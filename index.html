@@ -293,6 +293,7 @@ document.getElementById('novi').onclick = e => { e.preventDefault(); if (CFG) wi
     document.body.classList.add('dragging'); hint.textContent = D.fix ? '⏰ Ima sat – povuci na traku dolje za drugi dan' : D.mv ? '↕ Povuci u „Danas” ili na traku dolje' : '↕ Povuci na novo mjesto ili na traku dolje'; hint.classList.add('on'); bar.classList.add('on'); swallow = true; try { navigator.vibrate && navigator.vibrate(25); } catch (e) { } loop(); }
   function move(e) { if (!D) { if (!st) return; const p = pt(e), dx = p.clientX - st.x, dy = p.clientY - st.y;
       if (st.sw) { e.preventDefault(); swMove(dx); return; }
+      if (st.mouse && Math.hypot(dx, dy) > 6 && (st.z.dataset.dz || st.z.dataset.mv) && !st.z.classList.contains('vs')) { clearTimeout(tmr); const s0 = st; st = null; start(s0.z, s0.y); return; } /* v4.1: mišem odmah povuci, bez držanja */
       if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 1.6 && !st.z.classList.contains('dn')) { clearTimeout(tmr); swStart(); e.preventDefault(); swMove(dx); return; }
       if (Math.abs(dx) > 8 || Math.abs(dy) > 8) { clearTimeout(tmr); st = null; return; }
       if ((st.z.dataset.dz || st.z.dataset.mv) && e.cancelable) e.preventDefault(); /* iPhone: dok držiš prst, ne počinji pomicati stranicu */ return; }
