@@ -44,11 +44,11 @@ main .z:before{content:'';position:absolute;left:70px;top:0;bottom:0;width:2px;b
 
 /* v3.2: vrsta posla, koraci, povlačenje */
 .vp{display:inline-block;font:800 11px Arial;padding:2px 7px;border-radius:6px;margin-right:5px;vertical-align:1px;white-space:nowrap}
-.vp.etazni{background:#e0ecff;color:#1d4ed8}.vp.legalizacija{background:#fdf0d5;color:#a15c00}.vp.energetski{background:#dcf5e3;color:#15803d}.vp.statika{background:#e8ecf1;color:#334155}.vp.procjena{background:#fde4e4;color:#b91c1c}.vp.savjetovanje{background:#dff3fb;color:#0369a1}.vp.nadzor{background:#ffedd5;color:#c2410c}.vp.tlocrt{background:#e2e8f0;color:#1e3a5f}.vp.ostalo{background:#eef0f3;color:#64748b}
+.vp.etazni{background:#e0ecff;color:#1d4ed8}.vp.legalizacija{background:#fdf0d5;color:#a15c00}.vp.energetski{background:#dcf5e3;color:#15803d}.vp.statika{background:#e8ecf1;color:#334155}.vp.procjena{background:#fde4e4;color:#b91c1c}.vp.savjetovanje{background:#dff3fb;color:#0369a1}.vp.nadzor{background:#ffedd5;color:#c2410c}.vp.tlocrt{background:#e2e8f0;color:#1e3a5f}.vp.troskovnik{background:#fce7f3;color:#be185d}.vp.ostalo{background:#eef0f3;color:#64748b}
 .pg{display:flex;align-items:center;gap:8px;margin-top:7px;padding:2px 0}.pg i{flex:1;height:6px;background:var(--line);border-radius:3px;overflow:hidden}.pg i b{display:block;height:100%;background:var(--ac);border-radius:3px}.pg span{font:800 12px Arial;color:var(--ac)}.pg em{font-style:normal;color:var(--mut);font-size:13px}
 .z{flex-wrap:wrap}.ks{flex-basis:100%;background:var(--card);border-radius:12px;padding:4px 12px 10px;margin:6px 6px 2px 78px;box-shadow:0 1px 2px rgba(15,42,74,.07);position:relative;z-index:1}
 .k{display:flex;align-items:center;gap:10px;padding:8px 0;font-size:15px}.k .c{width:24px;height:24px;border-radius:7px;border:2px solid var(--ck);flex:none;display:flex;align-items:center;justify-content:center;color:#fff;font:900 13px Arial;background:transparent;padding:0}.k.d .c{background:var(--ac);border-color:var(--ac)}.k.d .t{text-decoration:line-through;color:var(--mut)}.k .t{flex:1;min-width:0;word-wrap:break-word}.k .dt{font:700 12px Arial;color:var(--ac);background:var(--soft);border-radius:999px;padding:3px 8px;white-space:nowrap}.k .dt.r{color:var(--red);background:#fdecec}
-.kadd{display:flex;gap:6px;margin-top:4px}.kadd input{flex:1;min-width:0;border:1px dashed var(--ck);border-radius:10px;padding:10px;font-size:15px;background:transparent;color:var(--tx)}
+.kadd{display:flex;gap:6px;margin-top:4px}#ekb{border:0;border-radius:10px;background:var(--ac);color:#fff;font:700 14px Arial;padding:0 14px;white-space:nowrap}.kadd input{flex:1;min-width:0;border:1px dashed var(--ck);border-radius:10px;padding:10px;font-size:15px;background:transparent;color:var(--tx)}
 .par{font:700 12px Arial;color:var(--mut);display:block;margin-bottom:1px}.z.vs .ck{border-radius:8px;width:26px;height:26px;margin-left:2px}.z.vs.dn .ck{background:var(--ac);border-color:var(--ac)}
 .lbl{font:700 12px Arial;color:var(--mut);margin:10px 2px 6px;display:flex;justify-content:space-between;letter-spacing:.2px}
 .vchips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}.vchips button{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:8px 11px;font:700 13px Arial;color:var(--tx)}.vchips button.on{border-color:transparent}.vchips button.au{border-style:dashed}
@@ -57,6 +57,8 @@ main .z:before{content:'';position:absolute;left:70px;top:0;bottom:0;width:2px;b
 .drag{position:fixed!important;z-index:30;pointer-events:none;margin:0!important}.drag .tx{box-shadow:0 12px 28px rgba(15,42,74,.28)!important;transform:scale(1.03) rotate(-1deg)}
 .phd{height:70px;margin:4px 6px 10px 78px;border:2px dashed var(--ac);border-radius:12px;background:#e3f1f580}
 .hint{position:fixed;left:12px;right:12px;top:10px;z-index:31;background:var(--tx);color:#fff;font:700 13px Arial;text-align:center;padding:10px;border-radius:12px;display:none}.hint.on{display:block}
+#dbar{position:fixed;left:8px;right:8px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:31;display:none;gap:6px}#dbar.on{display:flex}#dbar button{flex:1;padding:16px 4px;border-radius:14px;border:2px dashed var(--ac);background:#fff;color:var(--ac);font:700 14px Arial;box-shadow:0 4px 14px rgba(15,42,74,.18)}#dbar button.hv{background:var(--ac);color:#fff;border-style:solid;transform:scale(1.06)}
+#eq button.on,#eq button.sel{background:var(--ac);color:#fff;border-color:var(--ac)}
 body.dragging{user-select:none;-webkit-user-select:none;overflow:hidden}.z{-webkit-touch-callout:none}
 
 /* v3.3: kartice, pametan upis, čekam, tjedan, projekti, prevlačenje */
@@ -97,13 +99,13 @@ body.dragging{user-select:none;-webkit-user-select:none;overflow:hidden}.z{-webk
  <div class="row"><input id="ed_d" type="date"><input id="eh" type="time"></div>
  <div class="lbl"><span>⏳ ČEKAM OD DRUGIH</span><span id="ewa" style="font-weight:600"></span></div><div class="wch" id="ew"></div>
  <select id="eb"><option value="">— bez projekta —</option></select>
- <div class="lbl"><span id="ekl">KORACI</span></div><div class="ke" id="ek"></div><div class="kadd" style="margin:0 0 10px"><input id="ekn" placeholder="＋ Novi korak…  (Enter za sljedeći)" enterkeyhint="next"></div>
+ <div class="lbl"><span id="ekl">KORACI</span></div><div class="ke" id="ek"></div><div class="kadd" style="margin:0 0 10px"><input id="ekn" placeholder="＋ Novi korak…" enterkeyhint="done"><button type="button" id="ekb">＋ Dodaj</button></div>
  <select id="er"><option value="">🔁 ne ponavlja se</option><option value="dnevno">🔁 svaki dan</option><option value="radni dani">🔁 radnim danom</option><option value="tjedno">🔁 svaki tjedan</option><option value="svaka 2 tjedna">🔁 svaka 2 tjedna</option><option value="mjesečno">🔁 svaki mjesec</option></select>
  <input id="eu" type="url" placeholder="Poveznica (e-Dozvola, e-dnevnik…)">
  <textarea id="en" rows="2" placeholder="Napomena"></textarea>
  <div class="bt"><button id="edel" class="dl">🗑</button><button onclick="closeEd()" class="cn">Odustani</button><button onclick="saveEd()" class="ok">Spremi</button></div>
 </div></div>
-<div id="msg"></div><div id="setup"><div class="p"><img src="icon-192.png" alt=""><h2>Zadaci 57</h2><p>Zalijepi vezu na svoje zadatke – onu iz tablice <b>Registar → 🔗 Veza za tablet i mobitel</b> (završava s <code>/exec?k=…</code>). Upisuješ je samo jednom.</p><textarea id="su" placeholder="https://script.google.com/macros/s/…/exec?k=…"></textarea><button onclick="setupSave()">Spremi i otvori</button></div></div><div class="hint" id="hint">↕ Povuci na novo mjesto · pusti za spremanje</div>
+<div id="msg"></div><div id="setup"><div class="p"><img src="icon-192.png" alt=""><h2>Zadaci 57</h2><p>Zalijepi vezu na svoje zadatke – onu iz tablice <b>Registar → 🔗 Veza za tablet i mobitel</b> (završava s <code>/exec?k=…</code>). Upisuješ je samo jednom.</p><textarea id="su" placeholder="https://script.google.com/macros/s/…/exec?k=…"></textarea><button onclick="setupSave()">Spremi i otvori</button></div></div><div class="hint" id="hint">↕ Povuci na novo mjesto · pusti za spremanje</div><div id="dbar"><button data-to="0">Danas</button><button data-to="1">Sutra</button><button data-to="7">Za tjedan</button><button data-to="x">Bez datuma</button></div>
 <script>
 /* --- veza na tablicu (sprema se na uređaju) --- */
 let CFG = null; try { CFG = JSON.parse(localStorage.getItem('z57cfg') || 'null'); } catch (e) { }
@@ -136,7 +138,7 @@ const load = () => api('list');
 function guessV(t) { t = t.toLowerCase(); if (/nazv|zvati|telefon/.test(t)) return 'nazvati'; if (/mail/.test(t)) return 'mail'; if (/ponud/.test(t)) return 'ponuda'; if (/sastan/.test(t)) return 'sastanak'; if (/izmjer|mjeri/.test(t)) return 'izmjera'; if (/preda/.test(t)) return 'predaja'; if (/uplat|naplat|račun/.test(t)) return 'naplata'; return 'ostalo'; }
 function quick() { const q = document.getElementById('q'), t = q.value.trim(); if (!t) { openEd(null); return; } q.value = ''; const r = parseQ(t); const x = { id: 'z' + Date.now().toString(36), t: r.t, v: r.v, d: r.d, h: r.h, b: r.b, done: false }; optimistic(x); qprev(); msg('＋ ' + (x.d === today() ? 'Danas' : dTxt(x.d)) + (x.h ? ' ' + x.h : '')); api('save', x); }
 function optimistic(x) { S.tasks.push(x); render(); }
-const PS = [['etazni', 'Etažni elaborat', 'Etažni'], ['legalizacija', 'Legalizacija', 'Legalizacija'], ['energetski', 'Energetski certifikat', 'Energetski'], ['statika', 'Statika', 'Statika'], ['procjena', 'Procjena', 'Procjena'], ['savjetovanje', 'Savjetovanje', 'Savjetovanje'], ['nadzor', 'Nadzor', 'Nadzor'], ['tlocrt', 'Izrada tlocrta', 'Tlocrt'], ['ostalo', 'Ostalo', 'Ostalo']];
+const PS = [['etazni', 'Etažni elaborat', 'Etažni'], ['legalizacija', 'Legalizacija', 'Legalizacija'], ['energetski', 'Energetski certifikat', 'Energetski'], ['statika', 'Statika', 'Statika'], ['procjena', 'Procjena', 'Procjena'], ['savjetovanje', 'Savjetovanje', 'Savjetovanje'], ['nadzor', 'Nadzor', 'Nadzor'], ['tlocrt', 'Izrada tlocrta', 'Tlocrt'], ['troskovnik', 'Troškovnik', 'Troškovnik'], ['ostalo', 'Ostalo', 'Ostalo']];
 const PSN = {}; PS.forEach(p => PSN[p[0]] = p);
 const exp = {}; let PJ = {};
 const posao = x => x.p ? [x.p] : (x.b && PJ[x.b] && PJ[x.b].vr && PJ[x.b].vr.length ? PJ[x.b].vr : []);
@@ -159,7 +161,7 @@ function renderDan() { document.getElementById('dt').textContent = new Date().to
       L.forEach(x => { if (!nw && anyT && x._k < 100000 && x._k > nowM && x.h) { h += '<div class="now">' + nowH + '</div>'; nw = true; }
         if (!bk && x._k >= 100000) { if (anyT && !nw) { h += '<div class="now">' + nowH + '</div>'; nw = true; } if (anyT) h += '<div class="gh sub">Bilo kad danas</div>'; bk = true; }
         h += row(x, P, n, '', true); }); if (anyT && !nw) h += '<div class="now">' + nowH + '</div>'; }
-    else h += L.map(x => row(x, P, n, c === 'red' ? ' od' : '')).join(''); }
+    else h += L.map(x => row(x, P, n, c === 'red' ? ' od' : '', 'mv')).join(''); }
   const dn = (S.tasks || []).filter(x => x.done).sort((a, b) => (b.doneAt || 0) - (a.doneAt || 0)).slice(0, 20);
   if (dn.length) h += '<div class="gh" onclick="showDone=!showDone;render()">Gotovo <span>' + dn.length + '</span> ' + (showDone ? '▾' : '▸') + '</div>' + (showDone ? dn.map(x => row(x, P, '')).join('') : '');
   if (!open.length) h += '<p class="empty">Nema otvorenih zadataka 🎉</p>';
@@ -167,7 +169,7 @@ function renderDan() { document.getElementById('dt').textContent = new Date().to
 function vpH(x) { return posao(x).slice(0, 2).map(k => PSN[k] ? '<span class="vp ' + k + '">' + PSN[k][2] + '</span>' : '').join(''); }
 function row(x, P, g, cls, dz) { const p = x.b && P[x.b], ac = [];
   const dd = x.d && !/Danas|Sutra/.test(g) ? dTxt(x.d).split(' ') : null, tm = x.h ? x.h + (dd ? '<small>' + dd[0] + ' ' + dd[1] + '</small>' : '') : dd ? dd[1] + '<small>' + dd[0] + '</small>' : '';
-  const dzA = dz ? ' data-dz="1" data-key="' + x._k + '"' + (x.h || x.vs ? ' data-fix="1"' : '') : '';
+  const dzA = dz === 'mv' ? (x.vs || x.done ? '' : ' data-mv="1"') : dz ? ' data-dz="1" data-key="' + x._k + '"' + (x.h || x.vs ? ' data-fix="1"' : '') : '';
   if (x.vs) { return '<div class="z vs' + (cls || '') + '" data-id="' + x.id + '"' + dzA + '><div class="tm' + (tm ? '' : ' no') + '">' + (tm || '·') + '</div><button class="ck" onclick="stepTick(\'' + x.pid + '\',' + x.ki + ')"></button><div class="tx" onclick="openEd(\'' + x.pid + '\')"><span class="par">' + esc(x.par).slice(0, 34) + ' › korak ' + (x.ki + 1) + '/' + x.kn + '</span><b>' + esc(x.t) + '</b>' + (x.b || posao(x).length ? '<div>' + vpH(x) + (x.b ? '<span class="pr">' + (/^r/.test(x.b) ? '' : esc(x.b) + ' ') + (p ? esc(p.n).slice(0, 22) : '') + '</span>' : '') + '</div>' : '') + '</div></div>'; }
   if (x.u) ac.push('<a href="' + esc(x.u) + '" target="_blank">🔗</a>');
   if (p && p.adr && x.v === 'izmjera') ac.push('<a href="' + mapU(p.adr) + '" target="_blank" title="Karta">📍</a>');
@@ -258,7 +260,7 @@ function openEd(id, pb) { cur = id ? Object.assign({}, S.tasks.find(q => q.id ==
   g('eb').innerHTML = '<option value="">— bez projekta —</option>' + (S.proj || []).slice().sort((a, b) => b.b.localeCompare(a.b, 'hr', { numeric: true })).map(p => '<option value="' + esc(p.b) + '">' + esc((/^r/.test(p.b) ? '' : p.b + '  ') + p.n) + '</option>').join(''); g('eb').value = cur.b || '';
   cur.k = (cur.k || []).map(k => Object.assign({}, k)); pchips(); kedit(); wchips(); g('eb').onchange = () => { cur.b = g('eb').value; pchips(); };
   vchips(); g('edel').style.display = id ? '' : 'none'; g('ed').classList.add('on'); if (!id) setTimeout(() => g('et').focus(), 100); }
-function wchips() { const t0 = today(), dd = document.getElementById('ed_d').value; document.getElementById('ewa').textContent = cur.w ? 'od ' + dTxt(cur.w) + ' · ' + wDays(cur) : '';
+function wchips() { const t0 = today(), dd = document.getElementById('ed_d').value; document.querySelectorAll('#eq button').forEach(b => b.classList.toggle('on', b.dataset.d === 'x' ? !dd : dd === addD(+b.dataset.d))); /* v4: odabrani gumb datuma svijetli */ document.getElementById('ewa').textContent = cur.w ? 'od ' + dTxt(cur.w) + ' · ' + wDays(cur) : '';
   document.getElementById('ew').innerHTML = '<button class="' + (!cur.w ? 'on' : '') + '" onclick="cur.w=\'\';wchips()">Ne</button>' + [3, 5, 7, 14].map(n => '<button class="' + (cur.w && dd === addD(n) ? 'on' : '') + '" onclick="cur.w=cur.w||today();document.getElementById(\'ed_d\').value=addD(' + n + ');wchips()">provjeri za ' + n + ' d</button>').join('') + (cur.w && ![3, 5, 7, 14].some(n => dd === addD(n)) ? '<button class="on">' + (dd ? dTxt(dd) : 'bez datuma') + '</button>' : ''); }
 function pchips() { const pv = cur.b && PJ[cur.b] && PJ[cur.b].vr || [], eff = cur.p ? [cur.p] : pv;
   document.getElementById('epa').textContent = !cur.p && pv.length ? 'iz projekta' : '';
@@ -267,7 +269,9 @@ function kread() { document.querySelectorAll('#ek .k').forEach((r, i) => { if (!
 function kedit() { const n = cur.k.length, d = cur.k.filter(k => k.done).length; document.getElementById('ekl').textContent = 'KORACI' + (n ? ' ' + d + '/' + n : '');
   document.getElementById('ek').style.display = n ? '' : 'none';
   document.getElementById('ek').innerHTML = cur.k.map((k, i) => '<div class="k' + (k.done ? ' d' : '') + '"><button class="c" onclick="kread();cur.k[' + i + '].done=!cur.k[' + i + '].done;kedit()">' + (k.done ? '✓' : '') + '</button><input class="t" value="' + esc(k.t) + '"><input class="kd" type="date" value="' + esc(k.d || '') + '"><button class="x" onclick="kread();cur.k.splice(' + i + ',1);kedit()">✕</button></div>').join(''); }
-document.getElementById('ekn').addEventListener('keydown', e => { if (e.key !== 'Enter') return; e.preventDefault(); const v = e.target.value.trim(); if (!v) return; kread(); cur.k.push({ t: v, d: '', done: false }); e.target.value = ''; kedit(); });
+function kAdd() { const i = document.getElementById('ekn'), v = i.value.trim(); if (!v || !cur) return; kread(); cur.k.push({ t: v, d: '', done: false }); i.value = ''; kedit(); i.focus(); } /* v4: korak se dodaje odmah, zadatak ostaje otvoren */
+document.getElementById('ekn').addEventListener('keydown', e => { if (e.key !== 'Enter') return; e.preventDefault(); kAdd(); });
+document.getElementById('ekb').onclick = kAdd;
 function vchips() { document.getElementById('ev').innerHTML = Object.entries(ZV).map(([k, [i, n]]) => '<button class="' + (cur.v === k ? 'on' : '') + '" onclick="cur.v=\'' + k + '\';vchips()">' + i + ' ' + n + '</button>').join(''); }
 document.getElementById('eq').onclick = e => { const b = e.target.closest('button'); if (!b) return; document.getElementById('ed_d').value = b.dataset.d === 'x' ? '' : addD(+b.dataset.d); if (cur) wchips(); };
 document.getElementById('ed_d').addEventListener('change', () => { if (cur) wchips(); });
@@ -278,39 +282,47 @@ document.getElementById('edel').onclick = () => { if (!cur || !cur.id || !confir
 document.getElementById('q').addEventListener('keydown', e => { if (e.key === 'Enter') quick(); });
 document.getElementById('novi').onclick = e => { e.preventDefault(); if (CFG) window.open(CFG.url + '?k=' + CFG.k + '&p=novi', '_blank'); };
 
-/* v3.2: zadrži prst na zadatku (danas, bez sata) → povuci na novo mjesto */
+/* v4: zadrži prst (ili miš) na zadatku → povuci. Unutar „Danas” mijenjaš redoslijed; na traku dolje → Danas / Sutra / Za tjedan / Bez datuma */
 (function () { let tmr = null, st = null, D = null, swallow = false;
-  const L = document.getElementById('list'), hint = document.getElementById('hint');
-  const pt = e => e.touches ? e.touches[0] : e;
+  const L = document.getElementById('list'), hint = document.getElementById('hint'), bar = document.getElementById('dbar');
+  const pt = e => e.touches ? e.touches[0] : (e.changedTouches ? e.changedTouches[0] : e);
   function down(e) { const z = e.target.closest('.z[data-id]'); if (!z || e.target.closest('input,a,.ck,.c,.pg,.ks') || (e.button && e.button !== 0)) return; const p = pt(e); st = { x: p.clientX, y: p.clientY, z, mouse: !e.touches };
-    clearTimeout(tmr); if (!z.dataset.dz) return; tmr = setTimeout(() => { if (!st || st.sw) return; if (!st) return; if (z.dataset.fix) { msg(z.classList.contains('vs') ? 'Korak se pomiče u zadatku' : 'Zadatak sa satom stoji po vremenu'); st = null; swallow = true; return; } start(z, st.y); }, 450); }
+    clearTimeout(tmr); if (!z.dataset.dz && !z.dataset.mv) return; tmr = setTimeout(() => { if (!st || st.sw) return; if (z.classList.contains('vs')) { msg('Korak se pomiče u zadatku'); st = null; swallow = true; return; } start(z, st.y); }, st.mouse ? 350 : 450); }
   function start(z, y) { const r = z.getBoundingClientRect(); const ph = document.createElement('div'); ph.className = 'phd'; ph.style.height = r.height + 'px'; z.after(ph);
-    D = { z, ph, off: y - r.top, id: z.dataset.id }; z.classList.add('drag'); z.style.top = r.top + 'px'; z.style.width = r.width + 'px'; z.style.left = r.left + 'px'; document.body.classList.add('dragging'); hint.classList.add('on'); swallow = true; try { navigator.vibrate && navigator.vibrate(25); } catch (e) { } loop(); }
+    D = { z, ph, off: y - r.top, id: z.dataset.id, fix: !!z.dataset.fix, mv: !!z.dataset.mv, tg: null }; z.classList.add('drag'); z.style.top = r.top + 'px'; z.style.width = r.width + 'px'; z.style.left = r.left + 'px';
+    document.body.classList.add('dragging'); hint.textContent = D.fix ? '⏰ Ima sat – povuci na traku dolje za drugi dan' : D.mv ? '↕ Povuci u „Danas” ili na traku dolje' : '↕ Povuci na novo mjesto ili na traku dolje'; hint.classList.add('on'); bar.classList.add('on'); swallow = true; try { navigator.vibrate && navigator.vibrate(25); } catch (e) { } loop(); }
   function move(e) { if (!D) { if (!st) return; const p = pt(e), dx = p.clientX - st.x, dy = p.clientY - st.y;
       if (st.sw) { e.preventDefault(); swMove(dx); return; }
       if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 1.6 && !st.z.classList.contains('dn')) { clearTimeout(tmr); swStart(); e.preventDefault(); swMove(dx); return; }
       if (Math.abs(dx) > 8 || Math.abs(dy) > 8) { clearTimeout(tmr); st = null; return; }
-      if (st.z.dataset.dz && e.cancelable) e.preventDefault(); /* iPhone: dok držiš prst, ne počinji pomicati stranicu */ return; }
-    e.preventDefault(); const p = pt(e); D.y = p.clientY; D.z.style.top = (p.clientY - D.off) + 'px';
-    const rows = [...L.querySelectorAll('.z[data-dz]:not(.drag)')]; let before = null; for (const r of rows) { const b = r.getBoundingClientRect(); if (p.clientY < b.top + b.height / 2) { before = r; break; } }
-    if (before) { if (D.ph.nextElementSibling !== before) before.before(D.ph); } else if (rows.length) { const last = rows[rows.length - 1]; if (D.ph.previousElementSibling !== last) last.after(D.ph); } }
-  function loop() { if (!D) return; const y = D.y || 0; if (y && y < 90) window.scrollBy(0, -8); else if (y > innerHeight - 70) window.scrollBy(0, 8); requestAnimationFrame(loop); }
+      if ((st.z.dataset.dz || st.z.dataset.mv) && e.cancelable) e.preventDefault(); /* iPhone: dok držiš prst, ne počinji pomicati stranicu */ return; }
+    if (e.cancelable) e.preventDefault(); const p = pt(e); D.y = p.clientY; D.z.style.top = (p.clientY - D.off) + 'px';
+    let tg = null; for (const b of bar.querySelectorAll('[data-to]')) { const r = b.getBoundingClientRect(); if (p.clientX >= r.left && p.clientX <= r.right && p.clientY >= r.top - 14 && p.clientY <= r.bottom + 10) tg = b; }
+    bar.querySelectorAll('[data-to]').forEach(b => b.classList.toggle('hv', b === tg)); D.tg = tg ? tg.dataset.to : null; if (tg || D.fix) return;
+    const rows = [...L.querySelectorAll('.z[data-dz]:not(.drag)')]; if (!rows.length) return; let before = null; for (const r of rows) { const b = r.getBoundingClientRect(); if (p.clientY < b.top + b.height / 2) { before = r; break; } }
+    if (D.mv) { const f = rows[0].getBoundingClientRect(), l = rows[rows.length - 1].getBoundingClientRect(); if (p.clientY < f.top - 40 || p.clientY > l.bottom + 40) { D.inDan = false; return; } D.inDan = true; }
+    if (before) { if (D.ph.nextElementSibling !== before) before.before(D.ph); } else { const last = rows[rows.length - 1]; if (D.ph.previousElementSibling !== last) last.after(D.ph); } }
+  function loop() { if (!D) return; const y = D.y || 0; if (y && y < 90) window.scrollBy(0, -8); else if (y > innerHeight - 140 && y < innerHeight - 80) window.scrollBy(0, 8); requestAnimationFrame(loop); }
   function swStart() { const z = st.z; st.sw = true; z.classList.add('swp'); const bg = document.createElement('div'); bg.className = 'swb'; z.prepend(bg); st.bg = bg; st.tx = z.querySelector('.tx'); }
   function swMove(dx) { const vs = st.z.classList.contains('vs'); if (vs && dx < 0) dx = 0; dx = Math.max(-160, Math.min(160, dx)); st.dx = dx; st.tx.style.transform = 'translateX(' + dx + 'px)';
     const w = st.z.dataset.id && (S.tasks || []).find(q => q.id === st.z.dataset.id), ok = Math.abs(dx) > 90;
     st.bg.style.background = dx > 0 ? (ok ? '#15803d' : '#86b89a') : (ok ? '#0e7490' : '#7fb3c0'); st.bg.style.justifyContent = dx > 0 ? 'flex-start' : 'flex-end'; st.bg.textContent = dx > 0 ? '✓ Gotovo' : (w && w.w ? 'Još 3 dana →' : 'Sutra →'); }
   function swEnd() { const { z, dx } = st, id = z.dataset.id; swallow = true; z.classList.remove('swp'); if (st.bg) st.bg.remove(); if (st.tx) st.tx.style.transform = '';
     if (Math.abs(dx || 0) > 90) { if (z.classList.contains('vs')) { const [pid, ki] = id.split('#'); if (dx > 0) stepTick(pid, +ki); } else if (dx > 0) tick(id); else { const x = (S.tasks || []).find(q => q.id === id); later(id, x && x.w ? 3 : 1); } } }
-  function up() { clearTimeout(tmr); if (st && st.sw) { swEnd(); } st = null; setTimeout(() => swallow = false, 450); if (!D) return; const { z, ph, id } = D; D = null; document.body.classList.remove('dragging'); hint.classList.remove('on');
-    z.classList.remove('drag'); const all = [...L.querySelectorAll('.z[data-dz]:not([data-id="' + id + '"]), .phd')], i = all.indexOf(ph), prev = all[i - 1], next = all[i + 1]; z.remove(); ph.remove();
+  function up() { clearTimeout(tmr); if (st && st.sw) { swEnd(); } st = null; setTimeout(() => swallow = false, 450); if (!D) return; const { z, ph, id, tg, fix, mv, inDan } = D; D = null; document.body.classList.remove('dragging'); hint.classList.remove('on'); bar.classList.remove('on'); bar.querySelectorAll('.hv').forEach(b => b.classList.remove('hv'));
+    z.classList.remove('drag'); const x = S.tasks.find(q => q.id === id); if (!x) { render(); return; }
+    if (tg) { const nd = tg === 'x' ? '' : addD(+tg); z.remove(); ph.remove(); if ((x.d || '') === nd) { render(); return; } x.d = nd; if (tg !== '0') delete x.o; render(); msg(nd ? 'Premješteno na ' + dTxt(nd) : 'Premješteno u „Bez datuma”'); api('save', x); return; }
+    if (fix || (mv && !inDan) || !ph.parentNode) { z.remove(); ph.remove(); render(); if (fix) msg('Zadatak sa satom stoji po vremenu – za drugi dan povuci na traku'); return; }
+    const all = [...L.querySelectorAll('.z[data-dz]:not([data-id="' + id + '"]), .phd')], i = all.indexOf(ph), prev = all[i - 1], next = all[i + 1]; z.remove(); ph.remove();
     const kp = prev ? +prev.dataset.key : null, kn = next ? +next.dataset.key : null; let k;
     if (kp == null && kn == null) k = 100000; else if (kp == null) k = kn >= 100000 ? kn - 0.5 : Math.max(0, kn - 1); else if (kn == null) k = kp >= 100000 ? kp + 1 : 100000; else k = (kp + kn) / 2;
     if (kp != null && kn != null && kp < 100000 && kn >= 100000) k = kp + 0.5; /* iza zadnjeg sa satom = u rasporedu */
-    const x = S.tasks.find(q => q.id === id); if (!x) { render(); return; } x.o = k;
-    const t0 = today(), U = S.tasks.filter(q => !q.done && q.d === t0 && !q.h).map((q, j) => (q._k = okey(q, j), q)).sort((a, b) => a._k - b._k), o = {};
-    let n = 100000; U.forEach(q => { if (q._k >= 100000) { q.o = n++; } o[q.id] = q.o; }); render(); msg('Redoslijed spremljen'); api('red', { o }); }
+    const t0 = today(), moved = x.d !== t0; if (moved) x.d = t0; x.o = k;
+    const U = S.tasks.filter(q => !q.done && q.d === t0 && !q.h).map((q, j) => (q._k = okey(q, j), q)).sort((a, b) => a._k - b._k), o = {};
+    let n = 100000; U.forEach(q => { if (q._k >= 100000) { q.o = n++; } o[q.id] = q.o; }); render(); if (moved) { msg('Premješteno na danas'); api('save', x); } else msg('Redoslijed spremljen'); api('red', { o }); }
   L.addEventListener('touchstart', down, { passive: true }); document.addEventListener('touchmove', move, { passive: false }); document.addEventListener('touchend', up); document.addEventListener('touchcancel', up);
   L.addEventListener('mousedown', down); document.addEventListener('mousemove', move); document.addEventListener('mouseup', up);
+  L.addEventListener('dragstart', e => { if (e.target.closest && e.target.closest('.z')) e.preventDefault(); });
   L.addEventListener('contextmenu', e => { if (e.target.closest('.z')) e.preventDefault(); });
   document.addEventListener('click', e => { if (swallow) { swallow = false; e.stopPropagation(); e.preventDefault(); } }, true);
 })();
