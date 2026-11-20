@@ -540,8 +540,9 @@ function frHit(p) { return stHit(p, 'free'); }
 function stHit(p, only) { let best = null;
   for (const o of app.items()) { if (!(o.blk && o.blk.main && (o.blk.t === 'stube' || isFree(o.blk.t))) || (only && (only === 'free' ? !isFree(o.blk.t) : o.blk.t !== only))) continue; const B = o.blk, s = B.s || stScale(B), nv = nvOf(B.dv), dx = p.x - B.c.x, dy = p.y - B.c.y, u = (dx * B.dv.x + dy * B.dv.y) * s, v = (dx * nv.x + dy * nv.y) * s, G = geoOf(B);
     let u0 = Infinity, u1 = -Infinity, v0 = Infinity, v1 = -Infinity; for (const [a, b] of G.segs) for (const q of [a, b]) { u0 = Math.min(u0, q.u); u1 = Math.max(u1, q.u); v0 = Math.min(v0, q.v); v1 = Math.max(v1, q.v); }
-    const m = 15; if (u >= u0 - m && u <= u1 + m && v >= v0 - m && v <= v1 + m) { best = B.id; break; } }
-  return best; }
+    /* v2.61: dodir u pikselima zaslona (ne samo 15 cm) i manji blok ima prednost – stup na gredi se može odabrati, tanka greda pogoditi */
+    const m = Math.max(15, 22 / (app.scale() || 1) * s); if (u >= u0 - m && u <= u1 + m && v >= v0 - m && v <= v1 + m) { const ext = (u1 - u0) * (v1 - v0 + 1), dd = Math.max(0, u0 - u, u - u1) + Math.max(0, v0 - v, v - v1); if (!best || dd < best.dd - 1e-9 || (Math.abs(dd - best.dd) < 1e-9 && ext < best.ext)) best = { id: B.id, dd, ext }; } }
+  return best ? best.id : null; }
 function snapDir(d) { const m = TR.geoM(), th = (m && m.theta) || 0; let best = null, bd = -2; for (const k of [0, 1, 2, 3]) { const v = C.rotP({ x: Math.cos(k * Math.PI / 2), y: Math.sin(k * Math.PI / 2) }, th), dot = v.x * d.x + v.y * d.y; if (dot > bd) { bd = dot; best = v; } } return { x: Math.round(best.x * 1e4) / 1e4, y: Math.round(best.y * 1e4) / 1e4 }; }
 function stPlace(a, d) {
   if (curLayer() !== 'nacrt') { toast('🪜 Stubište se postavlja u sloju Nacrt.'); return; }
@@ -766,8 +767,12 @@ function dragStart(p, e, done) { const cv = $('canvas'), pid = e.pointerId; let 
   const up = ev => { if (ev.pointerId !== pid) return; window.removeEventListener('pointermove', mv, true); window.removeEventListener('pointerup', up, true); window.removeEventListener('pointercancel', up, true); RMR.drag = null; if (ev.type === 'pointerup') done(p, b); app.redraw(); };
   window.addEventListener('pointermove', mv, true); window.addEventListener('pointerup', up, true); window.addEventListener('pointercancel', up, true); }
 /* ▭ Prostorija: pravokutnik → 4 ravna zida, krajevi uhvaćeni na postojeće zidove; strana koja već postoji kao zid se ne crta dvaput */
+/* v2.61: Prostorija se ravna po zakretu skice samo ako ga stvarno nose zidovi – jedan kosi zid (ili prvi nacrtani) više ne zakreće pravokutnike */
+function roomTheta(m) { const th = m ? m.theta || 0 : 0; if (Math.abs(th) < 0.2 * Math.PI / 180) return th; let sT = 0, s0 = 0, nT = 0;
+  for (const o of app.items()) { if (o.layer !== 'nacrt' || o.blk || !Array.isArray(o.pts) || o.pts.length < 2) continue; for (let k = 1; k < o.pts.length; k++) { const p = o.pts[k - 1], q = o.pts[k], L = Math.hypot(q.x - p.x, q.y - p.y); if (!L) continue; const a = Math.atan2(q.y - p.y, q.x - p.x), dev = t => { let d = ((a - t) % (Math.PI / 2) + Math.PI / 2) % (Math.PI / 2); return Math.min(d, Math.PI / 2 - d); }; if (dev(th) < 3 * Math.PI / 180) { sT += L; nT++; } if (dev(0) < 3 * Math.PI / 180) s0 += L; } }
+  return nT >= 3 && sT > 2 * s0 ? th : 0; }
 function roomRect(a, b) { if (curLayer() !== 'nacrt') { toast('▭ Prostorija se crta u sloju Nacrt.'); return; } if (Math.hypot(b.x - a.x, b.y - a.y) * app.scale() < 30) { toast('▭ Povuci pravokutnik od jednog kuta prostorije do suprotnog.'); return; }
-  let m = null; try { TR.analyzeNow(true); m = T.m; } catch (e) { } const th = m ? m.theta || 0 : 0, A = C.rotP(a, -th), Bq = C.rotP(b, -th); let x0 = Math.min(A.x, Bq.x), x1 = Math.max(A.x, Bq.x), y0 = Math.min(A.y, Bq.y), y1 = Math.max(A.y, Bq.y);
+  let m = null; try { TR.analyzeNow(true); m = T.m; } catch (e) { } const th = roomTheta(m), A = C.rotP(a, -th), Bq = C.rotP(b, -th); let x0 = Math.min(A.x, Bq.x), x1 = Math.max(A.x, Bq.x), y0 = Math.min(A.y, Bq.y), y1 = Math.max(A.y, Bq.y);
   const tol = 22 / app.scale(), walls = m ? m.walls.filter(w => !w.view && !w.obj) : [];
   const snapV = (x, ya, yb) => { let best = x, bd = tol; for (const w of walls) if (w.o === 'V' && w.e1 > ya - tol && w.e0 < yb + tol) { const d = Math.abs(w.c - x); if (d < bd) { bd = d; best = w.c; } } return best; };
   const snapH = (y, xa, xb) => { let best = y, bd = tol; for (const w of walls) if (w.o === 'H' && w.e1 > xa - tol && w.e0 < xb + tol) { const d = Math.abs(w.c - y); if (d < bd) { bd = d; best = w.c; } } return best; };

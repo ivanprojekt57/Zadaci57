@@ -205,7 +205,19 @@ function analyze(floor, opts) {
   const theta = dominantAngle(raw.nacrt, D0 * 0.012);
   const R = p => rotP(p, -theta);
   const sk = { nacrt: raw.nacrt.map(s => s.map(R)), kote: raw.kote.map(s => s.map(R)), opisi: raw.opisi.map(s => s.map(R)), pogled: raw.pogled.map(s => s.map(R)) };
-  const nb = bbox(mainIdx.flatMap(i => sk.nacrt[i])), D = Math.max(nb.w, nb.h, 1);
+  const nb = bbox(mainIdx.flatMap(i => sk.nacrt[i])), D0b = Math.max(nb.w, nb.h, 1);
+  /* v2.61: kod jako dugih zgrada (hangar, niz prostorija) mjerilo iz najduže stranice daje preveliku toleranciju –
+     zidovi metar jedan od drugoga se stapaju, a razmaci postaju golema vrata. Ograniči je veličinom rukom pisanih brojeva. */
+  const glyphSz = (() => { const v = sk.kote.filter(st => st.length > 1).map(st => { const b = bbox(st); return Math.max(b.w, b.h); }).filter(x => x > 0 && x < 0.08 * D0b); return v.length >= 8 ? median(v) : 0; })();
+  /* bez rukom pisanih kota (sve nacrtano alatom Linija): najmanji razmak paralelnih ravnih zidova koji se preklapaju */
+  const lineGap = (() => { if (glyphSz) return 0; const L = sk.nacrt.map(st => { const p = st[0], q = st[st.length - 1], dx = q.x - p.x, dy = q.y - p.y, len = hyp(dx, dy); if (len < 0.04 * D0b) return null; for (let k = 1; k < st.length - 1; k += Math.max(1, st.length >> 4)) if (distToSeg(st[k], p, q) > 0.01 * len + 0.5) return null;
+      if (Math.abs(dy) < 0.02 * len) return { o: 'H', c: (p.y + q.y) / 2, a0: Math.min(p.x, q.x), a1: Math.max(p.x, q.x) }; if (Math.abs(dx) < 0.02 * len) return { o: 'V', c: (p.x + q.x) / 2, a0: Math.min(p.y, q.y), a1: Math.max(p.y, q.y) }; return null; }).filter(Boolean);
+    if (L.length < 6) return 0;
+    const lenAll = sk.nacrt.reduce((t, st) => t + pathLen(st), 0), lenL = L.reduce((t, l) => t + l.a1 - l.a0, 0); if (lenL < 0.8 * lenAll) return 0; /* samo kad je skica (skoro) sva crtana ravnalom */
+    let g = Infinity;
+    for (let i = 0; i < L.length; i++) for (let j = i + 1; j < L.length; j++) { const A = L[i], B = L[j]; if (A.o !== B.o) continue; const d = Math.abs(A.c - B.c), ov = Math.min(A.a1, B.a1) - Math.max(A.a0, B.a0); if (d > 0.002 * D0b && ov > -0.1 * D0b && d < g) g = d; }
+    return g < Infinity ? g : 0; })();
+  const D = glyphSz ? Math.min(D0b, Math.max(glyphSz / 0.012, D0b * 0.25)) : lineGap ? Math.min(D0b, Math.max(lineGap * 20, D0b * 0.1)) : D0b;
   const E = Math.max(3, D * 0.012);           // tolerancija skice
   const maxGap = D * 0.3;                      // najveći otvor u zidu
 
