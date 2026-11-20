@@ -11,7 +11,7 @@ const clean = s => String(s || 'izmjera').replace(/[^a-z0-9čćžšđ_-]/gi, '_'
 /* ---------- tablet: izvoz za kompjuter ---------- */
 function overlay(html) {
   let d = $('pcOv'); if (!d) { d = document.createElement('div'); d.id = 'pcOv'; d.style.cssText = 'position:fixed;inset:0;z-index:100001;background:#0008;display:flex;align-items:center;justify-content:center;padding:16px'; document.body.appendChild(d); }
-  d.innerHTML = '<div style="background:#fff;border-radius:14px;padding:18px 20px;max-width:520px;width:100%;font:16px Arial;color:#102b52;line-height:1.45">' + html + '</div>'; d.hidden = false; return d;
+  d.style.display = 'flex'; d.innerHTML = '<div style="background:#fff;border-radius:14px;padding:18px 20px;max-width:520px;width:100%;font:16px Arial;color:#102b52;line-height:1.45">' + html + '</div>'; d.hidden = false; return d;
 }
 async function pcExport() {
   const app = window.IzmjeraApp, TU = window.IzmjeraTlocrtUI; if (!app) return;
@@ -30,15 +30,15 @@ async function pcExport() {
   }
   const name = clean(($('project') && $('project').value) || (app.projectName && app.projectName())) + '_za_PC.json';
   const json = JSON.stringify(app.pack(), null, 2);
-  const d = $('pcOv'); if (d) d.hidden = true;
+  const d = $('pcOv'); if (d) d.remove();
   let saved = false; try { saved = !!(window.IzmjeraSpremi && IzmjeraSpremi.autoText(name, 'application/json', json)); } catch (e) { }
   if (!saved) { if (A && A.exportJson) A.exportJson(name, json); else { const url = URL.createObjectURL(new Blob([json], { type: 'application/json' })), a = document.createElement('a'); a.href = url; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); } }
   const read = total - empty;
   const box = overlay('<b style="font-size:18px">💻 Spremljeno za kompjuter</b><p style="margin:10px 0">Datoteka: <b>' + name.replace(/</g, '&lt;') + '</b>' + (saved ? ' (u mapi projekta)' : '') + '</p>' +
-    (total ? '<p style="margin:0 0 10px">Pročitano kota: <b>' + read + ' / ' + total + '</b>' + (empty ? '<br><span style="color:#b91c1c">' + empty + ' nije pročitano – upisat ćeš ih na kompjuteru.' + (read === 0 ? ' (Čitanje rukopisa prvi put treba internet.)' : '') + '</span>' : '') + '</p>' : '') +
+    (total ? '<p style="margin:0 0 10px">Pročitano kota: <b>' + read + ' / ' + total + '</b>' + (empty ? '<br><span style="color:#b91c1c">' + empty + ' nije pročitano – upisat ćeš ih na kompjuteru.' + (read === 0 ? ' (Čitanje rukopisa prvi put treba internet.)' : '') + '</span>' : '') + '</p>' : '<p style="margin:0 0 10px">✓ Sve rukom pisane kote već su pročitane.</p>') +
     '<p style="margin:0 0 14px;font-size:14px;color:#475569">Na kompjuteru otvori <b>Izmjera 57</b> i povuci ovu datoteku u prozor (ili <b>📂 Otvori izmjeru s tableta</b>). Tamo uredi kote i izvezi DXF. Promjene na kompjuteru ne vraćaju se na tablet.</p>' +
     '<div style="text-align:right"><button id="pcOk" style="background:#1e40af;color:#fff;border:0;border-radius:9px;padding:10px 18px;font:700 16px Arial">U redu</button></div>');
-  box.querySelector('#pcOk').onclick = () => { box.hidden = true; };
+  box.querySelector('#pcOk').onclick = () => { box.remove(); };
 }
 function bindTablet() { const b = $('pcExport'); if (b && !b.dataset.pc) { b.dataset.pc = '1'; b.onclick = e => { e.preventDefault(); pcExport(); }; } }
 
