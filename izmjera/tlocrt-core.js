@@ -522,7 +522,9 @@ function analyze(floor, opts) {
     const runsOf = ss => { const r = []; for (const sg of [...ss].sort((a, b) => a.a0 - b.a0)) { const q = r.at(-1); if (q && sg.a0 <= q.a1 + 0.8 * E) q.a1 = Math.max(q.a1, sg.a1); else r.push({ a0: sg.a0, a1: sg.a1 }); } return r; };
     const L1 = { o: sp.o, segs: A, last: L.last, view: false, c: L.c, runs: runsOf(A), splitAt: sp.at, splitPart: 0 }, L2 = { o: sp.o, segs: Bq, last: L.last, view: false, c: L.c, runs: runsOf(Bq), splitAt: sp.at, splitPart: 1 };
     if (L.splitFrom) { L1.splitFrom = L2.splitFrom = L.splitFrom; }
-    arr.splice(arr.indexOf(L), 1, L1, L2); jogPairs.push([L1, L2, sp]);
+    arr.splice(arr.indexOf(L), 1, L1, L2);
+    for (const pr of jogPairs) for (const k of [0, 1]) if (pr[k] === L) pr[k] = pr[2].at <= sp.at ? L1 : L2; /* v2.62: više prijeloma na istoj crti – raniji skok veže se na pravi dio */
+    jogPairs.push([L1, L2, sp]);
   }
   const perp = o => o === 'H' ? 'V' : 'H';
   const spans = (L, v, pad) => L.runs.some(r => v >= r.a0 - pad && v <= r.a1 + pad);

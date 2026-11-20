@@ -175,7 +175,10 @@ function num0(v) { const x = parseFloat(String(v == null ? '' : v).replace(',', 
 function gapPoint(q) {
   const m = T.m, o = q.ax === 'X' ? 'V' : 'H', wi = m.walls.filter(w => w.o === o && Math.abs(w.c - q.si) < 1), wj = m.walls.filter(w => w.o === o && Math.abs(w.c - q.sj) < 1);
   let best = null; for (const a of wi) for (const b of wj) { const lo = Math.max(a.e0, b.e0), hi = Math.min(a.e1, b.e1); if (hi > lo && (!best || hi - lo > best.hi - best.lo)) best = { lo, hi }; }
-  const all = C.bbox(m.sk.nacrt.flat()), v = best ? (best.lo + best.hi) / 2 : (q.ax === 'X' ? (all.y0 + all.y1) / 2 : (all.x0 + all.x1) / 2), u = (q.si + q.sj) / 2;
+  /* v2.62: zidovi se ne preklapaju (npr. dva dijela pročelja skoro u istoj liniji) – oznaka između njihovih najbližih krajeva, ne na sredini crteža */
+  let near = null; if (!best) for (const a of wi) for (const b of wj) { const g = Math.max(a.e0, b.e0) - Math.min(a.e1, b.e1), at = a.e1 <= b.e0 ? (a.e1 + b.e0) / 2 : b.e1 <= a.e0 ? (b.e1 + a.e0) / 2 : (Math.max(a.e0, b.e0) + Math.min(a.e1, b.e1)) / 2; if (!near || g < near.g) near = { g, at }; }
+  if (!best && !near) { const one = wi.concat(wj).sort((a, b) => (b.e1 - b.e0) - (a.e1 - a.e0))[0]; if (one) near = { at: (one.e0 + one.e1) / 2 }; } /* zid samo s jedne strane – oznaka uz njega */
+  const all = C.bbox(m.sk.nacrt.flat()), v = best ? (best.lo + best.hi) / 2 : near ? near.at : (q.ax === 'X' ? (all.y0 + all.y1) / 2 : (all.x0 + all.x1) / 2), u = (q.si + q.sj) / 2;
   return q.ax === 'X' ? { x: u, y: v } : { x: v, y: u };
 }
 /* v1.53: popis za energetski certifikat prije odlaska s objekta (fotografije, sjever, sustavi, voda) */

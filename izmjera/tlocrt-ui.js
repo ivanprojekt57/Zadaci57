@@ -48,7 +48,7 @@ function loadSettings() { try { return { ...C.DEFAULTS, ...JSON.parse(localStora
 function saveSettings(s) { try { localStorage.setItem(SETKEY, JSON.stringify(s)); } catch (e) { } }
 function persist() {
   const t = W.floor.tlocrt = W.floor.tlocrt || {};
-  t.v = 6; t.labels = W.st.labels; t.answers = W.st.answers; t.decisions = W.st.decisions; t.openings = W.st.openings; t.rec = W.st.rec; t.wallT = W.st.wallT; t.wallView = W.st.wallView; t.niches = W.st.niches; t.nicheKind = W.st.nicheKind; t.stairs = W.st.stairs; t.columns = W.st.columns; t.offPick = W.st.offPick; t.north = W.st.north; t.wallSplit = W.st.wallSplit; t.roomSwap = W.st.roomSwap;
+  t.v = 6; t.labels = W.st.labels; t.answers = W.st.answers; t.decisions = W.st.decisions; t.openings = W.st.openings; t.rec = W.st.rec; t.wallT = W.st.wallT; t.wallView = W.st.wallView; t.niches = W.st.niches; t.nicheKind = W.st.nicheKind; t.stairs = W.st.stairs; t.columns = W.st.columns; t.offPick = W.st.offPick; t.north = W.st.north; t.wallSplit = W.st.wallSplit; t.roomSwap = W.st.roomSwap; t.bigNo = W.st.bigNo || null;
   try { window.IzmjeraApp && window.IzmjeraApp.save(); } catch (e) { }
 }
 
@@ -56,7 +56,7 @@ function persist() {
 function ensureDom() {
   if ($('tlWiz')) return;
   const d = document.createElement('div'); d.id = 'tlWiz'; d.hidden = true;
-  d.innerHTML = '<div class="tl-head"><b>Tlocrt → DXF</b><span class="tl-ver">v2.61</span><span id="tlFloor"></span><div class="tl-steps" id="tlSteps"></div><button id="tlClose" class="tl-btn">✕ Zatvori</button></div>' +
+  d.innerHTML = '<div class="tl-head"><b>Tlocrt → DXF</b><span class="tl-ver">v2.62</span><span id="tlFloor"></span><div class="tl-steps" id="tlSteps"></div><button id="tlClose" class="tl-btn">✕ Zatvori</button></div>' +
     '<div class="tl-body"><div class="tl-view"><canvas id="tlCanvas"></canvas><div class="tl-zoom"><button id="tlFit" class="tl-btn" title="Prikaži sve">⤢</button></div><div id="tlWallPop" class="tl-pop" hidden></div></div><div class="tl-panel" id="tlPanel"></div></div>';
   document.body.appendChild(d);
   $('tlClose').onclick = close; $('tlFit').onclick = () => { W.view = null; draw(); };
@@ -70,7 +70,7 @@ function open() {
   W.floor = app.currentFloor(); W.projectName = app.projectName();
   let t = W.floor.tlocrt || {};
   if ((t.v || 1) < 6) t = {}; // starija verzija: odgovori i očitanja ne odgovaraju novom prepoznavanju
-  W.st = { settings: loadSettings(), labels: t.labels || {}, answers: t.answers || {}, decisions: t.decisions || {}, openings: t.openings || {}, rec: t.rec || {}, wallT: t.wallT || {}, wallView: t.wallView || {}, niches: t.niches || {}, nicheKind: t.nicheKind || {}, stairs: t.stairs || {}, columns: t.columns || {}, offPick: t.offPick || {}, north: t.north != null ? t.north : null, wallSplit: t.wallSplit || [], roomSwap: t.roomSwap || {} }; dropOldEstimates(W.st);
+  W.st = { settings: loadSettings(), labels: t.labels || {}, answers: t.answers || {}, decisions: t.decisions || {}, openings: t.openings || {}, rec: t.rec || {}, wallT: t.wallT || {}, wallView: t.wallView || {}, niches: t.niches || {}, nicheKind: t.nicheKind || {}, stairs: t.stairs || {}, columns: t.columns || {}, offPick: t.offPick || {}, north: t.north != null ? t.north : null, wallSplit: t.wallSplit || [], roomSwap: t.roomSwap || {}, bigNo: t.bigNo || null }; W.bigUndo = null; W.bigCache = null; dropOldEstimates(W.st);
   W.m = null; W.out = null; W.q = null; W.sel = -1; W.view = null;
   $('tlFloor').textContent = W.projectName + ' · ' + (W.floor.name || 'Etaža');
   $('tlWiz').hidden = false; W.open = true; Ink.prepare();
@@ -126,6 +126,64 @@ function gapSplit() {
       if (!(i2.score < info.score * 0.5)) continue; if (!best || i2.score < best.i.score) best = { sp: sp2, m: m2, st: st2, i: i2 }; }
     if (!best) break; sp = best.sp; m = best.m; st = best.st; info = best.i; added++; }
   if (!added) return; W.st.wallT = st.wallT; W.st.wallView = st.wallView; W.st.wallSplit = sp; W.m = m; W.out = null; persist();
+}
+
+/* v2.62: velike razlike mjera u nizu prostorija (npr. dubine 763 / 789 uz isti vanjski zid) – prijedlog prijeloma zidova:
+   fasada ostaje ravna, prostorije ostaju po izmjeri, a mijenja se debljina zida po prostoriji. Primjenjuje se tek kad korisnik potvrdi. */
+function bigSplitCalc() {
+  if (!W.m) return null; const E = W.m.E, same = (a, b) => a.o === b.o && Math.abs(a.c - b.c) < 2 * E && Math.abs(a.at - b.at) < 2 * E;
+  const an = sp => { const m = C.analyze(W.floor, { splits: sp }); m.labels.forEach(l => { const k = l.ocrKey || l.sig; if (W.st.rec[k] != null) l.rec = W.st.rec[k]; }); return m; };
+  const carry = (m0, m1, st) => { const out = { wallT: Object.assign({}, st.wallT || {}), wallView: Object.assign({}, st.wallView || {}) };
+    for (const f of ['wallT', 'wallView']) for (const w0 of m0.walls) { const v = (st[f] || {})[C.wallKey(w0)]; if (v == null) continue;
+      for (const w1 of m1.walls) { if (w1.o !== w0.o || Math.abs(w1.c - w0.c) > 2 * E || w1.e0 < w0.e0 - E || w1.e1 > w0.e1 + E) continue; const k1 = C.wallKey(w1); if (out[f][k1] == null) out[f][k1] = v; } }
+    return Object.assign({}, st, out); };
+  const lim = Number(W.st.settings.uskl) || 3, t00 = Date.now();
+  const devMax = info => Math.max(0, ...info.B.cons.filter(c => c.kind === 'measure' && Number.isFinite(c.dev) && Math.abs(c.dev) <= 40).map(c => Math.abs(c.dev)));
+  const base = Object.assign({}, W.st, { decisions: {}, settings: Object.assign({}, W.st.settings, { uskl: 15 }) });
+  let m = W.m, st = base, info; try { info = C.fitInfo(m, st); } catch (e) { return null; }
+  const before = devMax(info), nOver = inf => inf.B.cons.filter(c => c.kind === 'measure' && Number.isFinite(c.dev) && Math.abs(c.dev) > lim + 0.05).length, nB = nOver(info), sc0 = info.score; if (before <= Math.max(lim, 3) + 0.05) return null;
+  const sp0 = (W.st.wallSplit || []).slice(); let sp = sp0.slice();
+  const redo = sp2 => { const m2 = an(sp2), st2 = carry(m, m2, st), i2 = C.fitInfo(m2, st2); m = m2; st = st2; info = i2; sp = sp2; };
+  try {
+    for (let r = 0; r < 3 && Date.now() - t00 < 6000; r++) { const cands = C.softCands(m, st, info).filter(c => !sp.some(h => same(h, c))); if (!cands.length) break; redo(sp.concat(cands)); if (devMax(info) <= lim) break; }
+    if (sp.length === sp0.length) return null;
+    const rowsOf = () => { const sT = info.B.softT || {}, rows = [];
+      for (const w of m.walls) { const k = C.wallKey(w); if (sT[k] == null || w.view || w.obj) continue; const t0 = (st.wallT && st.wallT[k]) || w.tLabel || (w.exterior ? W.st.settings.ext : W.st.settings.int), t1 = Math.round(sT[k] * 10) / 10; if (Math.abs(t1 - t0) < 0.5) continue; rows.push({ w, k, t0, t1 }); }
+      return rows; };
+    /* nerazumna debljina (tanje od 8 cm ili promjena veća od 20 cm) – tu se ne lomi, prostorija se prilagodi */
+    for (let r = 0; r < 4 && Date.now() - t00 < 8000; r++) { const badR = rowsOf().filter(x => x.t1 < 8 || Math.abs(x.t1 - x.t0) > 20); if (!badR.length) break;
+      const keep = sp.filter(h => sp0.some(q => same(q, h)) || !badR.some(x => h.o === x.w.o && Math.abs(h.c - x.w.c) < 3 * E && (Math.abs(h.at - x.w.e0) < 2 * E || Math.abs(h.at - x.w.e1) < 2 * E))); if (keep.length === sp.length) break; redo(keep); }
+    /* nepotrebni prijelomi (skok < 0,5 cm) se maknu */
+    { const need = sp.filter(h => sp0.some(q => same(q, h)) || !info.jogs.some(g => g.soft && g.o === h.o && Math.abs(g.c - h.c) < 2 * E && Math.abs(g.at - h.at) < 2 * E && g.step < 0.5)); if (need.length < sp.length) redo(need); }
+    const after = devMax(info), rows = rowsOf().filter(x => x.t1 >= 8 && Math.abs(x.t1 - x.t0) <= 20);
+    const nA = nOver(info); if (!rows.length || sp.length === sp0.length || !(info.score < sc0 * 0.6) || !(nA < nB)) return null;
+    { let o2 = null; try { o2 = C.build(m, Object.assign({}, W.st, { wallSplit: sp, wallT: st.wallT, wallView: st.wallView })); } catch (e) { }
+      if (o2 && o2.sol) { const X = o2.sol.X.x, Y = o2.sol.Y.x; for (const x of rows) { const w = x.w, A = w.o === 'H' ? X : Y, B = w.o === 'H' ? Y : X, a0 = A[w.end[0]], a1 = A[w.end[1]], c = B[w.lineAxis]; if ([a0, a1, c].every(Number.isFinite)) x.pos = { a0, a1, c }; } } }
+    return { nB, nA, sp, wallT: st.wallT, wallView: st.wallView, rows, before, after, m };
+  } catch (e) { return null; }
+}
+function lim0() { return Number(W.st.settings.uskl) || 3; }
+function bigSplitSig() { const t = W.st; return JSON.stringify([t.labels, t.wallSplit, t.wallT, t.wallView, t.rec && Object.keys(t.rec).length, t.settings && t.settings.uskl]); }
+function bigSplitUI() {
+  const box = $('tlBig'); if (!box) return; const sig = bigSplitSig();
+  if (W.st.bigNo === sig) { box.innerHTML = ''; W.bigP = null; return; }
+  if (!W.bigCache || W.bigCache.sig !== sig) { let r = null; try { r = bigSplitCalc(); } catch (e) { } W.bigCache = { sig, r }; }
+  const r = W.bigCache.r; W.bigP = null; if (!r) { box.innerHTML = W.bigUndo ? '<div class="tl-big"><b>🧱 Zidovi su prelomljeni</b><div class="tl-actions"><button id="tlBigUndo" class="tl-btn">↩ Vrati kako je bilo</button></div></div>' : ''; bindBig(); return; }
+  const side = w => w.exterior ? ({ 'H-1': 'gornji vanjski', 'H1': 'donji vanjski', 'V-1': 'lijevi vanjski', 'V1': 'desni vanjski' }[w.o + (w.outSide || 0)] || 'vanjski') : 'unutarnji';
+  W.bigP = r.rows.map((x, n) => ({ w: x.w, pos: x.pos, n: n + 1 }));
+  box.innerHTML = '<div class="tl-big"><b>🧱 Prelomiti zidove umjesto mijenjanja prostorija?</b>' +
+    '<p>Mjere prostorija uz iste zidove ne slažu se (do <b>' + C.fmt(Math.round(r.before * 10) / 10, 1) + ' cm</b>, ' + r.nB + ' mjera izvan ±' + C.fmt(lim0(), 1) + ' cm). Ako prelomim zidove, fasada ostaje ravna, prostorije ostaju po izmjeri, a mijenja se debljina zida:</p>' +
+    '<ul>' + r.rows.map((x, n) => '<li><b>Z' + (n + 1) + '</b> ' + side(x.w) + ' zid: ' + C.fmt(x.t0, 1) + ' → <b>' + C.fmt(x.t1, 1) + ' cm</b> (' + (x.t1 > x.t0 ? '+' : '') + C.fmt(Math.round((x.t1 - x.t0) * 10) / 10, 1) + ')</li>').join('') + '</ul>' +
+    (r.nA ? '<p>Nakon prijeloma izvan ±' + C.fmt(lim0(), 1) + ' cm ostaje još <b>' + r.nA + '</b> mjera (najviše ' + C.fmt(Math.round(r.after * 10) / 10, 1) + ' cm) – te mjere provjeri, tamo se zid ne može razumno prelomiti.</p>' : '') + '<p class="tl-note">Oznake Z1, Z2… vidiš na tlocrtu (narančasto). Ako odbiješ, prostorije se smanje/povećaju kao dosad.</p>' +
+    '<div class="tl-actions"><button id="tlBigOk" class="tl-btn primary">✓ Prelomi zidove</button><button id="tlBigNo" class="tl-btn">✕ Ne, prilagodi prostorije</button></div></div>';
+  bindBig(); draw();
+}
+function bindBig() {
+  if ($('tlBigOk')) $('tlBigOk').onclick = () => { const r = W.bigCache && W.bigCache.r; if (!r) return; W.bigUndo = { wallSplit: (W.st.wallSplit || []).slice(), wallT: Object.assign({}, W.st.wallT), wallView: Object.assign({}, W.st.wallView) };
+    W.st.wallSplit = r.sp; W.st.wallT = r.wallT; W.st.wallView = r.wallView; W.m = r.m; W.out = null; W.bigP = null; persist(); stepResult(); draw(); };
+  if ($('tlBigNo')) $('tlBigNo').onclick = () => { W.st.bigNo = bigSplitSig(); W.bigP = null; persist(); const sc = $('tlPanel').scrollTop; stepResult(); draw(); $('tlPanel').scrollTop = sc; };
+  if ($('tlBigUndo')) $('tlBigUndo').onclick = () => { const u = W.bigUndo; if (!u) return; W.st.wallSplit = u.wallSplit; W.st.wallT = u.wallT; W.st.wallView = u.wallView; W.bigUndo = null; W.st.bigNo = null;
+    try { W.m = C.analyze(W.floor, { splits: W.st.wallSplit }); W.m.labels.forEach(l => { const k = l.ocrKey || l.sig; if (W.st.rec[k] != null) l.rec = W.st.rec[k]; }); } catch (e) { } W.out = null; persist(); W.st.bigNo = bigSplitSig(); persist(); stepResult(); draw(); };
 }
 
 function go(step) {
@@ -399,7 +457,8 @@ function stepResult() {
     (window.IzmjeraEnergija && (IzmjeraEnergija.isEnerg() || IzmjeraEnergija.isLegal()) ? '<div class="tl-actions"><button class="tl-btn primary" id="tlEnerg">' + IzmjeraEnergija.wizTitle() + '</button></div>' : '') +
     ((W.m.stairs || []).length ? '<p class="tl-note">🪜 Stubište nacrtano rukom: u 📏 Mjeri ga zamijeni blokom (jedan dodir) – tada su mjere i položaj točni.</p>' : '');
   { let q0 = null; try { q0 = C.nextQuestion(W.m, W.st); } catch (e) { } if (q0) h = '<div style="background:#fff7ed;border:1px solid #fdba74;border-radius:10px;padding:10px;margin-bottom:10px"><b>⚠ Nisu izmjerene sve mjere</b><br><span style="font-size:14px">Npr.: ' + esc(q0.text || '') + ' – što nedostaje, uzeto je iz skice.</span><div class="tl-actions"><button id="tlMjeri" class="tl-btn primary">📏 Otvori Mjeri</button></div></div>' + h; }
-  panel(h);
+  h = '<div id="tlBig"><p class="tl-note">Provjeravam zidove…</p></div>' + h;
+  panel(h); setTimeout(bigSplitUI, 30);
   document.querySelectorAll('[data-stair]').forEach(b => b.onclick = () => editStair(b.dataset.stair));
   if ($('tlEnerg')) $('tlEnerg').onclick = () => { persist(); close(); IzmjeraEnergija.open(); };
   $('tlDxf').onclick = () => saveDxf(C.toDxf(W.out), '_tlocrt');
@@ -700,6 +759,12 @@ function drawResult() {
   cx.textAlign = 'center'; cx.textBaseline = 'alphabetic';
   for (const t of o.texts) { const c = LCOL[t.layer]; if (!c) continue; const p = tr(t); cx.save(); cx.translate(p.x, p.y); cx.rotate(-(t.rot || 0) * Math.PI / 180); cx.fillStyle = c; cx.font = (t.layer === 'OPISI' && t.h >= 14 ? '700 ' : '') + Math.max(8, t.h * s) + 'px Arial'; cx.fillText(t.text, 0, 0); cx.restore(); }
   cx.textAlign = 'start';
+  if (W.bigP && W.bigP.length) { cx.font = 'bold 12px Arial'; cx.textAlign = 'center';
+    for (const P of W.bigP) { const w = P.w; if (!P.pos) continue; const { a0, a1, c } = P.pos;
+      const off = -(w.outSide || 1) * 45, q = w.o === 'H' ? { x: (a0 + a1) / 2, y: c + off } : { x: c + off, y: (a0 + a1) / 2 }, p = tr(q);
+      cx.strokeStyle = '#ea580c'; cx.lineWidth = 4; const e0 = tr(w.o === 'H' ? { x: a0, y: c } : { x: c, y: a0 }), e1 = tr(w.o === 'H' ? { x: a1, y: c } : { x: c, y: a1 }); cx.beginPath(); cx.moveTo(e0.x, e0.y); cx.lineTo(e1.x, e1.y); cx.stroke();
+      cx.fillStyle = '#ea580c'; cx.beginPath(); cx.arc(p.x, p.y, 12, 0, 7); cx.fill(); cx.fillStyle = '#fff'; cx.fillText('Z' + P.n, p.x, p.y + 4); }
+    cx.textAlign = 'start'; }
   if (W.geoF && W.geoF.length && W.st.geo && W.st.geo.open) { cx.font = 'bold 12px Arial'; cx.textAlign = 'center'; W.geoF.forEach((f, n) => { const q = f.o === 'H' ? { x: f.p.x, y: f.p.y + f.side * 70 } : { x: f.p.x + f.side * 70, y: f.p.y }, p = tr(q); cx.fillStyle = '#dc2626'; cx.beginPath(); cx.arc(p.x, p.y, 13, 0, 7); cx.fill(); cx.fillStyle = '#fff'; cx.fillText('G' + (n + 1), p.x, p.y + 4); }); cx.textAlign = 'start'; }
 }
 
