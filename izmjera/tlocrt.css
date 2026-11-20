@@ -1,0 +1,135 @@
+/* Izmjera 57 — čarobnjak Tlocrt → DXF + prilagodba za Redmi Pad Pro (12,1", ~1280×800 CSS px) */
+#tlWiz{position:fixed;inset:0;z-index:60;background:#f1f6fd;display:flex;flex-direction:column;color:#102b52;font-family:Arial,sans-serif}
+#tlWiz[hidden]{display:none}
+.tl-head{display:flex;align-items:center;gap:10px;padding:6px 10px;background:linear-gradient(110deg,#071d46,#17457f);color:#fff;min-height:48px;flex-wrap:wrap}
+.tl-head b{font-size:16px;letter-spacing:.02em}
+#tlFloor{font-size:13px;color:#c4d8f1;max-width:28vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tl-steps{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+.tl-steps span{font-size:12px;padding:5px 9px;border-radius:999px;background:#ffffff1a;color:#c4d8f1}
+.tl-steps span.on{background:#fff;color:#17457f;font-weight:700}
+.tl-steps span.done{color:#fff}
+.tl-body{flex:1;display:flex;min-height:0}
+.tl-view{flex:1;position:relative;min-width:0;background:#fff;border-right:1px solid #b8cde5}
+#tlCanvas{width:100%;height:100%;display:block;touch-action:none}
+.tl-zoom{position:absolute;right:10px;bottom:10px}
+.tl-panel{width:400px;max-width:46vw;overflow:auto;padding:12px 14px 16px;background:#f8fbff;-webkit-overflow-scrolling:touch}
+.tl-panel h3{margin:4px 0 8px;font-size:18px;color:#17457f}
+.tl-panel hr{border:0;border-top:1px solid #c5d8ee;margin:14px 0}
+.tl-panel ul{padding-left:18px;margin:6px 0;font-size:14px}
+.tl-panel details{margin:8px 0;font-size:14px}.tl-panel summary{font-weight:700;cursor:pointer;padding:4px 0}
+.tl-note{font-size:13px;color:#4a6584;line-height:1.35;margin:6px 0}
+.tl-q{font-size:17px;font-weight:700;margin:6px 0}
+.tl-btn{min-height:44px;padding:8px 14px;border-radius:10px;border:1px solid #b8cde5;background:#fff;color:#17457f;font-weight:700;font-size:15px}
+.tl-btn:active{background:#dceafb}
+.tl-btn.primary{background:#17457f;border-color:#17457f;color:#fff}
+.tl-head .tl-btn{min-height:36px;padding:5px 12px;font-size:13px}
+.tl-actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 4px}
+.tl-actions .tl-btn{flex:1 1 auto}
+.tl-actions.sticky{position:sticky;bottom:-16px;background:#f8fbff;padding:8px 0 10px;margin-bottom:-6px;border-top:1px solid #c5d8ee}
+.tl-field{display:flex;flex-direction:column;gap:4px;font-size:14px;font-weight:700;margin:10px 0 4px}
+.tl-field input{font-size:20px;padding:9px 10px;border-radius:9px;border:2px solid #9dbbe0;min-height:46px}
+.tl-chips{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0}
+.tl-chip{min-width:52px;min-height:40px;border-radius:9px;border:1px solid #b8cde5;background:#fff;color:#17457f;font-weight:700;font-size:15px;padding:4px 10px}
+.tl-chip.on{background:#17457f;color:#fff;border-color:#17457f}
+.tl-list{display:flex;flex-direction:column;gap:5px}
+.tl-row{display:flex;align-items:center;gap:6px;padding:5px;border-radius:10px;border:1px solid #d3e1f1;background:#fff}
+.tl-row.sel{border:2px solid #f97316;background:#fff7ed}
+.tl-row.bad{border-color:#f3a5a5;background:#fef2f2}.tl-row.bad.sel{border-color:#f97316}
+.tl-row.off{opacity:.55}
+.tl-n{flex:none;width:30px;height:30px;border-radius:50%;background:#2563eb;color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center}
+.tl-row.bad .tl-n{background:#dc2626}.tl-row.sel .tl-n{background:#f97316}
+.tl-val{flex:1;min-width:0;font-size:18px;font-weight:700;padding:7px 8px;border-radius:8px;border:1px solid #b8cde5;min-height:42px}
+.tl-kind{flex:none;width:116px;font-size:13px;padding:6px 4px;border-radius:8px;min-height:42px}
+.tl-or{flex:none;width:44px;min-height:42px;border-radius:8px;border:1px solid #b8cde5;background:#eef5fd;font-size:20px;color:#17457f}
+@media (orientation:portrait){.tl-body{flex-direction:column}.tl-view{flex:1 1 50%;border-right:0;border-bottom:1px solid #b8cde5}.tl-panel{width:auto;max-width:none;flex:1 1 50%}}
+
+/* gumb za tlocrt u alatnoj traci */
+.dxf-btn{background:#17457f!important;color:#fff!important;border-color:#17457f!important;font-weight:700}
+
+/* Redmi Pad Pro (landscape ~1280×800): alatna traka bez pomicanja, veći dodirni gumbi */
+@media (orientation:landscape) and (min-width:1100px) and (max-height:900px){
+ body.toolbar-left .toolbar:not(.hidden){width:236px;gap:4px;padding:5px}
+ body.toolbar-left #work:not(.hidden),body.toolbar-left #status:not(.hidden){margin-left:236px}
+ body.toolbar-left #work:not(.hidden){width:calc(100% - 236px)}
+ body.toolbar-left.fullscreen #work:not(.hidden){margin-left:0;width:100%}
+ body.toolbar-left .toolbar .group{padding:5px 6px}
+ body.toolbar-left .drawing-group button:has(.tool-icon){font-size:12px}
+ body.toolbar-left .drawing-group .tool-label{font-size:12px}
+ body.toolbar-left .floor-manager{max-height:150px}
+ body.toolbar-left .floor-panel .controls{display:none}
+ body.toolbar-left .floor-heading{margin-bottom:2px}
+ body.toolbar-left .floor-manager{margin-top:2px;padding:4px}
+ /* navigacija: 2 reda po 3 gumba, ikona iznad natpisa */
+ body.toolbar-left .navigation-controls{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px}
+ body.toolbar-left .navigation-row{display:contents}
+ body.toolbar-left .navigation-group button:has(.tool-icon){display:flex!important;align-items:center;justify-content:center;flex-direction:column!important;gap:1px;min-height:44px;padding:3px 1px!important;font-size:10.5px}
+ body.toolbar-left .navigation-group .tool-label{font-size:10.5px;white-space:nowrap}
+ body.toolbar-left .floor-row{min-height:0}
+ body.toolbar-left .floor-pick{padding:3px 6px!important}
+ body.toolbar-left .floor-manager{display:flex;flex-direction:column;gap:2px}
+ body.toolbar-left .floor-row{margin:0!important}
+ body.toolbar-left .toolbar:not(.hidden){gap:3px!important}
+ body.toolbar-left .toolbar .group{padding:4px 6px!important}
+ body.toolbar-left .floor-more{min-height:26px!important}
+ body.toolbar-left #addfloor{padding:3px 8px;min-height:28px}
+ body.toolbar-left .files-group .controls .dxf-btn{order:0}
+ body.toolbar-left .files-group .controls #save,body.toolbar-left .files-group .controls #open,body.toolbar-left .files-group .controls #backup{order:1}
+ body.toolbar-left .files-group .controls #layerpdf,body.toolbar-left .files-group .controls #allfloorpdf{order:2}
+ body.toolbar-left .files-group .controls{display:grid!important;grid-template-columns:repeat(12,minmax(0,1fr));gap:4px}
+ body.toolbar-left .files-group .controls button{grid-column:span 3;min-height:33px;padding:3px 2px!important;font-size:12px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ body.toolbar-left .files-group .controls #layerpdf,body.toolbar-left .files-group .controls #allfloorpdf,body.toolbar-left .files-group .controls #backup{grid-column:span 6}
+ body.toolbar-left .files-group .controls .dxf-btn{grid-column:1/-1;min-height:40px;font-size:14px!important}
+ body.toolbar-left .files-group .controls input[type=file]{display:none}
+}
+
+/* izbornik zida u čarobnjaku */
+.tl-pop{position:absolute;left:10px;top:10px;width:330px;max-width:calc(100% - 20px);background:#fff;border:2px solid #f97316;border-radius:12px;padding:10px 12px;box-shadow:0 6px 20px #0f2c5533}
+.tl-pop[hidden]{display:none}
+.tl-pop-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.tl-pop-head .tl-btn{min-height:36px;padding:4px 10px}
+.tl-check{display:flex;gap:10px;align-items:center;font-size:15px;font-weight:700;margin:10px 0;color:#4c1d95}
+.tl-check input{width:24px;height:24px;accent-color:#7c3aed}
+/* četiri sloja: 2×2 u lijevoj traci */
+@media (orientation:landscape) and (min-width:1100px) and (max-height:900px){
+ body.toolbar-left .layer-list{display:grid!important;grid-template-columns:1fr 1fr;gap:3px}
+ body.toolbar-left .layer-line{min-width:0}
+ body.toolbar-left .layer-line .layer-activate{min-width:0;padding-left:6px;padding-right:4px;font-size:13px}
+}
+
+/* uloga broja u popisu kota */
+.tl-row{flex-wrap:wrap}
+.tl-role{flex-basis:100%;padding:0 4px 1px 40px;font-size:12.5px;color:#4a6584;line-height:1.25}
+.tl-role.warn{color:#b91c1c;font-weight:700}
+.tl-ok{background:#ecfdf5;border:1px solid #6ee7b7;color:#065f46;border-radius:9px;padding:7px 9px;font-size:13.5px;font-weight:700;margin:6px 0}
+.tl-ver{font-size:11px;background:#ffffff26;color:#dceafb;border-radius:6px;padding:2px 6px}
+.tl-role.warn{cursor:pointer}
+/* zaglavlje PDF-a */
+.tl-pdfset .tl-logo{margin:6px 0}.tl-pdfset .tl-logo img{max-width:220px;max-height:70px;border:1px solid #c5d8ee;border-radius:6px;background:#fff;padding:4px}
+.tl-file{display:inline-flex;align-items:center;cursor:pointer}
+
+/* v1.28: naziv projekta u gornjoj traci ne smije prekriti gumbe na užem zaslonu (portret) */
+@media (max-width: 1100px) { .app-top #activeProjectName { display: none !important; } }
+
+/* v1.29: energetski certifikat */
+#enWiz{position:fixed;inset:0;z-index:61;background:#f1f6fd;display:flex;flex-direction:column;color:#102b52;font-family:Arial,sans-serif}
+#enWiz[hidden]{display:none}
+#enCanvas{width:100%;height:100%;display:block;touch-action:none}
+#enWiz .tl-panel{width:440px}
+.en-sel{font-size:16px;padding:8px;border-radius:9px;border:2px solid #9dbbe0;min-height:44px;background:#fff;color:#102b52;max-width:100%}
+#enWiz .tl-field input,#enWiz .tl-field select{width:100%;box-sizing:border-box}
+#enWiz .tl-field input{font-size:18px}
+.en-info{font-size:13px;line-height:1.5;background:#fff;border:1px solid #d3e1f1;border-radius:10px;padding:8px 10px;margin:6px 0}
+.en-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:0 8px}
+.en-layer{display:flex;gap:6px;align-items:center;margin:4px 0}.en-layer input{flex:1;font-size:16px;padding:8px;border-radius:8px;border:2px solid #9dbbe0;min-width:0}.en-layer .tl-btn{min-height:38px;padding:4px 10px}
+.en-op{background:#fff;border:1px solid #d3e1f1;border-radius:10px;padding:6px 8px;margin:6px 0}.en-op-h{font-size:13px;margin-bottom:4px}
+.en-op-f{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.en-op-f input{font-size:16px;padding:8px;border-radius:8px;border:2px solid #9dbbe0}.en-op-f .en-sel{min-height:40px;font-size:14px;padding:6px}
+.en-tab{width:100%;border-collapse:collapse;font-size:13px;margin:6px 0;background:#fff}.en-tab th,.en-tab td{border-bottom:1px solid #e2eaf5;padding:5px 6px;text-align:left}.en-tab th{background:#eaf2fc}.en-tab .r{text-align:right}.en-tab tr.b td{font-weight:700}
+.en-warn{color:#b45309;font-size:13px}
+.en-det{background:#fff;border:1px solid #d3e1f1;border-radius:10px;padding:4px 10px;margin:8px 0}
+.en-legend{position:absolute;left:10px;bottom:10px;font-size:12px;background:#ffffffe6;padding:5px 8px;border-radius:8px;max-width:70%}.en-legend span{display:inline-block;width:12px;height:12px;border-radius:3px;margin:0 3px 0 8px;vertical-align:-2px}
+#enOpen[hidden]{display:none}
+.en-box{background:#fff;border:2px solid #c7dbf3;border-radius:12px;padding:4px 10px 8px;margin:10px 0}.en-box-h{font-weight:800;color:#17457f;font-size:15px;margin:6px 0 0}
+.en-seg{display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:#fff;border:1px solid #d3e1f1;border-radius:10px;padding:6px 8px;margin:5px 0}.en-seg .en-n{flex:none;width:26px;height:26px;border-radius:50%;color:#fff;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center}
+.en-sm{display:inline-flex;align-items:center;gap:3px;font-size:13px;font-weight:700;color:#4a6584}
+.tl-pinb{position:absolute;left:10px;right:70px;top:10px;background:#f5f3ff;border:2px solid #7c3aed;border-radius:12px;padding:8px 10px;font-size:15px;color:#3b0764;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.tl-pinb .tl-btn{min-height:36px;padding:4px 10px}
