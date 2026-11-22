@@ -39,6 +39,7 @@ function solveLinear(A, b) {
 /* ---------------- tumačenje teksta kota ---------------- */
 function cleanOcr(t) {
   let s = String(t || '').trim(); if (!s) return '';
+  if (/^[ØøΦφϕ∅⌀]$/.test(s)) return 'Ø'; /* v2.63: prekrižena nula = 0 (prozor/vrata uz zid) */
   const digitish = (s.match(/[0-9OoIlSZBgq|]/g) || []).length;
   if (digitish >= Math.max(1, s.replace(/\s/g, '').length * 0.5)) {
     s = s.replace(/[Oo]/g, '0').replace(/[Il|!]/g, '1').replace(/[Zz]/g, '2').replace(/S/g, '5').replace(/B/g, '8').replace(/[gq]/g, '9').replace(/s/g, '5');
@@ -52,6 +53,8 @@ function toCm(v, raw) { return v; } /* v2.12: sve mjere su u cm (i „16,8” = 
 function parseLabel(text, opt) { if (opt && opt.cm) { CM_ONLY = true; try { return parseLabel(text); } finally { CM_ONLY = false; } }
   const t = cleanOcr(text); if (!t) return { kind: 'nepoznato' };
   let m;
+  if (t === 'Ø') return { kind: 'mjera', v: 0, zero: true };
+  if (/^0+(?:[.,]0+)?$/.test(t)) return { kind: 'mjera', v: 0, zero: true, plain: true };
   if ((m = /^h\s*[-_]?\s*[g9]r\s*[=:]\s*(\d+(?:[.,]\d+)?)$/i.exec(String(text || '').trim().replace(/\s+/g, ' ')) || /^h\s*[-_]?\s*9r\s*[=:]\s*(\d+(?:[.,]\d+)?)$/i.exec(t))) return { kind: 'hgr', v: num(m[1]) }; /* v2.49: visina od poda do donjeg ruba grede */
   if ((m = /^h\s*[=:]\s*(\d+(?:[.,]\d+)?)$/i.exec(t))) return { kind: 'visina', v: toCm(num(m[1]), m[1]) };
   if ((m = /^p[o0]d\s*[=:]?\s*([+\-–]?\s*\d+(?:[.,]\d+)?)$/i.exec(t))) { const r = m[1].replace(/[–\s]/g, c => c === '–' ? '-' : ''); return { kind: 'pod', v: num(r) }; }
@@ -197,6 +200,11 @@ function analyze(floor, opts) {
   const items = floor.items || [];
   const raw = { nacrt: strokesOf(items, 'nacrt'), kote: strokesOf(items, 'kote'), opisi: strokesOf(items, 'opisi'), pogled: strokesOf(items, 'pogled') };
   const texts = items.filter(o => o && o.type === 'text' && o.layer !== 'biljeske' && Number.isFinite(o.x) && Number.isFinite(o.y));
+  /* v2.69: prozor/vrata s udaljenošću 0 od ugla (iz postavki bloka) nema napisanu kotu – dodaj nevidljivu „0” od ugla do ruba otvora, inače se otvor postavi samo po skici (i dva prozora se preklope) */
+  const syn0 = new Set(); { const hasPin = new Set(texts.filter(t => t.blk && t.pin).map(t => t.blk.id));
+    for (const o of items) { const B = o && o.blk; if (!B || !B.main || !(B.t === 'prozor' || B.t === 'vrata') || B.od !== 0 || !B.end || B.odNb || !B.odP || !B.c || hasPin.has(B.id)) continue;
+      const dx = B.c.x - B.odP.x, dy = B.c.y - B.odP.y, L = Math.hypot(dx, dy); if (!(L > 0.5)) continue; const k = Math.min(1, L / 4) / L, bP = { x: B.odP.x + dx * k, y: B.odP.y + dy * k };
+      const t = { type: 'text', layer: 'kote', x: B.odP.x - 5, y: B.odP.y + 7, text: '0', blk: { id: B.id }, pin: { a: { x: B.odP.x, y: B.odP.y }, b: bP, outer: !!B.odOut }, syn0: true }; texts.push(t); syn0.add(B.id); } }
   const allN = raw.nacrt.flat();
   if (allN.length < 2) throw Error('Na sloju Nacrt nema nacrtanih zidova.');
   const labPts = texts.map(t => ({ x: t.x, y: t.y })).concat(raw.kote.filter(st => st.length).map(st => { const b = bbox(st); return { x: (b.x0 + b.x1) / 2, y: (b.y0 + b.y1) / 2 }; }));
@@ -224,7 +232,7 @@ function analyze(floor, opts) {
   /* --- rastavljanje poteza na ravne dijelove i lukove --- */
   const segs = [], arcs = [], diag = [], circles = [];
   // sloj Pogled (balkon, terasa, vanjske stube): ide istim ravnanjem, ali postaje linija, ne zid
-  const winBlk = new Set(), doorBlk = new Set(), zubK = new Map(), zubG = new Map(); /* zubK: potez označen alatom Zub/niša → 'izb' (izbočenje: stup, dimnjak) ili 'nisa' */ (items || []).filter(o => o && o.layer === 'nacrt' && o.type !== 'text' && Array.isArray(o.pts) && o.pts.length > 1 && !isStBlk(o)).forEach((o, i) => { if (o.blk && o.blk.t === 'prozor') winBlk.add(i); if (o.blk && !o.blk.t && o.blk.id) doorBlk.add(i); if (o.blk && o.blk.t === 'vrata') doorBlk.add(i); if (o.zub) { zubK.set(i, o.zub); if (o.zubId) zubG.set(i, o.zubId); } });
+  const winBlk = new Map(), doorBlk = new Set(), zubK = new Map(), zubG = new Map(); /* zubK: potez označen alatom Zub/niša → 'izb' (izbočenje: stup, dimnjak) ili 'nisa' */ (items || []).filter(o => o && o.layer === 'nacrt' && o.type !== 'text' && Array.isArray(o.pts) && o.pts.length > 1 && !isStBlk(o)).forEach((o, i) => { if (o.blk && o.blk.t === 'prozor') winBlk.set(i, o.blk.id || i); if (o.blk && !o.blk.t && o.blk.id) doorBlk.add(i); if (o.blk && o.blk.t === 'vrata') doorBlk.add(i); if (o.zub) { zubK.set(i, o.zub); if (o.zubId) zubG.set(i, o.zubId); } });
   const strokesAll = sk.nacrt.map(st => ({ st, view: false })).concat(sk.pogled.map(st => ({ st, view: true })));
   strokesAll.forEach(({ st, view }, si) => {
     if (pathLen(st) < E * 0.8) return;
@@ -341,7 +349,7 @@ function analyze(floor, opts) {
     const small = [...by.entries()].filter(([si]) => { const b = bbox(strokesAll[si].st); return Math.max(b.w, b.h) <= 0.14 * D && Math.max(b.w, b.h) >= 1.5 * E && Math.min(b.w, b.h) >= 0.6 * E; }) /* ravna crta (zid) nije dio pravokutnika */.map(([si, ss]) => ({ si, ss, b: bbox(strokesAll[si].st) }));
     const groups = small.map(g => [[g.si], g.ss, g.b]); // pravokutnik iz jednog poteza ili iz dva (npr. dvije „zagrade” s obje strane zida)
     for (let i = 0; i < small.length; i++) for (let j = i + 1; j < small.length; j++) { const a = small[i].b, c = small[j].b; if (a.x0 - E > c.x1 || c.x0 - E > a.x1 || a.y0 - E > c.y1 || c.y0 - E > a.y1) continue;
-      const u = { x0: Math.min(a.x0, c.x0), y0: Math.min(a.y0, c.y0), x1: Math.max(a.x1, c.x1), y1: Math.max(a.y1, c.y1) }; if (Math.max(u.x1 - u.x0, u.y1 - u.y0) > 0.14 * D) continue; groups.push([[small[i].si, small[j].si], small[i].ss.concat(small[j].ss), null]); }
+      if (winBlk.has(small[i].si) && winBlk.has(small[j].si) && winBlk.get(small[i].si) !== winBlk.get(small[j].si)) continue; /* v2.68: dva različita prozora iz bloka (jedan do drugog) se ne spajaju u jedan */ const u = { x0: Math.min(a.x0, c.x0), y0: Math.min(a.y0, c.y0), x1: Math.max(a.x1, c.x1), y1: Math.max(a.y1, c.y1) }; if (Math.max(u.x1 - u.x0, u.y1 - u.y0) > 0.14 * D) continue; groups.push([[small[i].si, small[j].si], small[i].ss.concat(small[j].ss), null]); }
     const usedS = new Set();
     for (const [sis, ss] of groups) { if (sis.some(x => usedS.has(x))) continue; const si = sis[0];
       for (const o of ['H', 'V']) { const par = ss.filter(x => x.o === o && x.a1 - x.a0 > 1.5 * E); if (par.length < 2) continue;
@@ -354,6 +362,8 @@ function analyze(floor, opts) {
         for (let k = segs.length - 1; k >= 0; k--) if (sis.includes(segs[k].stroke)) segs.splice(k, 1);
         for (let k = diag.length - 1; k >= 0; k--) if (sis.includes(diag[k].stroke)) diag.splice(k, 1);
         break; } } }
+  /* v2.69: ostatak crteža prozora iz bloka 🪟 (velik prozor koji nije prepoznat kao pravokutnik) nije zid ni zub – otvor dolazi iz bloka */
+  for (let k = segs.length - 1; k >= 0; k--) if (winBlk.has(segs[k].stroke)) segs.splice(k, 1);
   // mali potez s kutom (npr. dimnjak, stup u kutu) → objekt bez debljine zida
   { const by = new Map(); segs.forEach(sg => { if (!by.has(sg.stroke)) by.set(sg.stroke, []); by.get(sg.stroke).push(sg); });
     const arcStrokes = new Set(arcs.map(a => a.stroke));
@@ -372,7 +382,7 @@ function analyze(floor, opts) {
   const kStraight = sk.kote.filter(st => { const L = pathLen(st), ch = hyp(st[0].x - st.at(-1).x, st[0].y - st.at(-1).y); return L > 0.06 * D && ch / L > 0.85 && !ticked(st); });
   const segHitByKote = sg => kStraight.some(st => { const a = st[0], b = st.at(-1), p = sg.p0, q = sg.p1; const d = (b.x - a.x) * (q.y - p.y) - (b.y - a.y) * (q.x - p.x); if (Math.abs(d) < 1e-9) return false; const t = ((p.x - a.x) * (q.y - p.y) - (p.y - a.y) * (q.x - p.x)) / d, u = ((p.x - a.x) * (b.y - a.y) - (p.y - a.y) * (b.x - a.x)) / d; return t >= 0.05 && t <= 0.95 && u >= -0.05 && u <= 1.05; }); // kota koja samo završava na zubu ga ne poništava
   for (const N of segs) {
-    if (N.view || N.leaf || N.stair || N.niche || N.zubCol || segHitByKote(N)) continue; const Ln = N.a1 - N.a0, zN = zubK.get(N.stroke); if ((Ln > 0.3 * D && !zN) || Ln < 1.5 * E) continue;
+    if (N.view || N.leaf || N.stair || N.niche || N.zubCol || winBlk.has(N.stroke) || segHitByKote(N)) continue; /* v2.69: stranica prozora iz bloka 🪟 nije zub */ const Ln = N.a1 - N.a0, zN = zubK.get(N.stroke); if ((Ln > 0.3 * D && !zN) || Ln < 1.5 * E) continue;
     const stubs = [0, 1].map(k => { const ea = k ? N.a1 : N.a0; let best = null, bd = Infinity;
       for (const S2 of segs) { if (S2 === N || S2.o === N.o || S2.view || S2.leaf || S2.niche || S2.zubCol) continue; if (S2.a1 - S2.a0 > 0.1 * D && !(zN && zubK.has(S2.stroke))) continue; if (Math.abs(S2.c - ea) > 1.8 * E) continue;
         const d0 = Math.abs(S2.a0 - N.c), d1 = Math.abs(S2.a1 - N.c), d = Math.min(d0, d1); if (d > 1.8 * E) continue; if (d < bd) { bd = d; best = { S: S2, far: d0 < d1 ? S2.a1 : S2.a0 }; } }
@@ -387,7 +397,7 @@ function analyze(floor, opts) {
     const f0 = stubs[0].far, f1 = stubs[1].far, sd = Math.sign(f0 - N.c); if (sd !== Math.sign(f1 - N.c)) continue;
     const reach = Math.max(Math.abs(f0 - N.c), Math.abs(f1 - N.c)) + 2 * E;
     // zid: najbliža paralelna crta na strani krakova, uz ili preko zuba
-    let cW = null; for (const W2 of segs) { if (W2 === N || W2.o !== N.o || W2.view || W2.leaf || W2.niche || W2.obj || W2.a1 - W2.a0 < 0.5 * Ln || W2.stroke === N.stroke && W2.a1 - W2.a0 < 0.1 * D) continue; const off = (W2.c - N.c) * sd; if (off < 0.3 * E || off > reach) continue;
+    let cW = null; for (const W2 of segs) { if (W2 === N || W2.o !== N.o || W2.view || W2.leaf || W2.niche || W2.obj || W2.a1 - W2.a0 < 0.5 * Ln || W2.stroke === N.stroke && W2.a1 - W2.a0 < 0.1 * D || (zN && W2.stroke !== N.stroke && zubK.has(W2.stroke))) continue; /* v2.68: druga stranica nacrtanog izbočenja nije zid */ const off = (W2.c - N.c) * sd; if (off < 0.3 * E || off > reach) continue;
       if (!(Math.abs(W2.a1 - N.a0) < 2.5 * E || Math.abs(W2.a0 - N.a1) < 2.5 * E || (W2.a0 < N.a0 - E && W2.a1 > N.a1 + E) || (zN && W2.a0 < N.a0 + E && W2.a1 > N.a1 - E))) continue; if (cW == null || Math.abs(W2.c - N.c) < Math.abs(cW - N.c)) cW = W2.c; }
     if (cW == null) continue; const depth = Math.abs(cW - N.c); if (depth > Math.min(0.08 * D, 3.5 * E) && !zN) continue; /* v2.28: niša najviše ~3,5 debljine zida dubine */
     N.niche = true; N.obj = false; for (const sb of stubs) if (sb.S) { sb.S.niche = true; sb.S.obj = false; }
@@ -800,7 +810,7 @@ function analyze(floor, opts) {
     const fk = (t.fs || 18) / 18, p = R({ x: t.x + String(t.text).length * 5 * fk, y: t.y - 7 * fk });
     if (t.layer === 'kote') {
       const w = String(t.text).length * 10 * fk, h = 20 * fk;
-      labels.push({ src: 'text', cm: !!(t.blk || t.lz), text: String(t.text), bb: { x0: p.x - w / 2, x1: p.x + w / 2, y0: p.y - h / 2, y1: p.y + h / 2, w, h }, cx: p.x, cy: p.y, aspect: t.dir === 'V' ? 0.05 : 99, typed: true, tdir: t.dir === 'V' || t.dir === 'H' ? t.dir : null, tfix: !!t.dirFix, chev: /[<>]/.test(String(t.text)) ? 'auto' : null, blkc: t.blk && blkC.has(t.blk.id) ? R(blkC.get(t.blk.id)) : null, tsv: R(t.dir === 'V' ? { x: 0, y: 1 } : { x: -1, y: 0 }), /* smjer čitanja natpisa (za 80+40: prvi broj na početku teksta) */ sig: 't:' + Math.round(t.x) + ',' + Math.round(t.y) + ':' + t.text, pin: t.pin && t.pin.a && t.pin.b ? Object.assign({ a: R(t.pin.a), b: R(t.pin.b), outer: !!t.pin.outer, blk: !t.pin.od }, t.pin.od ? { od: true, sa: t.pin.sa || null, sb: t.pin.sb || null } : {}) : null, gap: t.gap && Number.isFinite(t.gap.si) && Number.isFinite(t.gap.sj) ? { ax: t.gap.ax, si: t.gap.si, sj: t.gap.sj } : null, dg: t.dg && t.dg.a && t.dg.b ? { a: R(t.dg.a), b: R(t.dg.b) } : null });
+      labels.push({ syn0: !!t.syn0, src: 'text', cm: !!(t.blk || t.lz), text: String(t.text), bb: { x0: p.x - w / 2, x1: p.x + w / 2, y0: p.y - h / 2, y1: p.y + h / 2, w, h }, cx: p.x, cy: p.y, aspect: t.dir === 'V' ? 0.05 : 99, typed: true, tdir: t.dir === 'V' || t.dir === 'H' ? t.dir : null, tfix: !!t.dirFix, chev: /[<>]/.test(String(t.text)) ? 'auto' : null, blkc: t.blk && blkC.has(t.blk.id) ? R(blkC.get(t.blk.id)) : null, tsv: R(t.dir === 'V' ? { x: 0, y: 1 } : { x: -1, y: 0 }), /* smjer čitanja natpisa (za 80+40: prvi broj na početku teksta) */ sig: 't:' + Math.round(t.x) + ',' + Math.round(t.y) + ':' + t.text, pin: t.pin && t.pin.a && t.pin.b ? Object.assign({ a: R(t.pin.a), b: R(t.pin.b), outer: !!t.pin.outer, blk: !t.pin.od }, t.pin.od ? { od: true, sa: t.pin.sa || null, sb: t.pin.sb || null } : {}) : null, gap: t.gap && Number.isFinite(t.gap.si) && Number.isFinite(t.gap.sj) ? { ax: t.gap.ax, si: t.gap.si, sj: t.gap.sj } : null, dg: t.dg && t.dg.a && t.dg.b ? { a: R(t.dg.a), b: R(t.dg.b) } : null });
     } else if (t.layer === 'opisi') rooms.push({ text: String(t.text), x: p.x, y: p.y });
     else if (t.layer === 'pogled') rooms.push({ text: String(t.text), x: p.x, y: p.y, view: true });
   }
@@ -920,7 +930,7 @@ function labelInfo(m, l, st) {
   const ov = (st.labels && st.labels[l.sig]) || {};
   let text = ov.value != null ? ov.value : (l.text != null ? l.text : (l.rec || ''));
   const p = parseLabel(text, { cm: ov.value == null && l.cm });
-  if (p.kind === 'nepoznato' && p.guess > 0 && ov.value != null && String(ov.value).trim() !== '') { p.kind = 'mjera'; p.v = p.guess; } // mali broj koji je korisnik sam upisao/potvrdio
+  if (p.kind === 'nepoznato' && p.guess > 0 && ((ov.value != null && String(ov.value).trim() !== '') || (ov.value == null && l.src === 'text'))) { p.kind = 'mjera'; p.v = p.guess; } // mali broj koji je korisnik sam upisao/potvrdio
   let kind = ov.kind && ov.kind !== 'auto' ? ov.kind : autoKind(l, p);
   if (['osirina', 'ovisina', 'nsirina', 'ndubina', 'ssirina', 'sdubina', 'udaljenost'].includes(kind) && !(p.v > 0) && p.guess > 0) p.v = p.guess;
   if (kind === 'pod' && p.kind !== 'pod') { const mm = /([+\-–]?)\s*(\d+(?:[.,]\d+)?)/.exec(String(text)); if (mm) { p.v = (mm[1] && mm[1] !== '+' ? -1 : 1) * num(mm[2]); } }
@@ -928,6 +938,7 @@ function labelInfo(m, l, st) {
 }
 function autoKind(l, p) {
   if (p.kind === 'visina' || p.kind === 'dijagonala' || p.kind === 'hgr') return p.kind;
+  if (p.zero && !l.chevOnly) return 'mjera'; /* v2.63: Ø / 0 = otvor uz zid */
   if (l.chevOnly || (l.tiny && !(p.v > 0))) return 'zanemari';
   if (l.nrole && (p.kind === 'mjera' || (p.kind === 'nepoznato' && p.guess))) return l.nrole.part === 'w' ? 'nsirina' : 'ndubina';
   if (l.crole && (p.kind === 'mjera' || (p.kind === 'nepoznato' && p.guess))) return l.crole.part === 'w' ? 'ssirina' : 'sdubina';
@@ -1042,7 +1053,10 @@ function buildConstraints(m, st) {
       if (S && I.parsed.n > 1) { S.n = I.parsed.n; l.span = { stair: S.id, part: 'n' }; } else notes.push({ kind: 'kota', label: l, text: 'Broj visina #' + l.n + ' nije pridružen stubištu.' }); return; }
     if (I.kind === 'mjera' && l.stairIn != null && stairs[l.stairIn] && I.parsed.v > 0) { const S = stairs[l.stairIn]; if (l.spart === 'w') S.w = I.parsed.v; else S.L = I.parsed.v; l.span = { stair: S.id, part: l.spart }; return; }
     if (I.kind === 'mjera' || I.kind === 'udaljenost') {
-      const v = I.parsed.v; if (!(v > 0)) return; const forceOff = I.kind === 'udaljenost';
+      const v = I.parsed.v; const ovz = st.labels && st.labels[l.sig];
+      if (!(v > 0)) { /* v2.63: nula – samo prekrižena nula (Ø) ili upisana 0; obična rukom pisana „0” može biti slučajan kružić */
+        if (!(v === 0 && I.parsed.zero && (!I.parsed.plain || l.typed || (ovz && ovz.value != null)))) return; }
+      const forceOff = I.kind === 'udaljenost';
       const putOff = (op, off) => { const o0 = op.offset, isPin = x => !!(x && x.label && (x.label.pin || st.labels && st.labels[x.label.sig] && st.labels[x.label.sig].pin));
         if (isPin(off) && !(o0 && isPin(o0) && o0.dir !== off.dir)) { if (o0 && !isPin(o0) && o0.dir !== off.dir) op.offset2 = o0; op.offset = off; return; } if (isPin(o0)) { if (o0.dir !== off.dir) op.offset2 = off; return; } /* dodjela dodirom ima prednost */
         if (o0 && o0.dir === off.dir && o0.axis === off.axis && o0.side !== off.side) op.offSame = off; else if (o0 && o0.dir !== off.dir) op.offset2 = off;
@@ -1055,6 +1069,8 @@ function buildConstraints(m, st) {
           const sp = { ax, dir: ax === 'X' ? 'H' : 'V', i, j, type: 'eksp', offI, offJ, add: offI - offJ, sketch: m.axes[ax][j].s - m.axes[ax][i].s, v: ax === 'X' ? l.cy : l.cx, pin: true, vod: true };
           if (!(v > 0)) { cons.push({ ax, i, j, target: 0, value: 0, add: 0, kind: 'same', key: l.sig }); l.span = sp; return; }
           cons.push({ ax, i, j, target: v + sp.add, value: v, add: sp.add, kind: 'measure', label: l, span: sp, accepted: st.decisions && st.decisions[l.sig] === 'accept' }); l.span = sp; return; } }
+      if (v === 0 && !((ovz && ovz.pin) || l.pin)) { const zp = zeroPin(m, l, ops); if (zp) { const r = pinSpan(m, st, zp, 0, l, ops.concat(nis), putOff, cons); if (r) { l.span = r; return; } }
+        notes.push({ kind: 'kota', label: l, text: 'Kota #' + l.n + ' (0): ne vidim kraj prozora/vrata uz zid blizu nje – dodijeli je dodirom.' }); return; }
       const pin = (st.labels && st.labels[l.sig] && st.labels[l.sig].pin) || l.pin; // korisnik je dodirom odabrao što kota mjeri (ili kota „od ugla” iz postavki prozora/vrata)
       if (pin) { const r = pinSpan(m, st, pin, v, l, ops.concat(nis), putOff, cons); if (r) { l.span = r; return; } notes.push({ kind: 'kota', label: l, text: 'Kota #' + l.n + ' (' + fmt(v) + '): na dodirnutim mjestima ne vidim zid ili rub otvora – dodijeli je ponovno.' }); return; }
       const cdl = l.edim != null ? m.edims[l.edim] : l.leader != null ? m.leaders[l.leader] : null;
@@ -1178,7 +1194,7 @@ function buildConstraints(m, st) {
     const P = buildConstraints(m, Object.assign({}, st, { _derivedT: Object.assign({}, st._derivedT || {}, tm), _softT: Object.assign({}, st._softT || {}, tmS), _derivedDone: true, _jogDone: true, _jogProbe: true }));
     const r1 = L.map(it => raw(it, P.cons, P.scale)), der = {}, derS = {}, dn = [];
     L.forEach((it, k) => { const t0 = it.D.tu, t1 = r0[k], g0 = r0[k] - t0, g1 = r1[k] - t1; let t = Math.abs(g1 - g0) > 1e-6 ? t1 - g1 * (t1 - t0) / (g1 - g0) : t1; t = Math.round(t * 10) / 10; if (Math.abs(t - it.D.tk) <= 1) t = it.D.tk;
-      if (t >= 8 && t <= 90 && Math.abs(t - t0) > 0.5) { (it.D.soft ? derS : der)[it.key] = t; dn.push({ kind: 'debljina', text: it.D.soft ? 'Mala razlika mjera (' + fmt(Math.abs(t - it.D.tk), 1) + ' cm): prostorije su točno po mjerama, a vanjski zid je na tom dijelu ' + fmt(t) + ' cm umjesto ' + fmt(it.D.tk) + ' cm. Fasada ostaje ravna.' : t === it.D.tk ? 'Debljina vanjskog zida uzeta ' + fmt(t) + ' cm, ista kao susjedni dio – fasada ravna.' : 'Debljina vanjskog zida izračunata ' + fmt(t) + ' cm, da fasada bude ravna (uz zid ' + fmt(it.D.tk) + ' cm).' }); } });
+      if (t >= 8 && t <= 90 && Math.abs(t - t0) > 0.5) { (it.D.soft ? derS : der)[it.key] = t; dn.push({ kind: 'debljina', text: it.D.soft ? 'Mala razlika mjera (' + fmt(Math.abs(t - it.D.tk), 1) + ' cm): prostorije su točno po mjerama, a ' + (it.D.w && it.D.w.exterior ? 'vanjski zid' : 'zid') + ' je na tom dijelu ' + fmt(t) + ' cm umjesto ' + fmt(it.D.tk) + ' cm. ' + (it.D.w && it.D.w.exterior ? 'Fasada ostaje ravna.' : 'Skok je na spoju s poprečnim zidom, druga strana zida ostaje ravna.') : t === it.D.tk ? 'Debljina vanjskog zida uzeta ' + fmt(t) + ' cm, ista kao susjedni dio – fasada ravna.' : 'Debljina vanjskog zida izračunata ' + fmt(t) + ' cm, da fasada bude ravna (uz zid ' + fmt(it.D.tk) + ' cm).' }); } });
     if (Object.keys(der).length || Object.keys(derS).length) { const R3 = buildConstraints(m, Object.assign({}, st, { _derivedT: Object.assign({}, st._derivedT || {}, der), _softT: Object.assign({}, st._softT || {}, derS), _derivedDone: true, _jogDone: true })); R3.notes.push(...dn); R3.derivedT = Object.assign({}, R3.derivedT || {}, der, derS); R3.softT = Object.assign({}, R3.softT || {}, derS); return R3; }
     jogFlush(m, st);
   }
@@ -1301,9 +1317,21 @@ function pinTarget(m, st, p, dir, ops) {
   for (const w of m.walls) { if (w.o !== po || w.obj || isView(w, st) || pv < w.e0 - E || pv > w.e1 + E) continue; const d = Math.abs(pu - w.c); if (d < bdw) { bdw = d; bw = { kind: 'w', w, pos: w.c, side: Math.abs(pu - w.c) < 0.25 * E ? 0 : Math.sign(pu - w.c), band: Math.abs(pu - w.c) < 0.6 * E }; } }
   if (bo && (!bw || bdo < bdw * 0.8)) return bo; return bw || bo;
 }
+/* v2.63: rukom pisana Ø uz kraj prozora/vrata = otvor je uz zid (udaljenost 0) – napravi „dodir” od ugla do ruba otvora */
+function zeroPin(m, l, ops) { const E = m.E, R = Math.max(4 * E, 1.6 * Math.max(l.bb.w, l.bb.h)); let best = null;
+  for (const op of ops) { const w = m.walls[op.wall]; if (!w || op.niche) continue;
+    for (const dir of [-1, 1]) { const e = dir < 0 ? op.s0 : op.s1, P = w.o === 'H' ? { x: e, y: w.c } : { x: w.c, y: e }, d = hyp(P.x - l.cx, P.y - l.cy); if (d > R || (best && d >= best.d)) continue;
+      const cand = [w.e0, w.e1]; for (const x of m.walls) { if (x.view || x.obj || x.o === w.o || x.c < w.e0 - E || x.c > w.e1 + E || w.c < x.e0 - 1.5 * E || w.c > x.e1 + 1.5 * E) continue; cand.push(x.c); }
+      let uc = null; for (const c of cand) { if ((dir < 0 ? c > e + E : c < e - E)) continue; if (Math.abs(c - e) > 5 * E) continue; if (uc == null || Math.abs(c - e) < Math.abs(uc - e)) uc = c; }
+      if (uc == null) continue; best = { d, w, e, uc }; } }
+  if (!best) return null; const w = best.w, sd = Math.sign((w.o === 'H' ? l.cy - w.c : l.cx - w.c)) || 1, Q = u => w.o === 'H' ? { x: u, y: w.c + sd * 0.3 * E } : { x: w.c + sd * 0.3 * E, y: u };
+  return { a: Q(best.uc), b: Q(best.e), outer: false }; }
 function pinSpan(m, st, pin, v, l, ops, putOff, cons) {
   const a = pin.a, b = pin.b; if (!a || !b) return null; const dir = Math.abs(b.x - a.x) >= Math.abs(b.y - a.y) ? 'H' : 'V', ax = dir === 'H' ? 'X' : 'Y';
-  const A = pinTarget(m, st, a, dir, ops), B = pinTarget(m, st, b, dir, ops); if (!A || !B) return null;
+  const A = pinTarget(m, st, a, dir, ops); let B = pinTarget(m, st, b, dir, ops);
+  /* v2.68: udaljenost upisana u prozor/vrata (od ugla do ruba) – drugi kraj je UVIJEK rub tog otvora, i kad je blizu crte drugog zida (inače postane mjera zid–zid i razvuče prostorije) */
+  if (pin.blk && l && l.blkc) { const E = m.E; let bo = null, bd = 6 * E; for (const o of ops) { const w = m.walls[o.wall]; if (!w || o.niche || w.o !== dir) continue; const mid = (o.s0 + o.s1) / 2, cu = dir === 'H' ? l.blkc.x : l.blkc.y, cv = dir === 'H' ? l.blkc.y : l.blkc.x, d = Math.hypot(mid - cu, w.c - cv); if (d < bd) { bd = d; const pu = dir === 'H' ? b.x : b.y, k = Math.abs(pu - o.s0) <= Math.abs(pu - o.s1) ? 0 : 1, pv = dir === 'H' ? b.y : b.x; bo = { kind: 'o', op: o, k, pos: k ? o.s1 : o.s0, side: Math.sign(pv - w.c) || 1 }; } } if (bo) B = bo; }
+  if (!A || !B) return null;
   /* v2.14 alat Od–do: strana zida zapamćena pri dodiru (near = rub prema drugoj točki = svijetla mjera, far = suprotni rub) */
   const xs = (X, Y, sd) => { if (X.kind !== 'w' || !sd) return; const tw = Math.sign(Y.pos - X.pos) || 1; X.side = sd === 'far' ? -tw : tw; X.band = false; X.xs = true; };
   if (pin.od) { xs(A, B, pin.sa); xs(B, A, pin.sb); }
@@ -1344,10 +1372,16 @@ function findAxis(m, ax, s, along) { /* v2.37: along = položaj kote uzduž zida
 /* skok vanjskog zida (dvije debljine): vanjsko lice (fasada) ostaje ravno, razlika debljine ide unutra */
 function jogFlush(m, st) {
   for (const g of m.jogs || []) {
-    g.ft = null; g.der = null; if (st._jogProbe) continue; const A = m.axes[g.ax], Li = A[g.i] && A[g.i].line, Lj = A[g.j] && A[g.j].line; if (!Li || !Lj) continue;
+    g.ft = null; g.der = null; g.inT = 0; { const sh = st.jogShare && st.jogShare[g.ax + ':' + Math.round(g.c) + ':' + Math.round(g.at)]; g.w = sh == null ? null : sh <= 0.001 ? 1 : 1e-8 / sh; } if (st._jogProbe) continue; const A = m.axes[g.ax], Li = A[g.i] && A[g.i].line, Lj = A[g.j] && A[g.j].line; if (!Li || !Lj) continue;
     const near = L => { let b = null, bd = Infinity; for (const w of m.walls) { if (w.line !== L || w.view || w.obj) continue; const d = Math.min(Math.abs(w.e0 - g.at), Math.abs(w.e1 - g.at)); if (d < bd) { bd = d; b = w; } } return bd <= 3 * m.E ? b : null; };
-    const wi = near(Li), wj = near(Lj); g.ext = !!(wi && wj && wi.exterior && wj.exterior); if (!wi || !wj || !wi.exterior || !wj.exterior || !wi.outSide || wi.outSide !== wj.outSide) continue;
-    const flip = st.jogFace && st.jogFace[g.ax + ':' + Math.round(g.c) + ':' + Math.round(g.at)] === 'in'; const o = wi.outSide * (flip ? -1 : 1);
+    const wi = near(Li), wj = near(Lj); g.ext = !!(wi && wj && wi.exterior && wj.exterior);
+    /* v2.65: unutarnji zid prelomljen na spoju s poprečnim zidom – skok ide samo na stranu gdje je poprečni zid (tamo ga skriva kut), druga strana zida ostaje ravna (nema zuba u prostoriji) */
+    let inT = 0; if (wi && wj && !g.ext && g.soft && !wi.exterior && !wj.exterior) { const E = m.E, po = Li.o === 'H' ? 'V' : 'H'; let sp = false, sn = false;
+      for (const p of m.walls) { if (p.o !== po || p.view || p.obj || Math.abs(p.c - g.at) > 2 * E) continue; if (Math.abs(p.e0 - g.c) < 1.5 * E && p.e1 > g.c + 1.5 * E) sp = true; else if (Math.abs(p.e1 - g.c) < 1.5 * E && p.e0 < g.c - 1.5 * E) sn = true; else if (p.e0 < g.c - 1.5 * E && p.e1 > g.c + 1.5 * E) { sp = sn = true; } }
+      if (sp !== sn) inT = sp ? -1 : 1; }
+    g.inT = inT;
+    if (!inT && (!wi || !wj || !wi.exterior || !wj.exterior || !wi.outSide || wi.outSide !== wj.outSide)) continue;
+    const flip = st.jogFace && st.jogFace[g.ax + ':' + Math.round(g.c) + ':' + Math.round(g.at)] === 'in'; const o = (inT || wi.outSide) * (flip ? -1 : 1);
     const ti = wallT(m, wi, st), tj = wallT(m, wj, st); if (!(ti > 0 && tj > 0)) continue;
     const known = w => !!(w.tLabel || (st.wallT && st.wallT[wallKey(w)]) || (st._derivedT && st._derivedT[wallKey(w)]) || (st._softT && st._softT[wallKey(w)])), ki = known(wi), kj = known(wj);
     g.der = null;
@@ -1365,7 +1399,7 @@ function solveAxis(m, ax, cons, scale, skip) {
   const order = [...A.keys()].sort((p, q) => A[p].s - A[q].s);
   const jg = (m.jogs || []).filter(g => g.ax === ax), isJog = (i, j) => jg.some(g => (g.i === i && g.j === j) || (g.i === j && g.j === i));
   for (let k = 1; k < n; k++) { const i = order[k - 1], j = order[k], t = (A[j].s - A[i].s) * scale; if (!isJog(i, j)) add(i, j, t, 1e-6 / Math.max(1, t) ** 2); }
-  for (const g of jg) if (g.ft != null) add(g.i, g.j, g.ft, 1); else add(g.i, g.j, 0, 1e-8); /* skok zida: vanjski – ravna fasada; inače bez mjere pola-pola, a odrede ga mjere */
+  for (const g of jg) if (g.ft != null) add(g.i, g.j, g.ft, 1); else add(g.i, g.j, 0, g.w || 1e-8); /* v2.67: g.w = korisnikov udio razlike (st.jogShare) */ /* skok zida: vanjski – ravna fasada; inače bez mjere pola-pola, a odrede ga mjere */
   const i0 = order[0]; M[i0][i0] += 1; b[i0] += A[i0].s * scale;
   cons.forEach((c, k) => { if (c.ax !== ax || k === skip) return; add(c.i, c.j, c.target, (c.prio ? 1e4 : 1) / Math.max(1, Math.abs(c.target)) ** 2); /* ukupne mjere <…> drže se; razlika ide u ostale */ });
   const x = solveLinear(M.map(r => Array.from(r)), Array.from(b));
@@ -1565,7 +1599,7 @@ function build(m, st) {
       const off = (side > 0 ? f0 : f1) - (side > 0 ? 1 : -1) * 22, p = P(c, off);
       T(o.type === 'prozor' ? 'OTVORI_PROZORI' : 'OTVORI_VRATA', p.x, p.y + (horiz ? 4 : 0), txt, 10, horiz ? 0 : 90);
     }
-    if (o._off) { const g = o._off, off = line + g.f.side * (t / 2 + 28); out._offDims = out._offDims || []; out._offDims.push({ dir: horiz ? 'H' : 'V', u0: Math.min(g.face, g.edge), u1: Math.max(g.face, g.edge), v: off, text: fmt(g.f.value) }); }
+    if (o._off && !(g0 => g0.f.value === 0 && g0.f.label && g0.f.label.syn0)(o._off)) { const g = o._off, off = line + g.f.side * (t / 2 + 28); out._offDims = out._offDims || []; out._offDims.push({ dir: horiz ? 'H' : 'V', u0: Math.min(g.face, g.edge), u1: Math.max(g.face, g.edge), v: off, text: fmt(g.f.value) }); }
     o._c = c; o._w = width;
   }
   for (const n of B.nis || []) {
@@ -1853,7 +1887,7 @@ function build(m, st) {
   for (const a of m.arcs) if (!a.used) out.polys.push({ layer: a.view ? 'POGLED' : 'OSTALO', pts: a.pts.map(W2) });
   for (const c of m.circles || []) { if (colCircles.has(c)) continue; const near = m.walls.some(w => w.obj && hyp((w.o === 'H' ? (w.e0 + w.e1) / 2 : w.c) - c.c.x, (w.o === 'H' ? w.c : (w.e0 + w.e1) / 2) - c.c.y) < 0.2 * m.D); out.polys.push({ layer: c.view ? 'POGLED' : near ? 'DIMNJAK' : 'OSTALO', pts: c.pts.map(W2) }); }
   for (const k of ['nacrt', 'kote', 'opisi', 'pogled']) for (const st2 of m.sk[k] || []) out.polys.push({ layer: 'SKICA', pts: st2.map(W2), color: k });
-  for (const t of m.texts) { const p = rotP({ x: t.x, y: t.y }, -m.theta); T('SKICA', wx(p.x), wy(p.y), t.text, 14, 0, 'l'); }
+  for (const t of m.texts) { if (t.syn0) continue; const p = rotP({ x: t.x, y: t.y }, -m.theta); T('SKICA', wx(p.x), wy(p.y), t.text, 14, 0, 'l'); }
   for (const n of B.notes) if (n.label) { const p = { x: wx(n.label.cx), y: wy(n.label.cy) }; out.circles.push({ layer: 'PROVJERA', c: p, r: 25 }); }
   if (dgWarps.length) applyDgWarp(out, dgWarps, rects, holes);
   out.bounds = { x0: bx0, y0: by0, x1: bx1, y1: by1 };
@@ -2034,11 +2068,11 @@ function autoSplits(m, st) {
 /* v2.36: male razlike mjera (pločice, žbuka) ne razvlače prostorije – zid se prelomi na spoju s pregradom i razlika ide u debljinu */
 function fitInfo(m, st) { const B = buildConstraints(m, st), sol = { X: solveAxis(m, 'X', B.cons, B.scale), Y: solveAxis(m, 'Y', B.cons, B.scale) }; violations(B.cons, sol, st.settings.tol);
   const lim = Number(st.settings.uskl) || 3; let score = 0, small = 0; const bad = []; B.cons.forEach(c => { if (c.kind !== 'measure' || !Number.isFinite(c.dev)) return; const a = Math.abs(c.dev); score += c.dev * c.dev; if (a <= 2 * lim + 0.05) { small += c.dev * c.dev; if (a > 0.3) bad.push(c); } }); /* velike razlike su prave greške (pitanja) – ne skrivaju se u zidu */
-  const jogs = (m.jogs || []).map(g => { const d = sol[g.ax].x[g.j] - sol[g.ax].x[g.i]; return { o: g.o, c: g.c, at: g.at, soft: g.soft, d, step: Math.abs(d) * (g.ext ? 2 : 1) }; });
+  const jogs = (m.jogs || []).map(g => { const d = sol[g.ax].x[g.j] - sol[g.ax].x[g.i]; return { o: g.o, c: g.c, at: g.at, ax: g.ax, soft: g.soft, ext: !!g.ext, inT: g.inT || 0, d, step: Math.abs(d) * (g.ext ? 2 : 1), dt: Math.abs(d) * (g.ext || g.inT ? 2 : 1) }; });
   return { score, small, bad, jogs, B, sol }; }
 function softCands(m, st, info) { const out = [], E = m.E, seen = new Set();
   for (const c of info.bad) { const A = m.axes[c.ax], o = c.ax === 'X' ? 'V' : 'H', lb = c.label || {}, pos = o === 'V' ? lb.cy : lb.cx;
-    for (const i of [c.i, c.j]) { const L = A[i] && A[i].line; if (!L || L.view) continue; const lo = Math.min(...L.runs.map(r => r.a0)), hi = Math.max(...L.runs.map(r => r.a1));
+    for (const i of [c.i, c.j]) { const L = A[i] && A[i].line; if (!L || L.view) continue; if (!m.walls.some(w => w.line === L && w.exterior)) continue; /* v2.66: unutarnji zid se ne lomi sam – razlika ide na vanjski zid (fasada ravna) */ const lo = Math.min(...L.runs.map(r => r.a0)), hi = Math.max(...L.runs.map(r => r.a1));
       for (const p of m.walls) { if (p.o === o || p.view || p.obj) continue; if (Math.min(Math.abs(p.e0 - L.c), Math.abs(p.e1 - L.c)) > 1.5 * E) continue; if (p.c <= lo + 1.5 * E || p.c >= hi - 1.5 * E) continue;
         if (L.splitAt != null && Math.abs(L.splitAt - p.c) < 2 * E) continue; const k = o + ':' + Math.round(L.c) + ':' + Math.round(p.c); if (seen.has(k)) continue; seen.add(k);
         out.push({ o, c: Math.round(L.c * 10) / 10, at: Math.round(p.c * 10) / 10, auto: true, soft: true, near: Number.isFinite(pos) ? Math.abs(pos - p.c) : 0 }); } } }

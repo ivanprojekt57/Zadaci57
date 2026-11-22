@@ -2,7 +2,7 @@
 (function () {
 'use strict';
 const FIELDS = [
-  ['Građevina', [['adresa', 'Adresa građevine'], ['kc', 'Katastarska čestica (k.č.)'], ['ko', 'Katastarska općina (k.o.)'], ['god', 'Godina izgradnje', 'numeric']]],
+  ['Građevina', [['gradjevina', 'Naziv građevine (npr. STAMBENA ZGRADA)'], ['td', 'T.D. (broj projekta)'], ['adresa', 'Adresa građevine'], ['kc', 'Katastarska čestica (k.č.)'], ['ko', 'Katastarska općina (k.o.)'], ['god', 'Godina izgradnje', 'numeric']]],
   ['Investitor', [['invIme', 'Ime i prezime / naziv'], ['invAdresa', 'Adresa'], ['invOib', 'OIB', 'numeric']]]
 ];
 const TYPES = [['etazni', 'Etažni elaborat'], ['legalizacija', 'Legalizacija'], ['energetski', 'Energetski certifikat'], ['statika', 'Statika'], ['procjena', 'Procjena'], ['savjetovanje', 'Savjetovanje'], ['nadzor', 'Nadzor'], ['tlocrt', 'Izrada tlocrta'], ['troskovnik', 'Troškovnik'], ['ostalo', 'Ostalo']];

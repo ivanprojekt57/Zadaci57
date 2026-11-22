@@ -53,7 +53,8 @@ function text(t, x, y, size, opt) {
   const F = '/' + (bold ? 'F2' : 'F1') + ' ';
   let body = str(t) + ' Tj';
   if (/[²³]/.test(String(t))) body = String(t).split(/([²³])/).filter(Boolean).map(seg => seg === '²' || seg === '³' ? F + f(size * 0.62) + ' Tf ' + f(size * 0.38) + ' Ts (' + (seg === '²' ? '2' : '3') + ') Tj ' + F + f(size) + ' Tf 0 Ts' : str(seg) + ' Tj').join(' '); // eksponent kao mala uzdignuta znamenka (ne ovisi o fontu preglednika)
-  return 'BT ' + F + f(size) + ' Tf ' + f(c) + ' ' + f(s) + ' ' + f(-s) + ' ' + f(c) + ' ' + f(x + dx * c) + ' ' + f(y + dx * s) + ' Tm ' + body + ' ET\n';
+  const k = opt.italic ? 0.2126 : 0; /* kurziv: nagib slova 12° (kao pismo sastavnice) */
+  return 'BT ' + F + f(size) + ' Tf ' + f(c) + ' ' + f(s) + ' ' + f(c * k - s) + ' ' + f(s * k + c) + ' ' + f(x + dx * c) + ' ' + f(y + dx * s) + ' Tm ' + body + ' ET\n';
 }
 function settings() { let logo = null, firma = ''; try { logo = localStorage.getItem(LOGO_KEY); firma = localStorage.getItem(FIRMA_KEY) || ''; } catch (e) {} return { logo, firma }; }
 function setLogo(dataUrl) { try { if (dataUrl) localStorage.setItem(LOGO_KEY, dataUrl); else localStorage.removeItem(LOGO_KEY); return true; } catch (e) { return false; } }

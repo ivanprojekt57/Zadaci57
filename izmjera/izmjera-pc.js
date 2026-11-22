@@ -16,7 +16,7 @@ function overlay(html) {
 async function pcExport() {
   const app = window.IzmjeraApp, TU = window.IzmjeraTlocrtUI; if (!app) return;
   try { app.save(); } catch (e) { }
-  const floors = app.floors() || [];
+  const floors = (app.allFloors ? app.allFloors() : app.floors()) || [];
   let total = 0, done = 0, empty = 0;
   if (TU && TU.inkOk && TU.inkOk()) {
     try { TU.inkPrepare(); } catch (e) { }
