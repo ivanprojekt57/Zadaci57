@@ -7,7 +7,7 @@ const SW = 420, SH = 297, IN = { x0: 25, y0: 6, x1: 414, y1: 291 };
 const MJ = ['siječanj', 'veljača', 'ožujak', 'travanj', 'svibanj', 'lipanj', 'srpanj', 'kolovoz', 'rujan', 'listopad', 'studeni', 'prosinac'];
 const datum = d => { d = d || new Date(); return MJ[d.getMonth()] + ', ' + d.getFullYear() + '.'; };
 
-function Sheet() { this.p = []; }
+function Sheet(w, h) { this.p = []; this.w = w || SW; this.h = h || SH; } /* A3 položeno (420×297) ili A4 uspravno (210×297) */
 Sheet.prototype.L = function (a, b, w, o) { this.p.push(Object.assign({ t: 'L', a, b, w: w || 0.18 }, o || {})); return this; };
 Sheet.prototype.T = function (x, y, s, txt, o) { if (txt == null || txt === '') return this; this.p.push(Object.assign({ t: 'T', x, y, s, txt: String(txt) }, o || {})); return this; };
 Sheet.prototype.F = function (pts, g) { this.p.push({ t: 'F', pts, g }); return this; };
@@ -31,14 +31,14 @@ Sheet.prototype.dim = function (A, B, off, txt, o) {
 
 /* okvir lista, gornja traka s nazivom, donja traka (naslov, propis, ukupno) i sastavnica */
 function frame(S, o) {
-  o = o || {}; const I = IN, X = x => I.x0 + x, Y = y => I.y0 + y;
-  S.rect(0, 0, SW, SH, 0.13, { lay: 'OKVIR' }).rect(I.x0, I.y0, I.x1, I.y1, 0.5, { lay: 'OKVIR' });
-  if (o.top) { S.L([X(0), Y(271)], [X(389), Y(271)], 0.35, { lay: 'OKVIR' }); S.T(X(194.5), Y(275.6), 3.5, o.top, { al: 'c', i: 1, lay: 'SASTAVNICA' }); }
+  o = o || {}; const I = { x0: 25, y0: 6, x1: S.w - 6, y1: S.h - 6 }, X = x => I.x0 + x, Y = y => I.y0 + y, iw = I.x1 - I.x0, ih = I.y1 - I.y0;
+  S.rect(0, 0, S.w, S.h, 0.13, { lay: 'OKVIR' }).rect(I.x0, I.y0, I.x1, I.y1, 0.5, { lay: 'OKVIR' });
+  if (o.top) { S.L([X(0), Y(ih - 14)], [X(iw), Y(ih - 14)], 0.35, { lay: 'OKVIR' }); S.T(X(iw / 2), Y(ih - 9.4), 3.5, o.top, { al: 'c', i: 1, lay: 'SASTAVNICA' }); }
   if (o.band) { S.L([X(0), Y(42)], [X(210), Y(42)], 0.35, { lay: 'OKVIR' }).L([X(0), Y(28)], [X(210), Y(28)], 0.25, { lay: 'OKVIR' });
     S.T(X(105), Y(34.6), 5, o.band.title, { al: 'c', i: 1, lay: 'SASTAVNICA' }).T(X(105), Y(30.2), 2.0, o.band.sub, { al: 'c', i: 1, lay: 'SASTAVNICA' });
     const tl = wrap(o.band.total || '', 3.25, 200); tl.forEach((t, k) => S.T(X(105), Y(14.5 + (tl.length - 1) * 2.6 - k * 5.2), 3.25, t, { al: 'c', i: 1, lay: 'SASTAVNICA' })); }
   sastavnica(S, I.x1, I.y0, o.sast || {});
-  return { x0: I.x0, y0: I.y0 + (o.band ? 42 : 0), x1: I.x1, y1: I.y0 + (o.top ? 271 : 285) };
+  return { x0: I.x0, y0: I.y0 + 42, x1: I.x1, y1: I.y1 - (o.top ? 14 : 0) };
 }
 function sastavnica(S, rx, by, f) {
   const P = (x, y) => [rx + x, by + y], lay = 'SASTAVNICA', T = (x, y, s, t, al, i) => S.T(rx + x, by + y, s, t, { al: al || 'l', i: i == null ? 1 : i, lay }), Ln = (a, b, c, d, w) => S.L(P(a, b), P(c, d), w || 0.25, { lay });
@@ -75,7 +75,7 @@ function toPdf(sheets) {
       else if (e.t === 'I') { const im = img(e.img); if (im) c += 'q ' + f(e.w * MM) + ' 0 0 ' + f(e.h * MM) + ' ' + f(e.x * MM) + ' ' + f(e.y * MM) + ' cm ' + im.name + ' Do Q\n'; }
       else if (e.t === 'T') c += P.text(e.txt, e.x * MM, e.y * MM, FS(e.s), { align: e.al || 'l', rot: e.rot || 0, bold: !!e.b, italic: !!e.i });
     }
-    doc.page(SW * MM, SH * MM, c + 'Q\n'); }
+    doc.page(S.w * MM, S.h * MM, c + 'Q\n'); }
   return doc.bytes();
 }
 /* --- DXF: listovi jedan do drugog, u mjerilu lista (1 mm papira = mjerilo/10 cm) --- */
@@ -88,10 +88,14 @@ function toDxf(sheets) {
       else if (e.t === 'T') { const q = M([e.x, e.y]); out.texts.push({ layer: e.lay || 'LEG_TEKST', x: q.x, y: q.y, text: e.txt, h: e.s * k, rot: e.rot || 0, align: e.al || 'l' }); }
       else if (e.t === 'I' && e.img === 'ZIG') { const rx = e.x + 170.5, by = e.y - 0.6; for (const l of d.ZIG_LINES || []) out.lines.push({ layer: 'ZIG', a: M([rx + l[0], by + l[1]]), b: M([rx + l[2], by + l[3]]) }); for (const t of d.ZIG_TEXTS || []) { const q = M([rx + t[0], by + t[1]]); out.texts.push({ layer: 'ZIG', x: q.x, y: q.y, text: t[3], h: t[2] * k, rot: 0, align: 'l' }); } }
     }
-    ox += (SW + 20) * k; }
-  const saved = C.LAYERS.slice(); C.LAYERS.length = 0; C.LAYERS.push(...LAY);
+    ox += (S.w + 20) * k; }
+  const used = new Set(out.lines.map(l => l.layer).concat(out.texts.map(t => t.layer))), known = new Map(LAY.concat(C.LAYERS.map(l => [l[0], l[1]])));
+  const lays = LAY.slice(); for (const n of used) if (!lays.some(l => l[0] === n)) lays.push([n, known.get(n) || (/KOTE/.test(n) ? 5 : /OTVORI/.test(n) ? 4 : 7)]);
+  const saved = C.LAYERS.slice(); C.LAYERS.length = 0; C.LAYERS.push(...lays);
   try { return C.toDxf(out); } finally { C.LAYERS.length = 0; C.LAYERS.push(...saved); }
 }
 
-root.IzmjeraSastavnica = { Sheet, frame, fromInfo, toPdf, toDxf, datum, IN, SW, SH, wrap };
+/* korisni prostor lista (iznad sastavnice, ispod gornje trake) za zadani format */
+const area = (w, h) => ({ x0: 25, y0: 6 + 42, x1: w - 6, y1: h - 6 - 14 });
+root.IzmjeraSastavnica = { Sheet, frame, fromInfo, toPdf, toDxf, datum, IN, SW, SH, wrap, area, A4: [210, 297], A3: [420, 297] };
 })(typeof window !== 'undefined' ? window : globalThis);

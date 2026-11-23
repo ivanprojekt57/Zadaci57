@@ -72,7 +72,7 @@ function persist() {
 function ensureDom() {
   if ($('tlWiz')) return;
   const d = document.createElement('div'); d.id = 'tlWiz'; d.hidden = true;
-  d.innerHTML = '<div class="tl-head"><b>Tlocrt → DXF</b><span class="tl-ver">v2.72</span><span id="tlFloor"></span><div class="tl-steps" id="tlSteps"></div><button id="tlClose" class="tl-btn">✕ Zatvori</button></div>' +
+  d.innerHTML = '<div class="tl-head"><b>Tlocrt → DXF</b><span class="tl-ver">v2.74</span><span id="tlFloor"></span><div class="tl-steps" id="tlSteps"></div><button id="tlClose" class="tl-btn">✕ Zatvori</button></div><div id="tlFlow" hidden style="background:#12305e;padding:6px 12px"></div>' +
     '<div class="tl-body"><div class="tl-view"><canvas id="tlCanvas"></canvas><div class="tl-zoom"><button id="tlFit" class="tl-btn" title="Prikaži sve">⤢</button></div><div id="tlWallPop" class="tl-pop" hidden></div></div><div class="tl-panel" id="tlPanel"></div></div>';
   document.body.appendChild(d);
   $('tlClose').onclick = close; $('tlFit').onclick = () => { W.view = null; draw(); };
@@ -80,9 +80,9 @@ function ensureDom() {
   window.addEventListener('resize', () => { if (W.open) draw(); });
 }
 
-function open() {
+function open(opts) {
   const app = window.IzmjeraApp; if (!app) return;
-  ensureDom();
+  ensureDom(); W.flow = !!(opts && opts.flow);
   W.floor = app.currentFloor(); W.projectName = app.projectName();
   let t = W.floor.tlocrt || {};
   if ((t.v || 1) < 6) t = {}; // starija verzija: odgovori i očitanja ne odgovaraju novom prepoznavanju
@@ -90,7 +90,8 @@ function open() {
   W.m = null; W.out = null; W.q = null; W.sel = -1; W.view = null;
   $('tlFloor').textContent = W.projectName + ' · ' + (W.floor.name || 'Etaža');
   $('tlWiz').hidden = false; W.open = true; Ink.prepare();
-  go(1);
+  if (W.flow && window.IzmjeraNacrti) IzmjeraNacrti.bar($('tlFlow'), 'tl'); else $('tlFlow').hidden = true;
+  go(W.flow && W.floor.tlocrt && W.floor.tlocrt.done ? 4 : 1);
 }
 function close() { W.open = false; $('tlWiz').hidden = true; }
 
@@ -496,7 +497,7 @@ function stepResult() {
   try { W.out = C.build(W.m, W.st); } catch (e) { alert('Izrada tlocrta nije uspjela: ' + (e.message || e)); go(2); return; }
   const r = W.out.report, adj = r.adjusted.filter(a => !a.accepted);
   W.view = null;
-  let h = '<h3>Tlocrt je spreman</h3>' +
+  let h = (W.flow && window.IzmjeraNacrti ? '<div style="margin:0 0 10px"><button id="tlFlowDone" class="tl-btn primary" style="width:100%;font-size:17px;padding:12px">✓ Tlocrt gotov – ' + esc(IzmjeraNacrti.nextLabel()) + '</button></div>' : '') + '<h3>Tlocrt je spreman</h3>' +
     '<p>Korištenih kota: <b>' + r.nCons + '</b><br>Usklađeno: <b>' + adj.length + '</b> kota, najviše <b>' + C.fmt(r.maxAdj, 1) + ' %</b> (dopušteno ±' + C.fmt(W.st.settings.tol, 1) + ' %)</p>';
   const notes = [].concat(r.accepted, r.estimates, r.notes);
   if (adj.length) h += '<details><summary>Usklađene mjere</summary><ul>' + adj.map(a => '<li>#' + a.n + ': ' + C.fmt(a.value) + ' → ' + C.fmt(a.got, 1) + ' (' + C.fmtPct(a.rel) + ')</li>').join('') + '</ul></details>';
@@ -513,6 +514,7 @@ function stepResult() {
   document.querySelectorAll('[data-stair]').forEach(b => b.onclick = () => editStair(b.dataset.stair));
   if ($('tlEnerg')) $('tlEnerg').onclick = () => { persist(); close(); IzmjeraEnergija.open(); };
   $('tlDxf').onclick = () => saveDxf(C.toDxf(W.out), '_tlocrt');
+  if ($('tlFlowDone')) $('tlFlowDone').onclick = () => { persist(); IzmjeraNacrti.tlDone(); };
   $('tlPdf').onclick = () => { try { exportPlanPdf(W.out); } catch (e) { alert('Izvoz PDF-a nije uspio: ' + (e.message || e)); } };
   bindPdfSettings(); bindGeo();
   $('tlBack').onclick = () => go(2);

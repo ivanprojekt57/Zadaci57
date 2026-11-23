@@ -75,8 +75,8 @@ function edit(id) {
   });
 }
 /* iz otvorenog projekta */
-function editCurrent() {
-  showForm(document.getElementById('project').value || '', window.projectInfo, info => {
+function editCurrent(cb) {
+  showForm(document.getElementById('project').value || '', window.projectInfo, info => { setTimeout(() => { try { cb && cb(); } catch (e) { } }, 0);
     for (const k of ['tijek', 'izvor', 'broj', 'mapa']) if (window.projectInfo && window.projectInfo[k] != null) info[k] = window.projectInfo[k]; window.projectInfo = info; try { window.IzmjeraApp && IzmjeraApp.save ? IzmjeraApp.save() : saveLocal(); } catch (e) { } try { window.IzmjeraEnergija && IzmjeraEnergija.syncButton(); } catch (e) { }
     try { const app = window.IzmjeraApp, id = app && app.projectId ? app.projectId() : null; if (id) setSummary(id, info); } catch (e) { }
   });

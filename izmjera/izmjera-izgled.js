@@ -163,7 +163,7 @@ function build() {
   const fl = document.createElement('button'); fl.id = 'ui2Floor'; fl.className = 'ui2-btn ui2-top'; fl.style.marginLeft = '8px'; fl.onclick = e => { e.stopPropagation(); place(); openPop(pop('ui2FloorPop'), fl); };
   const sv = document.createElement('span'); sv.id = 'ui2Save'; sv.className = 'ui2-save ui2-top';
   $('projInfo').after(fl); const nm = $('activeProjectName'); if (nm) nm.after(sv); else fl.after(sv);
-  const dx = document.createElement('button'); dx.id = 'ui2Dxf'; dx.className = 'ui2-btn primary ui2-top'; dx.textContent = '📐 DXF'; dx.title = 'Tlocrt → DXF'; dx.onclick = () => $('dxfplan').click();
+  const dx = document.createElement('button'); dx.id = 'ui2Dxf'; dx.className = 'ui2-btn primary ui2-top'; dx.textContent = '📐 Nacrti'; dx.title = 'Nacrti: tlocrti po etažama, pročelja i presjeci, izvoz svih nacrta'; dx.onclick = () => { if (window.IzmjeraNacrti) IzmjeraNacrti.open(); else $('dxfplan').click(); };
   const mn = document.createElement('button'); mn.id = 'ui2MenuBtn'; mn.className = 'ui2-btn ui2-top'; mn.textContent = '⋯'; mn.title = 'Datoteke i postavke'; mn.style.fontSize = '20px'; mn.onclick = e => { e.stopPropagation(); place(); openPop(pop('ui2Menu'), mn); };
   const pvb = document.createElement('button'); pvb.id = 'ui2Prov'; pvb.className = 'ui2-btn ui2-top'; pvb.textContent = '🔎 Provjera'; pvb.title = 'Provjera crteža: rupe, dvostruke crte, kote u zraku'; pvb.onclick = () => { const b = $('terenProvjera'); if (b) b.click(); setTimeout(() => pvb.classList.toggle('on', !!($('terenProvjera') && $('terenProvjera').classList.contains('active'))), 50); };
   acts.appendChild(pvb); acts.appendChild(dx); acts.appendChild(mn);

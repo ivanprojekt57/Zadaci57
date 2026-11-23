@@ -48,7 +48,7 @@ function compute(inc, PL) {
         const lins = roofLins(pt, (rp && rp.bbox) || r.bbox, L.zf, pt.up === 'kosi' /* v2.71: kao u presjeku – otvoreno krovište (bez stropa) nema gips-karton ispod rogova */), V = underRoof(P, lins, 119.5); let G = underRoof(P, lins, 199.5);
         /* v2.71: zid (ćelija bez prostorije) ulazi u GBP cijeli ako je uz unutarnje lice zida svijetla visina ≥ 2,0 m – granica 2,0 m ne ide kroz zid */
         if (T[c] < 0 && G.A < a - 1e-6) { const hAt = q => Math.min(...lins.map(l => l.a * q.x + l.b * q.y + l.c)); if (Math.max(...P.map(hAt)) >= 199.5) G = { A: a, V: 0, pcs: [P], cuts: [] }; }
-        if (!fl.secRoof) fl.secRoof = { lins, bb: (rp && rp.bbox) || r.bbox, sl: ((pt.kosi || {}).sljeme || 'H'), vr: (pt.kosi || {}).vrsta || 'dvostresni', T, g };
+        if (!fl.secRoof) fl.secRoof = { lins, bb: (rp && rp.bbox) || r.bbox, sl: ((pt.kosi || {}).sljeme || 'H'), vr: (pt.kosi || {}).vrsta || 'dvostresni', T, g, k: pt.kosi, heated: pt.up === 'kosi' };
         fl.gbp.st += G.A; fl.gbp.h2 += a - G.A; roofAcc.A += V.A; roofAcc.V += V.V; roofAcc.A0 += a; labG[c] = labV[c] = CODE.roof;
         fl.piecesG.push(...G.pcs.map(q => ({ poly: q, z: 'st' }))); if (G.A < a - 1) fl.cutsG.push(...G.cuts); /* granica 2,0 m samo gdje stvarno dijeli ćeliju */ fl.piecesV.push(...V.pcs.map(q => ({ poly: q, z: 'v' }))); if (V.A < a - 1) fl.cutsV.push(...V.cuts); continue; }
       const hr = ro ? num((lvl[ro.key] || {}).h, ro.h || 0) : 0, use = ro ? (((lg.use || {})[ro.key]) || defUse(ro.name)) : 'st';
@@ -192,5 +192,13 @@ function toPdf(R, meta) { return root.IzmjeraSastavnica.toPdf(sheets(R, meta)); 
 function toDxf(R, meta) { return root.IzmjeraSastavnica.toDxf(sheets(R, meta)); }
 function hatchPoly(P, sp) { const out = [], xs = P.map(p => p.x + p.y), lo = Math.min(...xs), hi = Math.max(...xs); for (let s = Math.ceil(lo / sp) * sp; s < hi; s += sp) { /* crta x + y = s */ const pts = []; for (let i = 0; i < P.length; i++) { const a = P[i], b = P[(i + 1) % P.length], va = a.x + a.y - s, vb = b.x + b.y - s; if ((va <= 0) !== (vb <= 0)) { const t = va / (va - vb); pts.push({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t }); } } if (pts.length >= 2) out.push([pts[0], pts[1]]); } return out; }
 
-root.IzmjeraLegalizacija = { compute, toPdf, toDxf, opisText, gbpLine, volLine, notes, fm, USE, defUse, natOf };
+/* v2.73: podaci za opis: najveća visina (gornji rub krova u sljemenu, od poda najniže etaže), nagib, visina uz strehu */
+function roofInfo(R) { let H = 0, nag = null, he = null, hr = null; for (const f of R.floors) { if (f.secRoof) { const S = f.secRoof, tg = Math.max(...S.lins.map(l => Math.max(Math.abs(l.a), Math.abs(l.b)))), al = Math.atan(tg), bb = S.bb;
+      const hAt = q => Math.min(...S.lins.map(l => l.a * q.x + l.b * q.y + l.c)); let top = 0; try { top = PR().roofBuild(S.k || {}, S.heated).top / Math.cos(al); } catch (e) { }
+      const c = { x: (bb.x0 + bb.x1) / 2, y: (bb.y0 + bb.y1) / 2 }, hm = Math.max(hAt(c), hAt({ x: c.x, y: bb.y0 + 1 }), hAt({ x: bb.x0 + 1, y: c.y })); const e = eaveH(f);
+      /* sljeme: najviša točka plohe krova unutar tlocrta */ let hx = -Infinity; for (let i = 0; i <= 20; i++) for (let j = 0; j <= 20; j++) hx = Math.max(hx, hAt({ x: bb.x0 + (bb.x1 - bb.x0) * i / 20, y: bb.y0 + (bb.y1 - bb.y0) * j / 20 }));
+      H = Math.max(H, (f.zf || 0) + hx + top); nag = Math.round(al * 180 / Math.PI); if (e) { he = (f.zf || 0) + e.he; hr = (f.zf || 0) + e.he + e.dh; } }
+    else if (f.volH.length) H = Math.max(H, (f.zf || 0) + f.volH[0].H); }
+  return { H, nagib: nag, he, hr }; }
+root.IzmjeraLegalizacija = { compute, toPdf, toDxf, sheets, roofInfo, eaveH, opisText, gbpLine, volLine, notes, fm, USE, defUse, natOf };
 })(typeof window !== 'undefined' ? window : globalThis);

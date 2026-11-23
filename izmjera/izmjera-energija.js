@@ -107,10 +107,14 @@ function open() {
   buildAll(); if (S.built[S.fi] && S.built[S.fi].err) { const k = S.built.findIndex(b => !b.err); if (k >= 0) S.fi = k; }
   go(S.tab || 1);
 }
-function close() { S.open = false; $('enWiz').hidden = true; save(); }
+function close() { S.open = false; S.flow = false; $('enWiz').hidden = true; const fh = $('enFlow'); if (fh) fh.hidden = true; save(); }
+/* v2.74: otvaranje iz toka „📐 Nacrti” */
+function openTab(t, o) { S.tab = t; open(); S.flow = !!(o && o.flow); if (S.flow) go(t); }
+function nacrtiData() { buildAll(); recalc(); const R = legCalc(); let legMeta = null; try { legMeta = R ? legMeta0() : null; } catch (e) { } return { floors: floors(), built: S.built, proc: isLegal() ? procBuild() : null, leg: isLegal() ? R : null, legMeta }; }
 function go(t) {
   const vt = visTabs(); if (!vt.includes(t)) t = vt[0]; S.tab = t; hidePop();
-  const hd = $('enWiz').querySelector('.tl-head b'); if (hd) hd.textContent = wizTitle();
+  const hd = $('enWiz').querySelector('.tl-head b'); if (hd) hd.textContent = S.flow ? '📐 Nacrti' : wizTitle();
+  { let fh = $('enFlow'); if (!fh) { fh = document.createElement('div'); fh.id = 'enFlow'; fh.style.cssText = 'background:#12305e;padding:6px 12px'; $('enWiz').querySelector('.tl-head').after(fh); } if (S.flow && window.IzmjeraNacrti) IzmjeraNacrti.bar(fh, t === 9 ? 'gbp' : 'pr'); else fh.hidden = true; }
   $('enTabs').innerHTML = vt.map((k, i) => '<span data-t="' + k + '" class="' + (k === t ? 'on' : '') + '" style="cursor:pointer">' + (i + 1) + '. ' + TABS[k - 1] + '</span>').join('');
   $('enTabs').querySelectorAll('[data-t]').forEach(s => s.onclick = () => go(+s.dataset.t));
   [null, tabEtaze, tabProstorije, tabOtvori, tabKonstrukcije, tabSustavi, tabRezultat, tabProcelja, tabIzvjesce, tabLegal][t]();
@@ -726,6 +730,114 @@ function exportPdf() {
   window.IzmjeraPdf.save(bytes, fileBase() + '.pdf');
 }
 
+/* ---------- v2.73: Legalizacija – snimka izvedenog stanja (tvoj Excel) i izjava statičara (tvoj Word) ---------- */
+const LD_KEYS = { snimka: 'leg-snimka', izjava: 'leg-izjava' };
+async function ldTplGet(k) { try { const db = await tplDb(); return await new Promise(res => { const q = db.transaction('f').objectStore('f').get(LD_KEYS[k]); q.onsuccess = () => res(q.result || null); q.onerror = () => res(null); }); } catch (e) { return null; } }
+async function ldTplPut(k, v) { const db = await tplDb(); await new Promise((res, rej) => { const t = db.transaction('f', 'readwrite'); t.objectStore('f').put(v, LD_KEYS[k]); t.oncomplete = res; t.onerror = () => rej(t.error); }); }
+function LD() { const p = P(); p.legDoc = p.legDoc || {}; return p.legDoc; }
+const LD_CH = {
+  zid: [['blok opeke', 'blok opeka'], ['pune opeke', 'puna opeka'], ['armiranog betona', 'AB'], ['betonskih blokova', 'beton. blokovi'], ['kamena', 'kamen'], ['drva', 'drvo']],
+  strop: [['ab', 'AB ploča'], ['nema', 'nema stropa'], ['drveni', 'drveni grednik'], ['sitnorebrasti', 'sitnorebrasti']],
+  pokrov: [['glinenog crijepa', 'crijep'], ['lima', 'lim'], ['betonskog crijepa', 'betonski crijep'], ['valovitih ploča', 'valovite ploče'], ['bitumenske šindre', 'šindra']],
+  temelj: [['trakastim temeljima', 'trakasti'], ['temeljnoj ploči', 'ploča'], ['temeljima samcima', 'samci']],
+  stol: [['drvena', 'drvena'], ['PVC', 'PVC'], ['aluminijska', 'aluminij']],
+  inst: [['voda', 'voda'], ['struja', 'struja'], ['plin', 'plin'], ['kanal', 'kanalizacija']]
+};
+const MJ = ['siječanj', 'veljača', 'ožujak', 'travanj', 'svibanj', 'lipanj', 'srpanj', 'kolovoz', 'rujan', 'listopad', 'studeni', 'prosinac'];
+const splitAdr = s => { s = String(s || '').trim(); const i = s.lastIndexOf(','); return i > 0 ? [s.slice(0, i).trim(), s.slice(i + 1).trim()] : [s, '']; };
+const GEN = { prizemlje: 'PRIZEMLJA', podrum: 'PODRUMA', suteren: 'SUTERENA', potkrovlje: 'POTKROVLJA', galerija: 'GALERIJE', tavan: 'TAVANA' };
+const genName = n => { const t = String(n || '').trim(), l = t.toLowerCase(); if (GEN[l]) return GEN[l]; const m = /^(\d+)\.\s*kat$/i.exec(t); if (m) return m[1] + '. KATA'; return t.toUpperCase(); };
+function ldData(R, full) {
+  const LG = window.IzmjeraLegalizacija, fm = LG.fm, i = window.projectInfo || {}, ld = LD(), now = new Date();
+  const gr = (i.gradjevina || '').trim() || 'ZGRADA', gl = gr.toLowerCase(), kc = [i.kc ? 'k.č.br. ' + i.kc : '', i.ko ? 'k.o. ' + i.ko : ''].filter(Boolean).join(', ');
+  const FL = R.floors.filter(f => !f.tavan), bb = FL.reduce((b, f) => ({ x0: Math.min(b.x0, f.bb.x0), y0: Math.min(b.y0, f.bb.y0), x1: Math.max(b.x1, f.bb.x1), y1: Math.max(b.y1, f.bb.y1) }), { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity });
+  const dims = fm((bb.x1 - bb.x0) / 100) + ' × ' + fm((bb.y1 - bb.y0) / 100), katnost = FL.map(f => String(f.name || '').toLowerCase()).join(' + ');
+  const ri = LG.roofInfo(R), visina = ri.H > 0 ? fm(ri.H / 100) + ' m' : '';
+  const zid = ld.zid || 'blok opeke', strop = ld.strop || (R.floors.some(f => f.secRoof) ? 'nema' : 'ab'), pokrov = ld.pokrov || 'glinenog crijepa', temelj = ld.temelj || 'trakastim temeljima', stol = ld.stol || 'drvena', inst = ld.inst || {};
+  let tW = null; try { const r0 = S.resAll && S.resAll.find(x => x && !x.err); if (r0) tW = Math.round(EC.extT(r0)); } catch (e) { }
+  const vrsta = (() => { const f = R.floors.find(x => x.secRoof); const v = f ? f.secRoof.vr : null; return v === 'jednostresni' ? 'jednostrešna' : v === 'cetverostresni' ? 'četverostrešna' : v ? 'dvostrešna' : null; })();
+  const stropTxt = { ab: 'Stropna konstrukcija izvedena je kao armiranobetonska ploča.', nema: 'Zgrada nema stropne konstrukcije – drveno krovište vidljivo je iz prostorije.', drveni: 'Stropna konstrukcija izvedena je kao drveni grednik.', sitnorebrasti: 'Stropna konstrukcija izvedena je kao sitnorebrasti strop.' }[strop];
+  const krovTxt = vrsta ? 'Krovna konstrukcija je drvena, ' + vrsta + (ri.nagib ? ', nagiba približno ' + ri.nagib + '°' : '') + '. Krovni pokrov izveden je od ' + pokrov + '.' : 'Krov je ravan.';
+  /* prostorije po etažama */
+  const roomTxt = []; procIncluded().forEach(F => { const rs = (F.res.rooms || []).filter(r => r.kind !== 'vanjski' && r.name); if (!rs.length) return; const A = r => fm((r.area || 0) / 1e4);
+    roomTxt.push(rs.length === 1 ? F.name + ' se sastoji od jedne prostorije – ' + rs[0].name.toLowerCase() + ' (neto površine ' + A(rs[0]) + ' m²).' : F.name + ' se sastoji od sljedećih prostorija: ' + rs.map(r => r.name.toLowerCase() + ' (' + A(r) + ' m²)').join(', ') + '.'); });
+  const auto = {
+    uvod: ['Ovaj elaborat je izrađen u skladu sa Zakonom o postupanju s nezakonito izgrađenim zgradama (NN 86/12, 143/13, 65/17, 14/19, 48/26) u svrhu ishođenja Rješenja o izvedenom stanju za nezakonito izgrađenu zgradu na zemljištu označenom kao ' + kc + '.', '', 'Na navedenoj čestici se nalazi ' + gl + '.', '', 'Za predmetnu zgradu nije izdana građevinska dozvola niti drugi akt kojim se dokazuje zakonitost građenja.'].join('\n'),
+    opis: ['Na predmetnoj čestici ' + kc + (i.adresa ? ', na adresi ' + i.adresa : '') + ', nalazi se ' + gl + '.', '', 'Predmetna građevina je slobodnostojeća ' + gl + ' katnosti ' + katnost + ', tlocrtnih vanjskih dimenzija ' + dims + ' m.', ''].concat(roomTxt.length ? roomTxt.flatMap(t => [t, '']) : [])
+      .concat(['Prema vizualnom pregledu, nosivi zidovi izvedeni su od ' + zid + (tW ? ' debljine ' + tW + ' cm' : '') + '. ' + stropTxt, krovTxt, '', 'Vanjska stolarija je ' + stol + '.']).join('\n'),
+    inst: (() => { const L = [['voda', 'javnu vodoopskrbnu mrežu'], ['struja', 'elektroenergetsku mrežu'], ['plin', 'javnu plinsku mrežu'], ['kanal', 'javnu kanalizacijsku mrežu']].filter(([k]) => inst[k]); const Z = gr.charAt(0) + gl.slice(1);
+      return L.length ? L.map(([, t]) => Z + ' je priključena na ' + t + '.').join('\n\n') : Z + ' nije priključena na komunalnu infrastrukturu – u zgradi nema instalacija vodovoda, kanalizacije, plina ni elektroinstalacija.'; })()
+  };
+  const txt = k => (ld[k + 'Txt'] != null ? ld[k + 'Txt'] : auto[k]), paras = t => t.split('\n');
+  const uvodP = paras(txt('uvod')).map((t, k) => k === 0 && kc && t.endsWith(kc + '.') ? [[t.slice(0, t.length - kc.length - 1), false], [kc + '.', true]] : t);
+  const datum = ld.datum || 'Zaprešić, ' + MJ[now.getMonth()] + ' ' + now.getFullYear() + '.';
+  const big = Math.max(bb.x1 - bb.x0, bb.y1 - bb.y0) < 1200 ? '1:50' : '1:100', lists = [];
+  FL.forEach(f => lists.push(['TLOCRT ' + genName(f.name), big])); if (R.floors.some(f => f.secRoof)) lists.push(['TLOCRT KROVNIH PLOHA', big]); lists.push(['PRESJEK A-A', big], ['PROČELJA', big]);
+  const gbpNo = lists.length + 1, volNo = lists.length + 2; lists.push(['ISKAZ POVRŠINA I OBRAČUNSKE VELIČINE ZGRADE - GBP', ld.scLeg || big], ['ISKAZ POVRŠINA I OBRAČUNSKE VELIČINE ZGRADE - OBUJAM', ld.scLeg || big]);
+  const pad = n => String(n).padStart(2, '0');
+  const [iu, ig] = splitAdr(i.invAdresa), [ou, og] = splitAdr(i.adresa), Gc = gr.charAt(0) + gl.slice(1);
+  return { auto, d: {
+    inv: (i.invIme || '').toUpperCase(), invAdr: i.invAdresa || '', invOib: i.invOib || '', td: i.td || i.broj || '', gradjevina: gr.toUpperCase(), kc, lokAdr: i.adresa || '', datum,
+    uvod: uvodP, opis: paras(txt('opis')), inst: paras(txt('inst')).concat(['']),
+    gbp: R.floors.filter(f => f.G > 0).map(f => [String(f.name).toLowerCase(), f.G / 1e4]), vol: R.floors.map(f => [String(f.name).toLowerCase(), f.V / 1e6]),
+    katnost, visina, namjena: ld.namjena || gl, polozaj: ld.polozaj || 'unutar građevinskog područja',
+    listovi: lists.map((l, k) => [pad(k + 1), l[0], l[1]]), listGbp: pad(gbpNo), listVol: pad(volNo),
+    ...(full && window.IzmjeraNacrti ? (() => { const L = IzmjeraNacrti.lists(); if (!L || !L.length) return {}; const g = L.find(x => /- GBP$/.test(x[1])), v = L.find(x => /- OBUJAM$/.test(x[1])); return { listovi: L, listGbp: g ? g[0] : pad(gbpNo), listVol: v ? v[0] : pad(volNo) }; })() : {}),
+    kp: ld.kp || null, dgu: ld.dgu || [], foto: ldPhotos(),
+    /* izjava */
+    invUlica: iu, invGrad: ig, invPosta: '', invOib2: i.invOib, objUlica: ou, objGrad: og, kcBroj: i.kc || '', ko: i.ko || '', tdIzj: ld.tdIzj || '', datumIzj: datum.replace(/\.$/, '') + '. godine',
+    izNamjena: Gc, izTlocrt: 'Građevina je tlocrtno pravilnog oblika, najvećih tlocrtnih gabaritnih dimenzija ' + dims.replace(' × ', ' x ') + ' m', izKatnost: katnost,
+    izVisina: ri.he != null ? 'Visina zgrade do nazidnice iznosi ' + fm(ri.he / 100) + ' m, a do sljemena ' + fm(ri.H / 100) + ' m' : (visina ? 'Visina zgrade iznosi ' + visina : null),
+    izTemelj: 'Građevina je, prema dostupnim podacima, temeljena na ' + temelj, izZidovi: 'Glavnu nosivu vertikalnu konstrukciju čine zidovi od ' + zid + (tW ? ' debljine ' + tW + ' cm' : ''),
+    izStrop: stropTxt.replace(/\.$/, ''), izKrov: vrsta ? 'Krov građevine je izveden kao ' + vrsta.replace(/a$/, 'o') + ' drveno krovište' + (ri.nagib ? ' nagiba ' + ri.nagib + '°' : '') + ', pokriven ' + pokrov.replace(/^glinenog /, 'glinenim ').replace(/^betonskog /, 'betonskim ').replace(/crijepa$/, 'crijepom').replace(/^lima$/, 'limom') : 'Krov građevine je ravan'
+  } };
+}
+function ldPhotos() { const out = []; for (const p of projPhotos()) { const s = window.IzmjeraFoto && IzmjeraFoto.get(p.o.id); if (s) out.push(s); } return out.concat(LD().foto || []); }
+function pickImages(multi) { return new Promise(res => { const i = document.createElement('input'); i.type = 'file'; i.accept = 'image/*,.pdf'; i.multiple = !!multi; i.style.display = 'none'; document.body.appendChild(i); i.onchange = () => { const f = [...(i.files || [])]; i.remove(); res(f); }; i.click(); }); }
+async function imgToData(f, max) { if (/pdf$/i.test(f.type) || /\.pdf$/i.test(f.name)) throw Error('PDF se ne može umetnuti kao slika – spremi stranicu kao sliku (snimka zaslona ili „Spremi kao JPG”) pa odaberi nju.');
+  const url = URL.createObjectURL(f); try { const im = await new Promise((res, rej) => { const x = new Image(); x.onload = () => res(x); x.onerror = () => rej(Error('Slika se ne može učitati.')); x.src = url; }); const k = Math.min(1, (max || 1800) / Math.max(im.width, im.height)), cv = document.createElement('canvas'); cv.width = Math.round(im.width * k); cv.height = Math.round(im.height * k); const g = cv.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, cv.width, cv.height); g.drawImage(im, 0, 0, cv.width, cv.height); return cv.toDataURL('image/jpeg', 0.82); } finally { URL.revokeObjectURL(url); } }
+function legDocHtml(R) {
+  const ld = LD(), i = window.projectInfo || {}, chip = (grp, val, on, lbl) => '<button class="tl-chip' + (on ? ' on' : '') + '" data-ldc="' + grp + '" data-v="' + esc(val) + '">' + esc(lbl) + '</button>';
+  const miss = [['invIme', 'investitor'], ['invAdresa', 'adresa investitora'], ['gradjevina', 'naziv građevine'], ['td', 'T.D.'], ['adresa', 'adresa građevine'], ['kc', 'k.č.'], ['ko', 'k.o.']].filter(([k]) => !String(i[k] || '').trim()).map(x => x[1]);
+  let h = '<div class="en-box" id="ldBox"><div class="en-box-h">📄 Snimka izvedenog stanja i izjava statičara</div><p class="tl-note">Aplikacija popuni tvoj Excel snimke i tvoj Word izjave podacima iz izmjere i iz Podataka o projektu. Predlošci se učitaju jednom i pamte se na uređaju.</p>';
+  h += '<div class="tl-actions"><button class="tl-btn" id="ldTplS">📊 Predložak snimke (Excel): <span id="ldTplSn">…</span></button><button class="tl-btn" id="ldTplI">📝 Predložak izjave (Word): <span id="ldTplIn">…</span></button></div>';
+  h += '<div class="tl-note" style="margin:6px 0">' + (miss.length ? '<span style="color:#b45309">U Podacima o projektu nedostaje: ' + esc(miss.join(', ')) + '.</span> ' : '✓ Podaci o projektu su upisani. ') + '<button class="tl-btn" id="ldInfo">✎ Podaci o projektu</button></div>';
+  h += '<div style="display:grid;grid-template-columns:auto 1fr;gap:6px 10px;align-items:center;margin:6px 0">' +
+    '<span>T.D. izjave</span><input id="ldTdI" value="' + esc(ld.tdIzj || '') + '" placeholder="2026 / Prezime-I" style="font-size:16px;padding:6px">' +
+    '<span>Datum</span><input id="ldDat" value="' + esc(ld.datum || '') + '" placeholder="Zaprešić, ' + MJ[new Date().getMonth()] + ' ' + new Date().getFullYear() + '." style="font-size:16px;padding:6px">' +
+    '<span>Namjena (2.8)</span><input id="ldNam" value="' + esc(ld.namjena || '') + '" placeholder="' + esc((i.gradjevina || 'zgrada').toLowerCase()) + '" style="font-size:16px;padding:6px"></div>';
+  const row = (t, grp, cur, multi) => '<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:4px 0"><span style="min-width:110px">' + t + '</span>' + LD_CH[grp].map(([v, l]) => chip(grp, v, multi ? !!(ld.inst || {})[v] : cur === v, l)).join('') + '</div>';
+  h += row('Nosivi zidovi', 'zid', ld.zid || 'blok opeke') + row('Strop', 'strop', ld.strop || (R.floors.some(f => f.secRoof) ? 'nema' : 'ab')) + row('Pokrov', 'pokrov', ld.pokrov || 'glinenog crijepa') + row('Temelji', 'temelj', ld.temelj || 'trakastim temeljima') + row('Stolarija', 'stol', ld.stol || 'drvena') + row('Instalacije', 'inst', null, true);
+  const D0 = ldData(R);
+  for (const [k, t] of [['uvod', '2.1 Uvod'], ['opis', '2.4 Arhitektonski opis'], ['inst', '2.5 Instalacije']]) h += '<div style="margin-top:8px"><b>' + t + '</b> ' + (ld[k + 'Txt'] != null ? '<button class="tl-btn" data-ldr="' + k + '">↺ Složi iz izmjere</button>' : '<span class="tl-note">(složeno iz izmjere – možeš mijenjati)</span>') + '<textarea data-ldt="' + k + '" rows="' + (k === 'opis' ? 9 : 4) + '" style="width:100%;font-size:15px;padding:6px;box-sizing:border-box">' + esc(ld[k + 'Txt'] != null ? ld[k + 'Txt'] : D0.auto[k]) + '</textarea></div>';
+  const nP = projPhotos().length, nE = (ld.foto || []).length;
+  h += '<div style="margin-top:8px"><b>Slike</b><div class="tl-actions"><button class="tl-btn" id="ldKp">🗺 Kopija plana: ' + (ld.kp ? '✓' : 'nije odabrana') + '</button><button class="tl-btn" id="ldDgu">📜 Uvjerenje DGU: ' + ((ld.dgu || []).length ? (ld.dgu.length + ' str.') : 'nije odabrano') + '</button><button class="tl-btn" id="ldFoto">📷 Dodaj fotografije</button>' + (nE ? '<button class="tl-btn" id="ldFotoX">✕ Makni dodane (' + nE + ')</button>' : '') + '</div><div class="tl-note">Fotografije: ' + nP + ' sa skice + ' + nE + ' dodanih, redom u okvire lista Fotodokumentacija. Kopiju plana i uvjerenje odaberi kao sliku (JPG/PNG).</div></div>';
+  h += '<div class="tl-actions" style="margin-top:8px"><button class="tl-btn" id="ldSnimka" style="background:#1e3a8a;color:#fff">⬇ Snimka izvedenog stanja (Excel)</button><button class="tl-btn" id="ldIzjava" style="background:#1e3a8a;color:#fff">⬇ Izjava statičara (Word)</button></div><div id="ldMsg" class="tl-note"></div></div>';
+  return h;
+}
+function legDocBind(R) {
+  const ld = LD(), re = () => { save(); const sc = $('enPanel').scrollTop; go(9); $('enPanel').scrollTop = sc; };
+  ldTplGet('snimka').then(t => { const e = $('ldTplSn'); if (e) e.textContent = t ? t.name : 'nije učitan'; }); ldTplGet('izjava').then(t => { const e = $('ldTplIn'); if (e) e.textContent = t ? t.name : 'nije učitan'; });
+  const tpl = k => async () => { const f = await pickFile(k === 'snimka' ? '.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' : '.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document'); if (!f) return; await ldTplPut(k, { name: f.name, bytes: await fileBytes(f) }); re(); };
+  $('ldTplS').onclick = tpl('snimka'); $('ldTplI').onclick = tpl('izjava');
+  $('ldInfo').onclick = () => { if (window.IzmjeraPodaci && IzmjeraPodaci.editCurrent) IzmjeraPodaci.editCurrent(() => re()); else alert('Podatke o projektu upiši na početnom zaslonu projekta.'); };
+  $('ldTdI').onchange = e => { ld.tdIzj = e.target.value.trim(); save(); }; $('ldDat').onchange = e => { ld.datum = e.target.value.trim(); save(); }; $('ldNam').onchange = e => { ld.namjena = e.target.value.trim(); save(); };
+  $('ldBox').querySelectorAll('[data-ldc]').forEach(b => b.onclick = () => { const g = b.dataset.ldc, v = b.dataset.v; if (g === 'inst') { ld.inst = ld.inst || {}; ld.inst[v] = !ld.inst[v]; } else ld[g] = v; re(); });
+  $('ldBox').querySelectorAll('[data-ldt]').forEach(t => t.onchange = () => { ld[t.dataset.ldt + 'Txt'] = t.value; re(); });
+  $('ldBox').querySelectorAll('[data-ldr]').forEach(b => b.onclick = () => { delete ld[b.dataset.ldr + 'Txt']; re(); });
+  const msg = t => { const e = $('ldMsg'); if (e) e.innerHTML = t; };
+  $('ldKp').onclick = async () => { const f = await pickImages(false); if (!f.length) return; try { ld.kp = await imgToData(f[0], 2200); re(); } catch (e) { alert(e.message); } };
+  $('ldDgu').onclick = async () => { const f = await pickImages(true); if (!f.length) return; try { ld.dgu = []; for (const x of f.slice(0, 4)) ld.dgu.push(await imgToData(x, 2200)); re(); } catch (e) { alert(e.message); } };
+  $('ldFoto').onclick = async () => { const f = await pickImages(true); if (!f.length) return; try { ld.foto = ld.foto || []; for (const x of f) ld.foto.push(await imgToData(x, 1600)); re(); } catch (e) { alert(e.message); } };
+  if ($('ldFotoX')) $('ldFotoX').onclick = () => { ld.foto = []; re(); };
+  const base = String((window.IzmjeraApp && IzmjeraApp.projectName()) || 'izmjera').replace(/[^a-z0-9čćžšđ_-]+/gi, '_');
+  $('ldSnimka').onclick = async () => { const t = await ldTplGet('snimka'); if (!t) { alert('Prvo učitaj svoj Excel predložak snimke (gumb „Predložak snimke”).'); return; } msg('Slažem snimku…');
+    try { const r = await IzmjeraLegalDoc.fillSnimka(t.bytes, ldData(legCalc(), true).d); EX.saveBytes(r.bytes, 'Snimka_izvedenog_stanja_' + base + '.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'); msg('✓ Snimka je spremljena.' + (r.warn.length ? '<br><span style="color:#b45309">' + r.warn.map(esc).join('<br>') + '</span>' : '')); } catch (e) { msg(''); alert('Snimka nije složena: ' + (e.message || e)); } };
+  $('ldIzjava').onclick = async () => { const t = await ldTplGet('izjava'); if (!t) { alert('Prvo učitaj svoj Word predložak izjave (gumb „Predložak izjave”).'); return; } msg('Slažem izjavu…');
+    try { const r = await IzmjeraLegalDoc.fillIzjava(t.bytes, ldData(legCalc()).d); EX.saveBytes(r.bytes, 'Izjava_' + base + '.docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'); msg('✓ Izjava je spremljena.' + (r.warn.length ? '<br><span style="color:#b45309">' + r.warn.map(esc).join('<br>') + '</span>' : '')); } catch (e) { msg(''); alert('Izjava nije složena: ' + (e.message || e)); } };
+}
+function legMeta0() { return { gradjevina: (window.projectInfo || {}).gradjevina || '' }; }
+function legMeta() { const D0 = ldData(legCalc()).d; return { gradjevina: (window.projectInfo || {}).gradjevina || '', listG: D0.listGbp, listV: D0.listVol }; }
 /* ---------- 9. Legalizacija: GBP (NN 93/17) i obujam (NN 15/19) ---------- */
 function legCalc() { if (S.leg) return S.leg; const inc = procIncluded(); if (!inc.length || !window.IzmjeraLegalizacija) return null; try { S.leg = IzmjeraLegalizacija.compute(inc, P().leg || {}); } catch (e) { S.leg = { err: e.message || String(e) }; } return S.leg; }
 function legE() { const e = E(S.fi); return e.leg = e.leg || {}; }
@@ -752,16 +864,17 @@ function tabLegal() {
   h += '<div class="en-box"><div class="en-box-h">Zgrada ukupno</div><table class="en-tab" style="width:100%;font-size:13px"><tr><th style="text-align:left">Etaža</th><th style="text-align:right">GBP m²</th><th style="text-align:right">Obujam m³</th></tr>' + R.floors.map(f => '<tr><td>' + esc(f.name) + '</td><td style="text-align:right">' + fm(f.G / 1e4) + '</td><td style="text-align:right">' + fm(f.V / 1e6) + '</td></tr>').join('') + '<tr style="font-weight:800"><td>Ukupno</td><td style="text-align:right">' + fm(R.G / 1e4) + '</td><td style="text-align:right">' + fm(R.V / 1e6) + '</td></tr></table>';
   if (R.floors.some(f => f.tavan) || R.Ls.some(L => L.parts.some(p => p.up === 'tavan'))) h += '<label style="display:flex;gap:8px;align-items:center;margin-top:6px"><input type="checkbox" id="lgTv"' + (pl.tavan !== false ? ' checked' : '') + '> Tavan je zatvoreni dio zgrade (ulazi u obujam)</label><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="lgTvG"' + (pl.tavanGbp !== false ? ' checked' : '') + '> Tavan visine ≥ 2,0 m ulazi i u GBP</label>';
   h += '</div>' + zgTotalHtml(R, fm);
+  h += legDocHtml(R);
   h += '<div class="tl-actions"><button class="tl-btn" id="lgPdf">📄 PDF (2 lista A3)</button><button class="tl-btn" id="lgDxf">📐 DXF</button><button class="tl-btn" id="lgTxt">📋 Tekst za opis (2.6)</button></div>';
-  panel(h); bindFloorPicker();
+  panel(h); bindFloorPicker(); legDocBind(R);
   const re = () => { S.leg = null; save(); const sc = $('enPanel').scrollTop; go(9); $('enPanel').scrollTop = sc; };
   $('lgPod').onchange = e => { legE().pod75 = e.target.checked; re(); };
   $('enPanel').querySelectorAll('[data-lgu]').forEach(b => b.onclick = () => { const l = legE(); l.use = l.use || {}; l.use[b.dataset.lgu] = b.dataset.v; re(); });
   $('enPanel').querySelectorAll('[data-lgo]').forEach(b => b.onclick = () => { const l = legE(); l.nat = l.nat || {}; l.nat[b.dataset.lgo] = b.dataset.v === '1'; re(); });
   const tv = $('lgTv'), tg = $('lgTvG'); if (tv) tv.onchange = () => { const p = P(); p.leg = p.leg || {}; p.leg.tavan = tv.checked; re(); }; if (tg) tg.onchange = () => { const p = P(); p.leg = p.leg || {}; p.leg.tavanGbp = tg.checked; re(); };
   const base = fileBase().replace(/_energetski$/, '') + '_GBP_obujam', proj = (window.IzmjeraApp && IzmjeraApp.projectName()) || 'Izmjera';
-  $('lgPdf').onclick = () => { try { window.IzmjeraPdf.save(LG.toPdf(legCalc(), { project: proj, gradjevina: (window.projectInfo || {}).gradjevina || '' }), base + '.pdf'); } catch (e) { alert('Izvoz nije uspio: ' + (e.message || e)); } };
-  $('lgDxf').onclick = () => { try { const txt = LG.toDxf(legCalc(), { gradjevina: (window.projectInfo || {}).gradjevina || '' }), name = base + '.dxf'; if (window.IzmjeraSpremi && IzmjeraSpremi.autoText(name, 'application/octet-stream', txt)) return; if (window.AndroidApp && AndroidApp.exportText) { AndroidApp.exportText(name, txt); return; } const u = URL.createObjectURL(new Blob([txt], { type: 'application/dxf' })), a = document.createElement('a'); a.href = u; a.download = name; a.click(); } catch (e) { alert('Izvoz nije uspio: ' + (e.message || e)); } };
+  $('lgPdf').onclick = () => { try { window.IzmjeraPdf.save(LG.toPdf(legCalc(), legMeta()), base + '.pdf'); } catch (e) { alert('Izvoz nije uspio: ' + (e.message || e)); } };
+  $('lgDxf').onclick = () => { try { const txt = LG.toDxf(legCalc(), legMeta()), name = base + '.dxf'; if (window.IzmjeraSpremi && IzmjeraSpremi.autoText(name, 'application/octet-stream', txt)) return; if (window.AndroidApp && AndroidApp.exportText) { AndroidApp.exportText(name, txt); return; } const u = URL.createObjectURL(new Blob([txt], { type: 'application/dxf' })), a = document.createElement('a'); a.href = u; a.download = name; a.click(); } catch (e) { alert('Izvoz nije uspio: ' + (e.message || e)); } };
   $('lgTxt').onclick = () => { const R0 = legCalc(), T0 = zgTotals(R0); let t = LG.opisText(R0); if (T0) { const ok = T0.filter(x => x.s); t += '\nUkupno na čestici:\n' + ok.map(x => '\t' + x.name + ':\tGBP ' + fm(x.s.G / 1e4) + ' m²,\tobujam ' + fm(x.s.V / 1e6) + ' m³').join('\n') + '\n\tukupno:\tGBP ' + fm(ok.reduce((a, x) => a + x.s.G, 0) / 1e4) + ' m²,\tobujam ' + fm(ok.reduce((a, x) => a + x.s.V, 0) / 1e6) + ' m³\n'; } const done = () => toastEn('Tekst je kopiran – zalijepi ga u tehnički opis.'); try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, () => fallback()); else fallback(); } catch (e) { fallback(); }
     function fallback() { const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); done(); } catch (e) { alert(t); } ta.remove(); } };
 }
@@ -1026,6 +1139,6 @@ function tap(pt) {
 /* za „Izvezi sve”: pročelja i presjeci (samo legalizacija) */
 function procFiles() { if (!isLegal()) return null; buildAll(); recalc(); const R = procBuild(); if (!R || R.err || !R.views || !R.views.length) return null;
   return { dxf: IzmjeraProcelja.toDxf(R), pdf: IzmjeraProcelja.toPdf(R, { project: (window.IzmjeraApp && IzmjeraApp.projectName()) || 'Izmjera', title: 'Pročelja' }) }; }
-window.IzmjeraEnergija = { open, close, syncButton, isEnerg, isLegal, wizTitle, procFiles, _S: S };
+window.IzmjeraEnergija = { open, openTab, nacrtiData, close, syncButton, isEnerg, isLegal, wizTitle, procFiles, _S: S };
 try { syncButton(); } catch (e) { }
 })();
