@@ -72,7 +72,7 @@ function persist() {
 function ensureDom() {
   if ($('tlWiz')) return;
   const d = document.createElement('div'); d.id = 'tlWiz'; d.hidden = true;
-  d.innerHTML = '<div class="tl-head"><b>Tlocrt → DXF</b><span class="tl-ver">v2.75</span><span id="tlFloor"></span><div class="tl-steps" id="tlSteps"></div><button id="tlClose" class="tl-btn">✕ Zatvori</button></div><div id="tlFlow" hidden style="background:#12305e;padding:6px 12px"></div>' +
+  d.innerHTML = '<div class="tl-head"><b>Tlocrt → DXF</b><span class="tl-ver">v2.77</span><span id="tlFloor"></span><div class="tl-steps" id="tlSteps"></div><button id="tlClose" class="tl-btn">✕ Zatvori</button></div><div id="tlFlow" hidden style="background:#12305e;padding:6px 12px"></div>' +
     '<div class="tl-body"><div class="tl-view"><canvas id="tlCanvas"></canvas><div class="tl-zoom"><button id="tlFit" class="tl-btn" title="Prikaži sve">⤢</button></div><div id="tlWallPop" class="tl-pop" hidden></div></div><div class="tl-panel" id="tlPanel"></div></div>';
   document.body.appendChild(d);
   $('tlClose').onclick = close; $('tlFit').onclick = () => { W.view = null; draw(); };
@@ -756,9 +756,9 @@ function draw() {
     if (l.src === 'ink' && val) { cx.fillStyle = col; cx.font = '700 12px Arial'; cx.fillText(val, b.x + 8, (a.y + b.y) / 2); }
     if (sel && l.span && l.span.room && info) for (const c of info.cons) { if (c.label === l) drawSpan(c.span, '#f97316'); }
     else if (sel && l.span) drawSpan(l.span, '#f97316');
-    if (sel && ov.pin) { const pa = tr(ov.pin.a), pb = tr(ov.pin.b); cx.strokeStyle = '#7c3aed'; cx.lineWidth = 2; cx.setLineDash([6, 4]); cx.beginPath(); cx.moveTo(pa.x, pa.y); cx.lineTo(pb.x, pb.y); cx.stroke(); cx.setLineDash([]); for (const q2 of [pa, pb]) { cx.fillStyle = '#7c3aed'; cx.beginPath(); cx.arc(q2.x, q2.y, 7, 0, 7); cx.fill(); } }
+    if (sel && ov.pin) { const pa = tr(ov.pin.a), pb = tr(ov.pin.b); cx.strokeStyle = '#0f766e'; cx.lineWidth = 2; cx.setLineDash([6, 4]); cx.beginPath(); cx.moveTo(pa.x, pa.y); cx.lineTo(pb.x, pb.y); cx.stroke(); cx.setLineDash([]); for (const q2 of [pa, pb]) { cx.fillStyle = '#0f766e'; cx.beginPath(); cx.arc(q2.x, q2.y, 7, 0, 7); cx.fill(); } }
   }
-  if (W.pinMode) for (const q2 of W.pinMode.pts) { const pp = tr(q2); cx.fillStyle = '#7c3aed'; cx.beginPath(); cx.arc(pp.x, pp.y, 8, 0, 7); cx.fill(); }
+  if (W.pinMode) for (const q2 of W.pinMode.pts) { const pp = tr(q2); cx.fillStyle = '#0f766e'; cx.beginPath(); cx.arc(pp.x, pp.y, 8, 0, 7); cx.fill(); }
   if (W.step === 3 && W.q) drawQuestion(W.q);
 }
 function drawSpan(sp, col) {

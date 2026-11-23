@@ -192,7 +192,7 @@ function roomSteps(r, qs, used) {
   take(q => q.type === 'viol' || q.type === 'rd');
   /* ista mjera se ne traži dvaput: razmak između ista dva zida koji je već „unutarnja mjera” prostorije */
   for (const q of qs) if (!used.has(q) && q.type === 'gap' && out.some(d => d.type === 'rdim' && d.ax === q.ax && Math.abs(d.si - q.si) < E0 && Math.abs(d.sj - q.sj) < E0) && inRoomQ(r, q)) used.add(q);
-  take(q => q.type === 'gap');
+  const gq = []; for (const q of qs) if (!used.has(q) && q.type === 'gap' && inRoomQ(r, q)) { used.add(q); gq.push(q); } /* v2.76: dužine zidova idu u obilazak prostorije zajedno s otvorima */
   /* otvori, niše, zubovi: redom „u krug” po prostoriji (od vrata, u smjeru kazaljke), za svaki odmah mjere pa udaljenost */
   const m = T.m, th = m.theta || 0, G = new Map(), opKey = op => 'o:' + op.wall + ':' + Math.round(op.s0), opPt = op => { const w = m.walls[op.wall], u = (op.s0 + op.s1) / 2; return w.o === 'H' ? { x: u, y: w.c } : { x: w.c, y: u }; };
   const gAdd = (key, p, q, door) => { let g = G.get(key); if (!g) G.set(key, g = { p, steps: [], door: false }); g.steps.push(q); if (door) g.door = true; };
@@ -212,11 +212,17 @@ function roomSteps(r, qs, used) {
   const c3 = V.c3 || [], hs = [];
   for (const c of c3) { for (const [part, rr] of [['a', c.rA], ['b', c.rB], ['h', c.rH]]) { const key = 'wt3:' + c.k + ':' + part; if (rr !== r || c.d3[part] > 0 || used.has(key) || V.skip.has(key)) continue; if (part !== 'h') { const b = blkOfOp(part === 'a' ? c.A : c.B); if (b && !(b.od >= 0 && b.od !== null) && !V.skip.has('bod:' + b.id)) continue; } /* udaljenost od ugla bloka (od tog zida) = ova mjera */ used.add(key); const q = { type: 'wt3', key, part, c, room: r };
       if (part === 'h') hs.push(q); else { const op = part === 'a' ? c.A : c.B, b = blkOfOp(op); gAdd(b ? 'b:' + b.id : opKey(op), opPt(op), q, op.type === 'vrata'); } } }
-  { const cx = (r.x0 + r.x1) / 2, cy = (r.y0 + r.y1) / 2, ang = g => Math.atan2(g.p.y - cy, g.p.x - cx), rank = { blk: 0, ow: 0, nk: 1, nw: 1.5, nd: 2, cs: 1, cp: 3, bod: 3, ood: 3, od: 3, wt3: 4, st: 5 };
-    let gs = [...G.values()].sort((a, b) => ang(a) - ang(b)); const d0 = gs.findIndex(g => g.door); if (d0 > 0) gs = gs.slice(d0).concat(gs.slice(0, d0));
-    for (const g of gs) g.steps.sort((a, b) => (rank[a.type] || 0) - (rank[b.type] || 0)).forEach(q => out.push(q)); hs.forEach(q => out.push(q)); }
+  for (const q of gq) { let gp = null; try { gp = TR.gapPoint(q); } catch (e) { } const a = q.ax === 'X' ? (q.si + q.sj) / 2 : (gp ? gp.x : (r.x0 + r.x1) / 2), b = q.ax === 'X' ? (gp ? gp.y : (r.y0 + r.y1) / 2) : (q.si + q.sj) / 2; gAdd('g:' + q.key, { x: a, y: b }, q, false); }
   const wts = [];
-  for (const e of r.walls) { const w = e.w, k = C.wallKey(w); if (used.has('w:' + k) || V.skip.has('wt:' + k) || knownT(w) || faces.has(w.id)) continue; { const c = c3.find(x => x.k === k); if (c && !(wt3Done(c) || ['a', 'b', 'h'].some(pp => V.skip.has('wt3:' + k + ':' + pp)))) continue; } used.add('w:' + k); const q = { type: 'wt', key: 'wt:' + k, wk: k, w, e, room: r }; wts.push(q); out.push(q); }
+  for (const e of r.walls) { const w = e.w, k = C.wallKey(w); if (used.has('w:' + k) || V.skip.has('wt:' + k) || knownT(w) || faces.has(w.id)) continue; { const c = c3.find(x => x.k === k); if (c && !(wt3Done(c) || ['a', 'b', 'h'].some(pp => V.skip.has('wt3:' + k + ':' + pp)))) continue; } used.add('w:' + k); const q = { type: 'wt', key: 'wt:' + k, wk: k, w, e, room: r }; wts.push(q);
+    const u = (Math.max(e.u0, w.e0) + Math.min(e.u1, w.e1)) / 2; gAdd('w:' + k, w.o === 'H' ? { x: u, y: w.c } : { x: w.c, y: u }, q, false); }
+  /* redom „u krug” po prostoriji: od vrata u smjeru kazaljke – za svaki zid dužina, otvori na njemu s mjerama i udaljenošću, pa debljina */
+  { const cx = (r.x0 + r.x1) / 2, cy = (r.y0 + r.y1) / 2, ang = g => Math.atan2(g.p.y - cy, g.p.x - cx), rank = { gap: -1, blk: 0, ow: 0, nk: 1, nw: 1.5, nd: 2, cs: 1, cp: 3, bod: 3, ood: 3, od: 3, wt3: 4, st: 5, wt: 6 };
+    /* strana prostorije (gore, desno, dolje, lijevo = smjer kazaljke) i položaj uzduž nje; na svakoj strani: dužina zida, otvori redom, debljina */
+    const side = g => { const p = g.p, d = [p.y - r.y0, r.x1 - p.x, r.y1 - p.y, p.x - r.x0]; let k = 0; for (let i = 1; i < 4; i++) if (d[i] < d[k]) k = i; return k; }, along = (g, k) => k === 0 ? g.p.x : k === 1 ? g.p.y : k === 2 ? -g.p.x : -g.p.y, cls = g => g.steps[0].type === 'gap' ? 0 : g.steps[0].type === 'wt' ? 2 : 1;
+    for (const g of G.values()) { g.k = side(g); g.t = along(g, g.k); g.c = cls(g); }
+    let gs = [...G.values()].sort((a, b) => a.k - b.k || a.c - b.c || a.t - b.t || ang(a) - ang(b)); const dg = gs.find(g => g.door); if (dg) { const d0 = gs.findIndex(g => g.k === dg.k); if (d0 > 0) gs = gs.slice(d0).concat(gs.slice(0, d0)); }
+    for (const g of gs) g.steps.sort((a, b) => (rank[a.type] || 0) - (rank[b.type] || 0)).forEach(q => out.push(q)); hs.forEach(q => out.push(q)); }
   wts.forEach(q => { q.word = wtWord(q); }); const cnt = {}; wts.forEach(q => cnt[q.word] = (cnt[q.word] || 0) + 1); const idx = {}; wts.forEach(q => { if (cnt[q.word] > 1) { idx[q.word] = (idx[q.word] || 0) + 1; q.part = idx[q.word] + '/' + cnt[q.word]; } });
   if (needHeights() && !r.hasH && !V.skip.has('vis:' + r.key)) out.push({ type: 'vis', key: 'vis:' + r.key, room: r });
   if (!r.name && !V.skip.has('nm:' + r.key)) out.push({ type: 'nm', key: 'nm:' + r.key, room: r });
@@ -350,6 +356,38 @@ function suggestNext(P) {
   if (L && L.walls) { const ids = new Set(L.walls.map(e => e.w.id)), nb = open.filter(r => r.walls.some(e => ids.has(e.w.id))); const pool = nb.length ? nb : open; return pool.slice().sort((a, b) => Math.hypot(a.c.x - L.c.x, a.c.y - L.c.y) - Math.hypot(b.c.x - L.c.x, b.c.y - L.c.y))[0]; }
   return open[0];
 }
+/* v2.76: kratka provjera na kraju prostorije – mjere i površina iz izračuna, upozorenje ako oblik jako odstupa od skice */
+function roomCheckData(r) {
+  const UI = window.IzmjeraTlocrtUI; if (!UI || !UI.buildFloor) return null; let b; try { b = UI.buildFloor(app.currentFloor()); } catch (e) { return null; } const m = b.m, sol = b.out && b.out.sol; if (!sol) return null;
+  const map = (ax, v) => { const P = m.axes[ax].map((a, i) => [a.s, sol[ax].x[i]]).filter(p => Number.isFinite(p[1])).sort((a, c) => a[0] - c[0]); if (P.length < 2) return NaN; let i = 0; while (i < P.length - 2 && v > P[i + 1][0]) i++; const [s0, x0] = P[i], [s1, x1] = P[i + 1]; return s1 === s0 ? x0 : x0 + (v - s0) * (x1 - x0) / (s1 - s0); };
+  const cx0 = map('X', r.c.x), cy0 = map('Y', r.c.y), WS = b.out.walls || []; /* unutarnje mjere: od središta prostorije do najbližih lica zidova lijevo/desno i gore/dolje */
+  let L = -Infinity, Rr = Infinity, U = -Infinity, Dn = Infinity; for (const w of WS) { if (w.y0 <= cy0 && w.y1 >= cy0) { if (w.x1 <= cx0 + 0.5) L = Math.max(L, w.x1); if (w.x0 >= cx0 - 0.5) Rr = Math.min(Rr, w.x0); } if (w.x0 <= cx0 && w.x1 >= cx0) { if (w.y1 <= cy0 + 0.5) U = Math.max(U, w.y1); if (w.y0 >= cy0 - 0.5) Dn = Math.min(Dn, w.y0); } }
+  const W = Rr - L, H = Dn - U;
+  const cx = map('X', r.c.x), cy = map('Y', r.c.y); let room = null, bd = Infinity; for (const R of b.out.rooms || []) { if (R.outside || !R.center) continue; const d = Math.hypot(R.center.x - cx, R.center.y - cy); if (d < bd) { bd = d; room = R; } }
+  const rect = r.rects && r.rects.length && Math.abs(r.rects.reduce((a, q) => a + (q[2] - q[0]) * (q[3] - q[1]), 0) - (r.x1 - r.x0) * (r.y1 - r.y0)) < 0.05 * (r.x1 - r.x0) * (r.y1 - r.y0);
+  const warn = []; const sk = (r.x1 - r.x0) / Math.max(1e-6, r.y1 - r.y0), ms = W / Math.max(1e-6, H);
+  if (W > 0 && H > 0 && rect && (ms / sk > 1.7 || sk / ms > 1.7)) warn.push('Oblik se jako razlikuje od skice (na skici ' + (sk >= 1 ? 'šira' : 'uža') + ', izmjereno ' + fmt(W) + ' × ' + fmt(H) + ') – provjeri nisu li ↔ i ↕ zamijenjene ili je tipfeler.');
+  if (!(W > 40) || !(H > 40)) { if (Number.isFinite(W) && Number.isFinite(H)) warn.push('Neka mjera prostorije je premala (' + fmt(W) + ' × ' + fmt(H) + ' cm).'); }
+  if (W > 3000 || H > 3000) warn.push('Neka mjera prostorije je prevelika (' + fmt(W) + ' × ' + fmt(H) + ' cm) – tipfeler?');
+  const A = room && room.area > 0 ? room.area / 1e4 : NaN; if (A > 0 && rect && W > 0 && H > 0 && Math.abs(A - W * H / 1e4) > 0.25 * A) warn.push('Površina iz tlocrta (' + fmt2(A) + ' m²) ne odgovara mjerama ' + fmt(W) + ' × ' + fmt(H) + '.');
+  return { W, H, A, rect, warn };
+}
+function fmt2(v) { return (Math.round(v * 100) / 100).toFixed(2).replace('.', ','); }
+function roomCheck(r, P) {
+  const D = roomCheckData(r); if (!D) return false; const p = panelEl(), nm = r.text || r.name || 'Prostorija'; V.q = null; V.target = null; V.pick = false;
+  p.innerHTML = '<div class="vd-head"><b>✓ ' + esc(nm) + ' – provjera</b><button data-rc="x">✕</button></div>' +
+    '<div class="vd-q" style="font-size:20px">' + (D.rect && Number.isFinite(D.W) && Number.isFinite(D.H) ? '↔ ' + fmt(D.W) + ' · ↕ ' + fmt(D.H) + ' cm' : D.rect ? 'Mjere se ne mogu očitati' : 'Prostorija nije pravokutna') + (D.A > 0 ? '<br><span style="font-size:16px">P = ' + fmt2(D.A) + ' m²</span>' : '') + '<div style="font-size:12px;color:#5b6b80;font-weight:400">unutarnje mjere kako će biti na tlocrtu</div></div>' +
+    (D.warn.length ? '<div class="vd-h" style="color:#b91c1c">⚠ ' + D.warn.map(esc).join('<br>⚠ ') + '</div>' : '<div class="vd-h" style="color:#166534">Mjere se slažu sa skicom.</div>') +
+    '<div class="vd-row"><button data-rc="ok" class="pri">✓ U redu je</button><button data-rc="re">↺ Premjeri</button><button data-rc="off" title="Više ne prikazuj provjeru na kraju prostorije (uključuje se u ⚙ ili ovdje)">Preskoči provjere</button></div>';
+  const go = () => { pickPanel(V.P || plan()); };
+  p.querySelectorAll('[data-rc]').forEach(b => b.onclick = () => { const a = b.dataset.rc;
+    if (a === 'x') { stop(); return; }
+    if (a === 'off') { store.set('izmjera-provjera-sobe', '0'); toast('Provjera na kraju prostorije isključena. (Uključi: 📏 Mjeri → ⚙ na popisu prostorija)'); go(); return; }
+    if (a === 're') { try { TR.T.links = true; localStorage.setItem('izmjera-teren-veze', '1'); const vz = $('terenVeze'); vz && vz.classList.add('active'); } catch (e) { } if (r.c) app.centerOn(raw(r.c)); toast('↺ Dodirni kotu koju treba ispraviti (🔗 Veze uključene) – ili odaberi prostoriju ponovno.'); go(); return; }
+    go(); });
+  if (r.c) { const cv = $('canvas'), sc = app.screen(raw(r.c)); if (!(sc.x > cv.clientWidth * 0.1 && sc.x < cv.clientWidth * 0.65)) app.centerOn(raw(r.c)); }
+  T.rcRoom = r; app.redraw(); return true;
+}
 function pickPanel(P) {
   const p = panelEl(); V.q = null; V.target = null; V.pick = true; const sug = suggestNext(P); V.sug = sug ? sug.key : null;
   const nAll = P.rest.length + [...P.per.values()].reduce((a, v) => a + v.length, 0);
@@ -357,17 +395,18 @@ function pickPanel(P) {
   const btn = (key, text, n) => '<button data-r="' + esc(key) + '" class="vd-room' + (n ? '' : ' ok') + (key === V.sug ? ' sug' : '') + '">' + (key === V.sug ? '➜ ' : '') + esc(text) + ' <span>' + (n ? n : '✓') + '</span></button>';
   p.innerHTML = '<div class="vd-head"><b>📏 Mjerenje' + (V.lastDone ? ' – ✓ ' + esc(V.lastDone.text) : '') + '</b><span class="vd-left">još ' + nAll + '</span><button data-a="x">✕</button></div>' +
     '<div class="vd-q">' + (P.rooms.length ? 'Koju prostoriju mjeriš' + (V.lastDone ? ' sljedeću' : '') + '?' : 'Mjerenje') + '</div>' +
-    '<div class="vd-h">' + (P.rooms.length ? 'Dodirni prostoriju na skici ili je odaberi s popisa. Redom se mjeri: unutarnje mjere, otvori (mjere i udaljenost od ugla), debljine zidova' + (needHeights() ? ', visina' : '') + ', naziv.' : 'Na skici nema zatvorenih prostorija – pitanja idu redom.') + '</div>' +
+    '<div class="vd-h">' + (P.rooms.length ? 'Dodirni prostoriju na skici ili je odaberi s popisa. Redom se mjeri: unutarnje mjere, pa u krug po prostoriji od vrata (u smjeru kazaljke): dužine zidova, otvori (mjere i udaljenost od ugla) i debljine' + (needHeights() ? ', visina' : '') + ', naziv – na kraju kratka provjera.' : 'Na skici nema zatvorenih prostorija – pitanja idu redom.') + '</div>' +
     '<div class="vd-rooms">' + P.rooms.map(r => btn(r.key, r.text, (P.per.get(r.key) || []).length)).join('') + (P.rest.length ? btn('rest', P.rooms.length ? 'Ostalo (između prostorija)' : 'Kreni', P.rest.length) : '') + '</div>' +
-    (V.skip.size ? '<div class="vd-row"><button data-a="unskip">Vrati preskočeno (' + V.skip.size + ')</button></div>' : '');
-  bindPanel(); app.redraw();
+    (V.skip.size ? '<div class="vd-row"><button data-a="unskip">Vrati preskočeno (' + V.skip.size + ')</button></div>' : '') +
+    (store.get('izmjera-provjera-sobe', '1') !== '1' ? '<div class="vd-row"><button data-rcon="1">✓ Uključi provjeru na kraju prostorije</button></div>' : '');
+  bindPanel(); { const b = p.querySelector('[data-rcon]'); if (b) b.onclick = () => { store.set('izmjera-provjera-sobe', '1'); toast('Provjera na kraju prostorije uključena.'); pickPanel(P); }; } app.redraw();
 }
 function pickRoom(key) { const P = V.P || plan(); V.room = key === 'rest' ? REST : P.rooms.find(r => r.key === key) || null; V.pick = false; if (V.room && V.room.c) { const cv = $('canvas'), s = app.screen(raw(V.room.c)); if (!(s.x > cv.clientWidth * 0.1 && s.x < cv.clientWidth * 0.65 && s.y > cv.clientHeight * 0.1 && s.y < cv.clientHeight * 0.9)) app.centerOn(raw(V.room.c)); } step(); }
 function step(noCenter) {
   if (!V.on) return; const P = V.P = plan(), p = panelEl(); V.val = '';
   if (V.room && V.room.key !== 'rest') { if (P.cur) V.room = P.cur; else V.room = null; }
   const list = V.room ? (V.room.key === 'rest' ? P.rest : (P.per.get(V.room.key) || [])) : null;
-  if (V.room && !list.length) { V.lastDone = V.room; V.room = null; }
+  if (V.room && !list.length) { V.lastDone = V.room; V.room = null; if (V.lastDone.key !== 'rest' && store.get('izmjera-provjera-sobe', '1') === '1' && roomCheck(V.lastDone, P)) return; }
   if (!V.room) { if (!P.rooms.length && P.rest.length && !V.lastDone) { V.room = REST; return step(noCenter); } pickPanel(P); return; }
   V.pick = false; const q = V.q = list[0], Q = qText(q); V.target = targetOf(q); V.fresh = false; if (Q.pre) { V.val = Q.pre; V.fresh = true; } if (q.type === 'vis' && V.lastH == null) { const lh = num(store.get('izmjera-zadnja-visina', '')); if (lh > 0) V.lastH = lh; }
   const pad = !Q.btns;
@@ -922,19 +961,25 @@ function copyOutline(si, mode) {
   const fs = app.floors(), src = fs[si]; if (!src) return; let m;
   try { m = C.analyze({ name: src.name, items: (src.items || []).filter(o => !(o.blk && /^(stube|krovni|otvorp|terasa|greda|prag|stup)$/.test(o.blk.t))), tlocrt: src.tlocrt }, { splits: (src.tlocrt && src.tlocrt.wallSplit) || [] }); } catch (e) { alert('Na etaži „' + src.name + '” nema zidova za kopiranje.'); return; }
   const R = p => { const q = C.rotP(p, m.theta); return { x: Math.round(q.x * 10) / 10, y: Math.round(q.y * 10) / 10 }; }, add = [];
-  if (mode === 'sve') { const nid = {}; for (const o of src.items || []) if (o.layer === 'nacrt' && Array.isArray(o.pts)) { const c = JSON.parse(JSON.stringify(o)); if (c.blk && c.blk.id) { c.blk.id = nid[c.blk.id] || (nid[c.blk.id] = c.blk.id + 'k' + Math.random().toString(36).slice(2, 6)); } add.push(c); } /* v2.32: vrata/prozori dobiju nove oznake (ne dijele ih s donjom etažom) */ }
+  const f0 = app.currentFloor(); let tlCopy = false;
+  if (mode === 'isto') { /* v2.76: „isto kao ta etaža” – nacrt, kote, nazivi i pogled na istim mjestima, s pročitanim kotama i debljinama zidova */
+    const nid = {}, rid = id => nid[id] || (nid[id] = id + 'k' + Math.random().toString(36).slice(2, 6));
+    for (const o of src.items || []) { if (!/^(nacrt|kote|opisi|pogled)$/.test(o.layer) || o.type === 'photo') continue; const c = JSON.parse(JSON.stringify(o)); if (c.blk && c.blk.id) c.blk.id = rid(c.blk.id); add.push(c); }
+    tlCopy = !(f0.items || []).some(o => o.layer === 'nacrt' || o.layer === 'kote') && !!src.tlocrt; }
+  else if (mode === 'sve') { const nid = {}; for (const o of src.items || []) if (o.layer === 'nacrt' && Array.isArray(o.pts)) { const c = JSON.parse(JSON.stringify(o)); if (c.blk && c.blk.id) { c.blk.id = nid[c.blk.id] || (nid[c.blk.id] = c.blk.id + 'k' + Math.random().toString(36).slice(2, 6)); } add.push(c); } /* v2.32: vrata/prozori dobiju nove oznake (ne dijele ih s donjom etažom) */ }
   else for (const w of m.walls) { if (w.view || w.obj || (mode === 'vanjski' && !w.exterior)) continue; const a = w.o === 'H' ? { x: w.e0, y: w.c } : { x: w.c, y: w.e0 }, b = w.o === 'H' ? { x: w.e1, y: w.c } : { x: w.c, y: w.e1 }; add.push({ type: 'line', layer: 'nacrt', color: '#000000', width: 2, pts: [R(a), R(b)] }); }
   if (!add.length) { alert('Nema zidova za kopiranje.'); return; }
   app.snapshot(); const it = app.items(); for (const o of add) it.push(o);
   const f = app.currentFloor(), sT = src.tlocrt || {}; if (mode !== 'sve' && sT.wallT && Object.keys(sT.wallT).length && !(f.tlocrt && f.tlocrt.wallT && Object.keys(f.tlocrt.wallT).length)) { /* debljine zidova ne prenosimo – ključevi ovise o skici */ }
-  app.save(); T.sig = ''; T.mGeo = null; app.fit && app.fit(); app.redraw(); toast('📋 Kopirano ' + add.length + ' crta s etaže „' + src.name + '”. Doradi unutarnje zidove.');
+  if (tlCopy) { const c = JSON.parse(JSON.stringify(src.tlocrt)); delete c.done; f0.tlocrt = c; }
+  app.save(); T.sig = ''; T.mGeo = null; app.fit && app.fit(); app.redraw(); toast(mode === 'isto' ? '📋 Etaža je ista kao „' + src.name + '” – s kotama. Promijeni samo ono što je drugačije.' : '📋 Kopirano ' + add.length + ' crta s etaže „' + src.name + '”. Doradi unutarnje zidove.');
 }
 function outlineDialog() {
   const fs = app.floors(), ci = app.floorIndex(); const others = fs.map((f, i) => ({ f, i })).filter(x => x.i !== ci && (x.f.items || []).some(o => o.layer === 'nacrt'));
   if (!others.length) { alert('Nema druge etaže s nacrtom.'); return; }
-  const d = sheet('<div class="tp-head"><b>📋 Obris s druge etaže</b><button data-a="x">✕</button></div><div class="tp-note">Kopira zidove na ovu etažu („' + esc(fs[ci].name) + '”) kao početnu skicu.</div>' +
+  const d = sheet('<div class="tp-head"><b>📋 Kopiraj s druge etaže</b><button data-a="x">✕</button></div><div class="tp-note">Kopira zidove na ovu etažu („' + esc(fs[ci].name) + '”) kao početnu skicu.</div>' +
     '<div class="tp-lab">S etaže</div><div class="tp-row">' + others.map(x => '<button data-f="' + x.i + '">' + esc(x.f.name) + '</button>').join('') + '</div>' +
-    '<div class="tp-lab">Što kopirati</div><div class="tp-row"><button data-m="vanjski" style="background:#17457f;color:#fff">Vanjski zidovi (obris)</button><button data-m="zidovi">Svi zidovi (ravno)</button><button data-m="sve">Cijeli nacrt (s prozorima i vratima)</button></div>');
+    '<div class="tp-lab">Što kopirati</div><div class="tp-row"><button data-m="vanjski" style="background:#17457f;color:#fff">Vanjski zidovi (obris)</button><button data-m="zidovi">Svi zidovi (ravno)</button><button data-m="sve">Cijeli nacrt (s prozorima i vratima)</button><button data-m="isto">Isto kao ta etaža (+ kote i nazivi)</button></div>');
   let sel = others[Math.max(0, others.findIndex(x => x.i === ci - 1))].i, mode = 'vanjski';
   const paint = () => { d.querySelectorAll('[data-f]').forEach(b => { const on = +b.dataset.f === sel; b.style.background = on ? '#0f766e' : ''; b.style.color = on ? '#fff' : ''; }); };
   paint(); d.querySelectorAll('[data-f]').forEach(b => b.onclick = () => { sel = +b.dataset.f; paint(); });
@@ -943,7 +988,7 @@ function outlineDialog() {
 }
 /* prazna etaža: ponudi kopiranje obrisa */
 function emptyHint() { const f = app.currentFloor(), fs = app.floors(), empty = !(f.items || []).some(o => o.layer === 'nacrt'), other = fs.some(x => x !== f && (x.items || []).some(o => o.layer === 'nacrt'));
-  let b = $('vdObrisHint'); if (empty && other && document.body.classList.contains('ui2')) { if (!b) { b = document.createElement('button'); b.id = 'vdObrisHint'; b.textContent = '📋 Kopiraj obris s druge etaže'; b.onclick = outlineDialog; ($('work') || document.body).appendChild(b); } b.hidden = false; } else if (b) b.hidden = true; }
+  let b = $('vdObrisHint'); if (empty && other && document.body.classList.contains('ui2')) { if (!b) { b = document.createElement('button'); b.id = 'vdObrisHint'; b.textContent = '📋 Kopiraj s druge etaže (obris ili isto s kotama)'; b.onclick = outlineDialog; ($('work') || document.body).appendChild(b); } b.hidden = false; } else if (b) b.hidden = true; }
 setInterval(emptyHint, 1500);
 
 /* ======================= nazivi i visine prostorija (dijalog Tekst) ======================= */
@@ -1065,7 +1110,7 @@ function addButtons() {
   bs.insertAdjacentElement('afterend', bm);
   const pm = $('penMode'); const host = pm ? pm.parentNode : bs.parentNode;
   const sun = mk('terenSunce', '☀ Jaki kontrast (sunce)', 'Jači kontrast za rad na suncu', () => setSun(!document.body.classList.contains('sun')));
-  const ob = mk('terenObris', '📋 Obris s druge etaže', 'Kopiraj zidove s druge etaže kao početnu skicu', outlineDialog);
+  const ob = mk('terenObris', '📋 Kopiraj s druge etaže', 'Obris, svi zidovi ili ista etaža s kotama – na ovu etažu', outlineDialog);
   const ex = mk('terenIzvoz', '📦 Izvezi sve', 'Sve etaže: DXF, PDF, skica, fotografije i projekt u jednoj ZIP datoteci', exportAsk);
   const fzOn = () => store.get('izmjera-fs-zum', '1') !== '0', fz = mk('terenFsZum', '', 'Novi upisani brojevi kota: veličina prema zumu (zumirano = manji broj)', () => { store.set('izmjera-fs-zum', fzOn() ? '0' : '1'); fzP(); toast(fzOn() ? '🔍 Novi brojevi: veličina prema zumu (na zaslonu uvijek iste veličine).' : '🔍 Novi brojevi: uvijek ista veličina na crtežu.'); }), fzP = () => { fz.textContent = '🔍 Broj prema zumu: ' + (fzOn() ? 'uključeno' : 'isključeno'); fz.classList.toggle('active', fzOn()); }; fzP();
   const nb = mk('terenSjever', '🧭 Sjever (strane svijeta)', 'Povuci strelicu prema sjeveru – za energetski certifikat (strane pročelja i prozora)', () => northSet(!NS.mode));
@@ -1116,5 +1161,5 @@ function pdfTexts(floor, cur) { const out = [], put = (t, p, layer, color, fs) =
     for (const c of T.B.cols || []) { const b = c.bb; if (c.w > 0 || c.h > 0) put('stup ' + (c.w > 0 ? fmt(c.w) : '?') + 'x' + (c.h > 0 ? fmt(c.h) : '?'), raw({ x: (b.x0 + b.x1) / 2, y: b.y1 + 2.2 * E }), 'kote', '#ea580c', 14);
       for (const ax of ['X', 'Y']) { const ps = c.pos[ax]; if (!ps || !ps.w || !ps.vod) continue; const e = ps.dir > 0 ? (ax === 'X' ? b.x0 : b.y0) : (ax === 'X' ? b.x1 : b.y1), mid = (ps.w.c + e) / 2; put(fmt(ps.value), raw(ax === 'X' ? { x: mid, y: (b.y0 + b.y1) / 2 - 1.6 * E } : { x: (b.x0 + b.x1) / 2 + 2.4 * E, y: mid }), 'kote', '#ea580c', 14); } } }
   return out; }
-window.IzmjeraVodic = { qText, targetOf, stBuild, stCopyUp, pvList: () => (pvCompute(), PV.list), left: () => NZ.n, nzOn: v => { if (v != null) { nzOn = !!v; store.set('izmjera-neizm', v ? '1' : '0'); app.redraw(); } return nzOn; }, pvCount: () => { try { pvCompute(); return PV.list.length; } catch (e) { return 0; } }, stReplace, pdfTexts, krPlace, zubTap, laserFeed, refresh: () => { if (!V.on) return; if (!V.val || V.fresh) step(true); else { const b = panelEl().querySelector('[data-a="laser"]'); if (b) b.outerHTML = laserBtn(); bindPanel(); } }, goBack, roomsOf, plan, start, stop, V, ST, stMenu, copyOutline, exportAll, backup, setSun };
+window.IzmjeraVodic = { roomCheck, roomCheckData, qText, targetOf, stBuild, stCopyUp, pvList: () => (pvCompute(), PV.list), left: () => NZ.n, nzOn: v => { if (v != null) { nzOn = !!v; store.set('izmjera-neizm', v ? '1' : '0'); app.redraw(); } return nzOn; }, pvCount: () => { try { pvCompute(); return PV.list.length; } catch (e) { return 0; } }, stReplace, pdfTexts, krPlace, zubTap, laserFeed, refresh: () => { if (!V.on) return; if (!V.val || V.fresh) step(true); else { const b = panelEl().querySelector('[data-a="laser"]'); if (b) b.outerHTML = laserBtn(); bindPanel(); } }, goBack, roomsOf, plan, start, stop, V, ST, stMenu, copyOutline, exportAll, backup, setSun };
 })();

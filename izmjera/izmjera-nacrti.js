@@ -74,6 +74,28 @@ function viewItem(v) {
     for (const t of v.texts) { if (t.lay === 'NASLOV') continue; S.T(X(t.u), Y(t.z), Math.max(1.6, Math.min(3, (t.h || 15) * MMcm)), t.t, { al: t.al === 'l' ? 'l' : t.al === 'r' ? 'r' : 'c', lay: 'POGLED_' + t.lay }); }
   } };
 }
+/* v2.76: tlocrt krovnih ploha (pogled odozgo) – plohe krova s prepustom, obris zidova ispod crtkano, strelice pada s nagibom, visina sljemena, ukupne mjere */
+function roofItem(levels) {
+  const PR = root.IzmjeraProcelja; if (!PR || !PR.roofFaces || !levels) return null; const F = [], outl = [];
+  for (const L of levels) { let fs = []; try { fs = PR.roofFaces(L); } catch (e) { fs = []; } for (const f of fs) if (!f.wall) F.push(f); for (const pt of L.parts || []) if (pt.kosi && pt.bbox && Number.isFinite(pt.bbox.x0)) outl.push({ x0: pt.bbox.x0 + L.off.x, y0: pt.bbox.y0 + L.off.y, x1: pt.bbox.x1 + L.off.x, y1: pt.bbox.y1 + L.off.y }); }
+  if (!F.length) return null; let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity, zMax = -Infinity; for (const f of F) for (const q of f.pts) { x0 = Math.min(x0, q[0]); x1 = Math.max(x1, q[0]); y0 = Math.min(y0, q[1]); y1 = Math.max(y1, q[1]); zMax = Math.max(zMax, q[2]); }
+  const DM = 14; /* mjesto za kote (mm) */
+  return { name: 'TLOCRT KROVNIH PLOHA', w: (x1 - x0) * MMcm + DM, h: (y1 - y0) * MMcm + 7 + DM, draw(S, ox, oy) {
+    const X = x => ox + DM + (x - x0) * MMcm, Y = y => oy - 7 - DM - (y - y0) * MMcm, P = (x, y) => [X(x), Y(y)];
+    S.T(ox, oy - 3.5, 2.5, this.name, { i: 1, b: 1, lay: 'NASLOV' });
+    for (const b of outl) { const r = [[b.x0, b.y0], [b.x1, b.y0], [b.x1, b.y1], [b.x0, b.y1], [b.x0, b.y0]]; for (let i = 0; i < 4; i++) S.L(P(r[i][0], r[i][1]), P(r[i + 1][0], r[i + 1][1]), 0.18, { lay: 'KROV_ZIDOVI', dash: [2, 1.2] }); }
+    const seen = new Set(); for (const f of F) for (let i = 0; i < f.pts.length; i++) { const a = f.pts[i], b = f.pts[(i + 1) % f.pts.length], k = [a, b].map(q => Math.round(q[0]) + ',' + Math.round(q[1])).sort().join('|'); if (seen.has(k)) continue; seen.add(k); S.L(P(a[0], a[1]), P(b[0], b[1]), 0.35, { lay: 'KROV_PLOHE' }); }
+    for (const f of F) { const [p0, p1, p2] = f.pts, ux = p1[0] - p0[0], uy = p1[1] - p0[1], uz = p1[2] - p0[2], vx = p2[0] - p0[0], vy = p2[1] - p0[1], vz = p2[2] - p0[2], nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx; if (Math.abs(nz) < 1e-9) continue;
+      let dx = nx / nz, dy = ny / nz; const g = Math.hypot(dx, dy); if (g < 1e-6) continue; dx /= g; dy /= g; const deg = Math.round(Math.atan(g) * 180 / Math.PI);
+      const cx = f.pts.reduce((a, q) => a + q[0], 0) / f.pts.length, cy = f.pts.reduce((a, q) => a + q[1], 0) / f.pts.length, A = [X(cx), Y(cy)], la = 7, ex = dx, ey = -dy; /* papir: y prema gore */
+      const t0 = [A[0] - ex * la / 2, A[1] - ey * la / 2], t1 = [A[0] + ex * la / 2, A[1] + ey * la / 2]; S.L(t0, t1, 0.25, { lay: 'KROV_PAD' });
+      const hx = -ex * 1.6, hy = -ey * 1.6, px = -ey * 0.8, py = ex * 0.8; S.L(t1, [t1[0] + hx + px, t1[1] + hy + py], 0.25, { lay: 'KROV_PAD' }); S.L(t1, [t1[0] + hx - px, t1[1] + hy - py], 0.25, { lay: 'KROV_PAD' });
+      S.T(t0[0] - ex * 2.4, t0[1] - ey * 2.4 - 0.7, 2.0, deg + '°', { al: 'c', lay: 'KROV_PAD' }); }
+    { const top = []; for (const f of F) for (const q of f.pts) if (zMax - q[2] < 1) top.push(q); if (top.length) { const mx = top.reduce((a, q) => a + q[0], 0) / top.length, my = top.reduce((a, q) => a + q[1], 0) / top.length, v = Math.round(zMax) / 100; S.T(X(mx), Y(my) + 1.2, 2.0, 'sljeme +' + v.toFixed(2).replace('.', ','), { al: 'c', lay: 'KROV_VISINE' }); } }
+    S.dim([X(x0), Y(y0)], [X(x1), Y(y0)], 6, String(Math.round(x1 - x0)).replace('.', ','), { lay: 'KOTE' });
+    S.dim([X(x0), Y(y1)], [X(x0), Y(y0)], 6, String(Math.round(y1 - y0)).replace('.', ','), { lay: 'KOTE' });
+  } };
+}
 /* slaganje pogleda na listove: A4 kad stane, inače A3; po listu koliko stane (redovi slijeva nadesno) */
 function pack(items, title) {
   const sheets = [], gap = 8;
@@ -102,6 +124,7 @@ function plan() {
     if (secs.length) { const ps = pack(secs.map(viewItem), 'PRESJEK'); ps.forEach(s => { s.title = s.items.map(x => x.it.name).join(', ').replace(/PRESJEK /g, '').replace(/^/, 'PRESJEK '); }); res.push(...ps); }
     if (vws.length) { const ps = pack(vws.map(viewItem), 'PROČELJA'); ps.forEach(s => { s.title = s.items.length === 1 ? s.items[0].it.name : 'PROČELJA'; }); res.push(...ps); } }
   else if (isLegal()) warn.push('Pročelja i presjeci nisu izrađeni (korak 2).');
+  if (isLegal() && D.proc && D.proc.levels) { let it = null; try { it = roofItem(D.proc.levels); } catch (e) { it = null; } if (it) for (const s2 of pack([it], it.name)) res.push(s2); }
   const lst = res.map((s, k) => ({ no: String(k + 1).padStart(2, '0'), name: s.title, sc: '1:100', sheet: s, fmt: s.sz === SA().A4 ? 'A4' : 'A3' }));
   if (isLegal() && D.leg) { const n0 = lst.length; const legS = IzmjeraLegalizacija.sheets(D.leg, Object.assign(D.legMeta || {}, { listG: String(n0 + 1).padStart(2, '0'), listV: String(n0 + 2).padStart(2, '0') }));
     legS.forEach((S, k) => lst.push({ no: String(n0 + 1 + k).padStart(2, '0'), name: k ? 'ISKAZ POVRŠINA I OBRAČUNSKE VELIČINE ZGRADE - OBUJAM' : 'ISKAZ POVRŠINA I OBRAČUNSKE VELIČINE ZGRADE - GBP', sc: '1:' + S.sc, built: S, fmt: 'A3' })); }
