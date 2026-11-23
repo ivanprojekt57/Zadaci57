@@ -700,7 +700,7 @@ async function tabIzvjesce() {
     catch (e) { alert('Izvješće nije napravljeno: ' + (e.message || e)); }
     bt.disabled = false; bt.textContent = '⬇ Popunjeno izvješće (.xlsx)'; };
 }
-function fileBase() { return String((window.IzmjeraApp && IzmjeraApp.projectName()) || 'izmjera').replace(/[^a-z0-9čćžšđ_-]+/gi, '_') + '_energetski'; }
+function fileBase() { return String((window.IzmjeraApp && IzmjeraApp.projectName()) || 'izmjera').replace(/[^a-z0-9čćžšđ_-]+/gi, '_') + '_površine'; }
 function exportXlsx() {
   const D = dataTables(), B = v => ({ v, b: true }), T = D.T;
   const sheets = [
@@ -872,7 +872,7 @@ function tabLegal() {
   $('enPanel').querySelectorAll('[data-lgu]').forEach(b => b.onclick = () => { const l = legE(); l.use = l.use || {}; l.use[b.dataset.lgu] = b.dataset.v; re(); });
   $('enPanel').querySelectorAll('[data-lgo]').forEach(b => b.onclick = () => { const l = legE(); l.nat = l.nat || {}; l.nat[b.dataset.lgo] = b.dataset.v === '1'; re(); });
   const tv = $('lgTv'), tg = $('lgTvG'); if (tv) tv.onchange = () => { const p = P(); p.leg = p.leg || {}; p.leg.tavan = tv.checked; re(); }; if (tg) tg.onchange = () => { const p = P(); p.leg = p.leg || {}; p.leg.tavanGbp = tg.checked; re(); };
-  const base = fileBase().replace(/_energetski$/, '') + '_GBP_obujam', proj = (window.IzmjeraApp && IzmjeraApp.projectName()) || 'Izmjera';
+  const base = fileBase().replace(/_površine$/, '') + '_GBP_obujam', proj = (window.IzmjeraApp && IzmjeraApp.projectName()) || 'Izmjera';
   $('lgPdf').onclick = () => { try { window.IzmjeraPdf.save(LG.toPdf(legCalc(), legMeta()), base + '.pdf'); } catch (e) { alert('Izvoz nije uspio: ' + (e.message || e)); } };
   $('lgDxf').onclick = () => { try { const txt = LG.toDxf(legCalc(), legMeta()), name = base + '.dxf'; if (window.IzmjeraSpremi && IzmjeraSpremi.autoText(name, 'application/octet-stream', txt)) return; if (window.AndroidApp && AndroidApp.exportText) { AndroidApp.exportText(name, txt); return; } const u = URL.createObjectURL(new Blob([txt], { type: 'application/dxf' })), a = document.createElement('a'); a.href = u; a.download = name; a.click(); } catch (e) { alert('Izvoz nije uspio: ' + (e.message || e)); } };
   $('lgTxt').onclick = () => { const R0 = legCalc(), T0 = zgTotals(R0); let t = LG.opisText(R0); if (T0) { const ok = T0.filter(x => x.s); t += '\nUkupno na čestici:\n' + ok.map(x => '\t' + x.name + ':\tGBP ' + fm(x.s.G / 1e4) + ' m²,\tobujam ' + fm(x.s.V / 1e6) + ' m³').join('\n') + '\n\tukupno:\tGBP ' + fm(ok.reduce((a, x) => a + x.s.G, 0) / 1e4) + ' m²,\tobujam ' + fm(ok.reduce((a, x) => a + x.s.V, 0) / 1e6) + ' m³\n'; } const done = () => toastEn('Tekst je kopiran – zalijepi ga u tehnički opis.'); try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, () => fallback()); else fallback(); } catch (e) { fallback(); }
@@ -1032,7 +1032,7 @@ function bindViewChips() {
   if ($('prCutAdd')) $('prCutAdd').onclick = () => { PP().presjeci = PP().presjeci || []; S.cutPick = { idx: PP().presjeci.length, pts: [] }; S.fi = procIncluded()[0].i; S.view = null; go(7); };
 }
 function bindExports() {
-  const base = fileBase().replace(/_energetski$/, '') + '_procelja';
+  const base = fileBase().replace(/_površine$/, '') + '_procelja';
   $('prDxf').onclick = () => { try { const txt = IzmjeraProcelja.toDxf(procBuild()), name = base + '.dxf'; if (window.IzmjeraSpremi && IzmjeraSpremi.autoText(name, 'application/octet-stream', txt)) return; if (window.AndroidApp && AndroidApp.exportText) { AndroidApp.exportText(name, txt); return; } const u = URL.createObjectURL(new Blob([txt], { type: 'application/dxf' })), a = document.createElement('a'); a.href = u; a.download = name; a.click(); } catch (e) { alert('Izvoz nije uspio: ' + (e.message || e)); } };
   $('prPdf').onclick = () => { try { const by = IzmjeraProcelja.toPdf(procBuild(), { project: (window.IzmjeraApp && IzmjeraApp.projectName()) || 'Izmjera', title: 'Pročelja' }); window.IzmjeraPdf.save(by, base + '.pdf'); } catch (e) { alert('Izvoz nije uspio: ' + (e.message || e)); } };
 }

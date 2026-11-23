@@ -1376,7 +1376,10 @@ function jogFlush(m, st) {
     const near = L => { let b = null, bd = Infinity; for (const w of m.walls) { if (w.line !== L || w.view || w.obj) continue; const d = Math.min(Math.abs(w.e0 - g.at), Math.abs(w.e1 - g.at)); if (d < bd) { bd = d; b = w; } } return bd <= 3 * m.E ? b : null; };
     const wi = near(Li), wj = near(Lj); g.ext = !!(wi && wj && wi.exterior && wj.exterior);
     /* v2.65: unutarnji zid prelomljen na spoju s poprečnim zidom – skok ide samo na stranu gdje je poprečni zid (tamo ga skriva kut), druga strana zida ostaje ravna (nema zuba u prostoriji) */
-    let inT = 0; if (wi && wj && !g.ext && g.soft && !wi.exterior && !wj.exterior) { const E = m.E, po = Li.o === 'H' ? 'V' : 'H'; let sp = false, sn = false;
+    /* v2.75: vanjski/unutarnji gleda se uz sam spoj (dugi zid može tek dalje postati vanjski) */
+    const extAt = w => { if (!w.exterior) return false; const E = m.E, mid = (w.e0 + w.e1) / 2, u = g.at + Math.sign(mid - g.at) * Math.min(3 * E, Math.abs(mid - g.at)); let lo = false, hi = false;
+      for (const q of m.walls) { if (q === w || q.obj || q.view || q.o !== w.o || u < q.e0 - 0.5 * E || u > q.e1 + 0.5 * E) continue; if (q.c < w.c - E) lo = true; if (q.c > w.c + E) hi = true; } return !(lo && hi); };
+    let inT = 0; if (wi && wj && !g.ext && g.soft && !extAt(wi) && !extAt(wj)) { const E = m.E, po = Li.o === 'H' ? 'V' : 'H'; let sp = false, sn = false;
       for (const p of m.walls) { if (p.o !== po || p.view || p.obj || Math.abs(p.c - g.at) > 2 * E) continue; if (Math.abs(p.e0 - g.c) < 1.5 * E && p.e1 > g.c + 1.5 * E) sp = true; else if (Math.abs(p.e1 - g.c) < 1.5 * E && p.e0 < g.c - 1.5 * E) sn = true; else if (p.e0 < g.c - 1.5 * E && p.e1 > g.c + 1.5 * E) { sp = sn = true; } }
       if (sp !== sn) inT = sp ? -1 : 1; }
     g.inT = inT;

@@ -23,7 +23,9 @@ function bar(host, active) {
   host.querySelectorAll('[data-nf]').forEach(b => b.onclick = () => goStep(b.dataset.nf));
   host.querySelectorAll('[data-nfl]').forEach(b => b.onclick = () => { const f = app().allFloors()[+b.dataset.nfl]; if (f && f !== cur) toTl(f); });
 }
-function closeAll() { try { root.IzmjeraTlocrtUI && IzmjeraTlocrtUI.close(); } catch (e) { } try { root.IzmjeraEnergija && IzmjeraEnergija.close(); } catch (e) { } const x = $('nfWiz'); if (x) x.hidden = true; }
+function closeAll() { try { root.IzmjeraTlocrtUI && IzmjeraTlocrtUI.close(); } catch (e) { } try { root.IzmjeraEnergija && IzmjeraEnergija.close(); } catch (e) { } nfShow(false); }
+/* prikaz/skrivanje (inline display:flex inače nadjača atribut hidden) */
+function nfShow(on) { const x = $('nfWiz'); if (!x) return; x.hidden = !on; x.style.display = on ? 'flex' : 'none'; }
 function toTl(f) { closeAll(); const a = app(); if (f && f !== a.currentFloor()) a.switchFloor(gi(f)); setTimeout(() => IzmjeraTlocrtUI.open({ flow: true }), 30); }
 function goStep(k) {
   if (k === 'tl') { const fs = floors(), cur = app().currentFloor(); toTl(fs.includes(cur) ? cur : fs[0]); return; }
@@ -119,11 +121,11 @@ function render(L) {
 function ensureDom() {
   if ($('nfWiz')) return; const d = document.createElement('div'); d.id = 'nfWiz'; d.hidden = true; d.style.cssText = 'position:fixed;inset:0;z-index:60;background:#f1f6fd;display:flex;flex-direction:column;color:#102b52;font-family:Arial,sans-serif';
   d.innerHTML = '<div class="tl-head"><b>📐 Nacrti</b><span id="nfProj" style="font-size:13px;color:#c4d8f1"></span><span style="flex:1"></span><button id="nfClose" class="tl-btn">✕ Zatvori</button></div><div id="nfFlow" style="background:#12305e;padding:6px 12px"></div><div id="nfBody" style="flex:1;overflow:auto;padding:14px 18px"></div>';
-  document.body.appendChild(d); $('nfClose').onclick = () => { d.hidden = true; };
+  document.body.appendChild(d); $('nfClose').onclick = () => nfShow(false);
 }
 let LAST = null;
 function showExport() {
-  ensureDom(); $('nfWiz').hidden = false; $('nfProj').textContent = ' ' + ((app() && app().projectName()) || ''); bar($('nfFlow'), 'iz');
+  ensureDom(); nfShow(true); $('nfProj').textContent = ' ' + ((app() && app().projectName()) || ''); bar($('nfFlow'), 'iz');
   const body = $('nfBody'); body.innerHTML = '<p>Slažem listove…</p>';
   setTimeout(() => { let P; try { P = plan(); } catch (e) { body.innerHTML = '<p style="color:#b91c1c">Nacrti se ne mogu složiti: ' + esc(e.message || e) + '</p>'; return; } LAST = P;
     const info = root.projectInfo || {}, miss = [['invIme', 'investitor'], ['gradjevina', 'naziv građevine'], ['td', 'T.D.'], ['adresa', 'adresa'], ['kc', 'k.č.']].filter(([k]) => !String(info[k] || '').trim()).map(x => x[1]);

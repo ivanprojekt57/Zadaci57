@@ -72,7 +72,7 @@ function persist() {
 function ensureDom() {
   if ($('tlWiz')) return;
   const d = document.createElement('div'); d.id = 'tlWiz'; d.hidden = true;
-  d.innerHTML = '<div class="tl-head"><b>Tlocrt → DXF</b><span class="tl-ver">v2.74</span><span id="tlFloor"></span><div class="tl-steps" id="tlSteps"></div><button id="tlClose" class="tl-btn">✕ Zatvori</button></div><div id="tlFlow" hidden style="background:#12305e;padding:6px 12px"></div>' +
+  d.innerHTML = '<div class="tl-head"><b>Tlocrt → DXF</b><span class="tl-ver">v2.75</span><span id="tlFloor"></span><div class="tl-steps" id="tlSteps"></div><button id="tlClose" class="tl-btn">✕ Zatvori</button></div><div id="tlFlow" hidden style="background:#12305e;padding:6px 12px"></div>' +
     '<div class="tl-body"><div class="tl-view"><canvas id="tlCanvas"></canvas><div class="tl-zoom"><button id="tlFit" class="tl-btn" title="Prikaži sve">⤢</button></div><div id="tlWallPop" class="tl-pop" hidden></div></div><div class="tl-panel" id="tlPanel"></div></div>';
   document.body.appendChild(d);
   $('tlClose').onclick = close; $('tlFit').onclick = () => { W.view = null; draw(); };
@@ -114,8 +114,11 @@ function softSplit() {
       for (const w1 of m1.walls) { if (w1.o !== w0.o || Math.abs(w1.c - w0.c) > 2 * E || w1.e0 < w0.e0 - E || w1.e1 > w0.e1 + E) continue; const k1 = C.wallKey(w1); if (out[f][k1] == null) out[f][k1] = v; } }
     return Object.assign({}, st, out); };
   { /* v2.66: stari automatski prijelomi unutarnjih zidova (zub u prostoriji) se brišu – unutarnji zid se ne lomi sam */
-    const ext = h => W.m.walls.some(w => w.o === h.o && w.exterior && Math.abs(w.c - h.c) < 2 * E && h.at >= w.e0 - 2 * E && h.at <= w.e1 + 2 * E);
-    const keep = (W.st.wallSplit || []).filter(h => !(h.auto && h.soft) || h.user || ext(h)); if (keep.length < (W.st.wallSplit || []).length) { W.st.wallSplit = keep; try { W.m = an(keep); } catch (e) { } W.out = null; persist(); } }
+    /* v2.75: vanjski se gleda uz sam prijelom (dugi zid koji tek dalje postane vanjski nije vanjski na tom mjestu); prijelom s odabranom raspodjelom (jogShare) ostaje */
+    const extAt = (h, u) => { let lo = false, hi = false; for (const q of W.m.walls) { if (q.obj || q.view || q.o !== h.o || u < q.e0 - 0.5 * E || u > q.e1 + 0.5 * E) continue; if (q.c < h.c - E) lo = true; if (q.c > h.c + E) hi = true; } return !(lo && hi); };
+    const ext = h => W.m.walls.some(w => w.o === h.o && w.exterior && Math.abs(w.c - h.c) < 2 * E && h.at >= w.e0 - 2 * E && h.at <= w.e1 + 2 * E) && (extAt(h, h.at - 3 * E) || extAt(h, h.at + 3 * E));
+    const shared = h => { const js = W.st.jogShare || {}; return Object.keys(js).some(k => { const [ax, c, at] = k.split(':'); return (ax === 'X') === (h.o === 'V') && Math.abs(+c - h.c) < 2 * E && Math.abs(+at - h.at) < 2 * E; }); };
+    const keep = (W.st.wallSplit || []).filter(h => !(h.auto && h.soft) || h.user || shared(h) || ext(h)); if (keep.length < (W.st.wallSplit || []).length) { W.st.wallSplit = keep; try { W.m = an(keep); } catch (e) { } W.out = null; persist(); } }
   let sp = (W.st.wallSplit || []).slice(), m = W.m, st = W.st, info, added = 0, t0 = Date.now(); try { info = C.fitInfo(m, st); } catch (e) { return; }
   for (let round = 0; round < 6 && info.bad.length && Date.now() - t0 < 4000; round++) {
     const cands = C.softCands(m, st, info).filter(c => !sp.some(h => same(h, c))); let best = null;
