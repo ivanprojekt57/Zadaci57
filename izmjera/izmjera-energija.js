@@ -392,12 +392,18 @@ function sazData() { const K = kiData(), T = K.T, sIdx = st => { const i = STR_R
   const walls = [...W.values()].sort((a, b) => EC.EL_ORDER.indexOf(a.el) - EC.EL_ORDER.indexOf(b.el)), G = new Map();
   for (const o of K.ops) { const g = G.get(o.naziv) || { naziv: o.naziv, kind: o.kind, Aw: o.Aw, mj: new Set(), po: {}, neg: 0, n: 0 }; g.mj.add(Math.round(o.w) + ' × ' + Math.round(o.h)); if (o.strana === '—') g.neg += o.n; else g.po[o.strana] = (g.po[o.strana] || 0) + o.n; g.n += o.n; G.set(o.naziv, g); }
   const ops = [...G.values()].sort((a, b) => +a.naziv.slice(1) - +b.naziv.slice(1)), strane = [...new Set([...walls.flatMap(w => Object.keys(w.po)), ...ops.flatMap(o => Object.keys(o.po))])].sort((a, b) => sIdx(a) - sIdx(b));
-  return { Ak: T.Ak / 1e4, Af: K.fl.reduce((a, f) => a + f.Af, 0), Ve: T.Ve / 1e6, walls, ops, strane, neg: ops.some(o => o.neg > 0) }; }
+  /* v2.80: podovi, stropovi i krovovi prema negrijanom, vanjskom zraku i tlu – po etažama */
+  const PM = new Map(), pfl = []; for (const r of K.flat) { if (!(r.A > 0) || !EC.EL[r.el]) continue; const fn = String(r.fl || '').replace(/ – ručno$/, ''); if (!pfl.includes(fn)) pfl.push(fn); const o = PM.get(r.el) || { el: r.el, po: {}, uk: 0 }; o.po[fn] = (o.po[fn] || 0) + r.A; o.uk += r.A; PM.set(r.el, o); }
+  const plohe = [...PM.values()].sort((a, b) => EC.EL_ORDER.indexOf(a.el) - EC.EL_ORDER.indexOf(b.el)), pflo = K.fl.map(f => f.name).filter(n => pfl.includes(n)).concat(pfl.filter(n => !K.fl.some(f => f.name === n)));
+  return { Ak: T.Ak / 1e4, Af: K.fl.reduce((a, f) => a + f.Af, 0), Ve: T.Ve / 1e6, walls, ops, strane, neg: ops.some(o => o.neg > 0), plohe, pfl: pflo }; }
 function sazPdfBlocks() { const Z = sazData(), f = v => v.toFixed(2).replace('.', ','), dash = '–', bl = [{ h: 'Sažetak površina', blue: true }, { p: 'Zgrada ukupno, sve etaže. Mjere su vanjske, zidovi su neto (bez otvora). Kako je izračunata svaka površina piše u nastavku ispisa.' }];
   bl.push({ table: { style: 'plavo', size: 13, sizeH: 8.5, cols: [{ t: 'Ploština korisne površine Ak', w: 34, al: 'c' }, { t: 'Ploština poda grijanog dijela Af', w: 34, al: 'c' }, { t: 'Bruto obujam grijanog dijela Ve', w: 34, al: 'c' }], rows: [[f(Z.Ak) + ' m²', f(Z.Af) + ' m²', f(Z.Ve) + ' m³']], boldCol: [0, 1, 2] } });
   if (Z.walls.length) { const tot = Z.strane.map(st => Z.walls.reduce((a, w) => a + (w.po[st] || 0), 0));
     bl.push({ h: 'Zidovi – neto površine (m²)', blue: true }, { table: { style: 'plavo', cols: [{ t: 'Zid', w: 40 }, ...Z.strane.map(st => ({ t: st, w: 11, al: 'r' })), { t: 'Ukupno', w: 14, al: 'r' }], boldCol: [Z.strane.length + 1], rows: [...Z.walls.map(w => [EC.EL[w.el], ...Z.strane.map(st => w.po[st] ? f(w.po[st]) : dash), f(w.uk)]), ['Ukupno', ...tot.map(v => v ? f(v) : dash), f(Z.walls.reduce((a, w) => a + w.uk, 0))]], bold: [Z.walls.length] } });
     bl.push({ p: 'Zidovi prema grijanom (susjedna grijana zgrada, grijani prostor) nisu u ovoj tablici.' }); }
+  if (Z.plohe.length) { const one = Z.pfl.length <= 1, tot = Z.pfl.map(fn => Z.plohe.reduce((a, o) => a + (o.po[fn] || 0), 0));
+    bl.push({ h: 'Podovi, stropovi i krovovi (m²)', blue: true }, { table: { style: 'plavo', cols: [{ t: 'Ploha', w: 40 }, ...(one ? [] : Z.pfl.map(fn => ({ t: fn, w: Math.max(11, Math.min(18, 60 / Z.pfl.length)), al: 'r' }))), { t: 'Ukupno', w: 14, al: 'r' }], boldCol: [one ? 1 : Z.pfl.length + 1], rows: [...Z.plohe.map(o => [EC.EL[o.el], ...(one ? [] : Z.pfl.map(fn => o.po[fn] ? f(o.po[fn]) : dash)), f(o.uk)]), ['Ukupno', ...(one ? [] : tot.map(v => v ? f(v) : dash)), f(Z.plohe.reduce((a, o) => a + o.uk, 0))]], bold: [Z.plohe.length] } });
+    bl.push({ p: 'Podovi i stropovi prema grijanom (grijana etaža ispod ili iznad) nisu u ovoj tablici.' }); }
   if (Z.ops.length) { const tn = Z.strane.map(st => Z.ops.reduce((a, o) => a + (o.po[st] || 0), 0)), cat = k => k === 'prozor' || k === 'krovni' ? 'Prozori' : k === 'balkonska' ? 'Balkonska vrata' : 'Vrata', nc = 5 + Z.strane.length + (Z.neg ? 1 : 0), rows = [], grp = []; let lc = '';
     for (const o of Z.ops) { const c0 = cat(o.kind); if (c0 !== lc) { grp.push(rows.length); rows.push([c0, ...Array(nc).fill('')]); lc = c0; } rows.push([o.naziv, EC.OPEN_NAME[o.kind], [...o.mj].join(', '), f(o.Aw), ...Z.strane.map(st => o.po[st] ? String(o.po[st]) : dash), ...(Z.neg ? [o.neg ? String(o.neg) : dash] : []), String(o.n), f(o.Aw * o.n)]); }
     rows.push(['Ukupno', '', '', '', ...tn.map(v => v ? String(v) : dash), ...(Z.neg ? [String(Z.ops.reduce((a, o) => a + o.neg, 0))] : []), String(Z.ops.reduce((a, o) => a + o.n, 0)), f(Z.ops.reduce((a, o) => a + o.Aw * o.n, 0))]);
@@ -405,7 +411,9 @@ function sazPdfBlocks() { const Z = sazData(), f = v => v.toFixed(2).replace('.'
     bl.push({ p: (Z.neg ? 'Neg. = otvor u zidu prema negrijanom (stubište, garaža, negrijani prostor). ' : '') + 'Mjere otvora su građevinske mjere, u cm.' }); }
   return bl; }
 function sazSheet() { const Z = sazData(), B = v => ({ v, b: true }), rows = [[B('Sažetak površina – zgrada ukupno (vanjske mjere, zidovi neto bez otvora)')], [], [B('Ak m²'), B('Af m²'), B('Ve m³')], [r2(Z.Ak), r2(Z.Af), r2(Z.Ve)], [], [B('Zid'), ...Z.strane.map(B), B('Ukupno m²')]];
-  Z.walls.forEach(w => rows.push([EC.EL[w.el], ...Z.strane.map(st => w.po[st] ? r2(w.po[st]) : ''), r2(w.uk)])); rows.push([], [B('Naziv'), B('Vrsta'), B('š × v cm'), B('m²/kom'), ...Z.strane.map(B), ...(Z.neg ? [B('Neg.')] : []), B('kom'), B('ukupno m²')]);
+  Z.walls.forEach(w => rows.push([EC.EL[w.el], ...Z.strane.map(st => w.po[st] ? r2(w.po[st]) : ''), r2(w.uk)]));
+  if (Z.plohe.length) { rows.push([], [B('Pod / strop / krov'), ...Z.pfl.map(B), B('Ukupno m²')]); Z.plohe.forEach(o => rows.push([EC.EL[o.el], ...Z.pfl.map(fn => o.po[fn] ? r2(o.po[fn]) : ''), r2(o.uk)])); rows.push([B('Ukupno'), ...Z.pfl.map(fn => { const v = Z.plohe.reduce((a, o) => a + (o.po[fn] || 0), 0); return v ? B(r2(v)) : ''; }), B(r2(Z.plohe.reduce((a, o) => a + o.uk, 0)))]); }
+  rows.push([], [B('Naziv'), B('Vrsta'), B('š × v cm'), B('m²/kom'), ...Z.strane.map(B), ...(Z.neg ? [B('Neg.')] : []), B('kom'), B('ukupno m²')]);
   Z.ops.forEach(o => rows.push([o.naziv, EC.OPEN_NAME[o.kind], [...o.mj].join(', '), o.Aw, ...Z.strane.map(st => o.po[st] ? { v: o.po[st], int: true } : ''), ...(Z.neg ? [o.neg ? { v: o.neg, int: true } : ''] : []), { v: o.n, int: true }, r2(o.Aw * o.n)]));
   return { name: 'Sažetak', cols: [40, 22, 16, 10, ...Z.strane.map(() => 8), 8, 8, 12], rows }; }
 const r2 = v => Math.round(v * 100) / 100;
@@ -1155,6 +1163,22 @@ function tap(pt) {
 /* za „Izvezi sve”: pročelja i presjeci (samo legalizacija) */
 function procFiles() { if (!isLegal()) return null; buildAll(); recalc(); const R = procBuild(); if (!R || R.err || !R.views || !R.views.length) return null;
   return { dxf: IzmjeraProcelja.toDxf(R), pdf: IzmjeraProcelja.toPdf(R, { project: (window.IzmjeraApp && IzmjeraApp.projectName()) || 'Izmjera', title: 'Pročelja' }) }; }
-window.IzmjeraEnergija = { open, openTab, nacrtiData, close, syncButton, isEnerg, isLegal, wizTitle, procFiles, _S: S };
+/* v2.78: Predaja – stanje priloga i dokumenata te sve datoteke (bajtovi) za jedan ZIP */
+const pBase = () => String((window.IzmjeraApp && IzmjeraApp.projectName()) || 'izmjera').replace(/[^a-z0-9čćžšđ_-]+/gi, '_');
+async function predajaInfo() { let ok = true; try { nacrtiData(); } catch (e) { ok = false; } const r = { ok, en: null, leg: null };
+  if (isEnerg()) { let tbl = true; try { dataTables(); } catch (e) { tbl = false; } r.en = { tables: tbl, tpl: !!(await tplGet()) }; }
+  if (isLegal()) { const ld = LD(), R = legCalc();
+    r.leg = { calc: !!(R && !R.err), err: R && R.err, kp: !!ld.kp, dgu: (ld.dgu || []).length, foto: (ld.foto || []).length, tplS: !!(await ldTplGet('snimka')), tplI: !!(await ldTplGet('izjava')) }; }
+  return r; }
+async function izvBytes(progress) { const t = await tplGet(); if (!t || !IZ()) return null; const z = izvState(), B = await IZ().openTemplate(t.bytes, 'Podaci'); IZ().setCells(B, izvValues().out); await applyReport(B, z, t, progress || (() => { })); return { name: 'Izvjesce_' + pBase() + '.xlsx', bytes: await IZ().buildTemplate(B), mime: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }; }
+async function snimkaBytes() { const t = await ldTplGet('snimka'); if (!t) return null; const r = await IzmjeraLegalDoc.fillSnimka(t.bytes, ldData(legCalc(), true).d); return { name: 'Snimka_izvedenog_stanja_' + pBase() + '.xlsx', bytes: r.bytes, mime: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', warn: r.warn }; }
+async function izjavaBytes() { const t = await ldTplGet('izjava'); if (!t) return null; const r = await IzmjeraLegalDoc.fillIzjava(t.bytes, ldData(legCalc()).d); return { name: 'Izjava_' + pBase() + '.docx', bytes: r.bytes, mime: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', warn: r.warn }; }
+async function predajaFiles(progress) { const out = [], warn = [], pr = progress || (() => { }); try { nacrtiData(); } catch (e) { }
+  const cap = (fn, what) => { const o = EX.saveBytes, PD = window.IzmjeraPdf, op = PD && PD.save; EX.saveBytes = (bytes, name, mime) => out.push({ name, bytes, mime }); if (PD) PD.save = (bytes, name) => out.push({ name, bytes, mime: 'application/pdf' }); try { fn(); } catch (e) { warn.push(what + ': ' + (e.message || e)); } finally { EX.saveBytes = o; if (PD) PD.save = op; } };
+  if (isEnerg()) { pr('površine'); cap(exportXlsx, 'Površine (Excel)'); cap(exportPdf, 'Površine (PDF)'); pr('izvješće'); try { const r = await izvBytes(n => pr('izvješće – slika ' + n)); if (r) out.push(r); else warn.push('Izvješće: nije učitan Excel predložak izvješća.'); } catch (e) { warn.push('Izvješće: ' + (e.message || e)); } }
+  if (isLegal()) { pr('snimka'); try { const r = await snimkaBytes(); if (r) { out.push(r); (r.warn || []).forEach(w => warn.push('Snimka: ' + w)); } else warn.push('Snimka: nije učitan Excel predložak snimke.'); } catch (e) { warn.push('Snimka: ' + (e.message || e)); }
+    pr('izjava'); try { const r = await izjavaBytes(); if (r) { out.push(r); (r.warn || []).forEach(w => warn.push('Izjava: ' + w)); } else warn.push('Izjava: nije učitan Word predložak izjave.'); } catch (e) { warn.push('Izjava: ' + (e.message || e)); } }
+  return { files: out, warn }; }
+window.IzmjeraEnergija = { open, openTab, nacrtiData, close, syncButton, isEnerg, isLegal, wizTitle, procFiles, predajaInfo, predajaFiles, izvBytes, snimkaBytes, izjavaBytes, _S: S };
 try { syncButton(); } catch (e) { }
 })();

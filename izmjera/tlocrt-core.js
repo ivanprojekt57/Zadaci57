@@ -202,7 +202,7 @@ function analyze(floor, opts) {
   const texts = items.filter(o => o && o.type === 'text' && o.layer !== 'biljeske' && Number.isFinite(o.x) && Number.isFinite(o.y));
   /* v2.69: prozor/vrata s udaljenošću 0 od ugla (iz postavki bloka) nema napisanu kotu – dodaj nevidljivu „0” od ugla do ruba otvora, inače se otvor postavi samo po skici (i dva prozora se preklope) */
   const syn0 = new Set(); { const hasPin = new Set(texts.filter(t => t.blk && t.pin).map(t => t.blk.id));
-    for (const o of items) { const B = o && o.blk; if (!B || !B.main || !(B.t === 'prozor' || B.t === 'vrata') || B.od !== 0 || !B.end || B.odNb || !B.odP || !B.c || hasPin.has(B.id)) continue;
+    for (const o of items) { const B = o && o.blk; if (!B || !B.main || !(B.t === 'prozor' || B.t === 'vrata') || B.od !== 0 || !B.end || B.odNb || B.odIz || !B.odP || !B.c || hasPin.has(B.id)) continue;
       const dx = B.c.x - B.odP.x, dy = B.c.y - B.odP.y, L = Math.hypot(dx, dy); if (!(L > 0.5)) continue; const k = Math.min(1, L / 4) / L, bP = { x: B.odP.x + dx * k, y: B.odP.y + dy * k };
       const t = { type: 'text', layer: 'kote', x: B.odP.x - 5, y: B.odP.y + 7, text: '0', blk: { id: B.id }, pin: { a: { x: B.odP.x, y: B.odP.y }, b: bP, outer: !!B.odOut }, syn0: true }; texts.push(t); syn0.add(B.id); } }
   const allN = raw.nacrt.flat();
@@ -810,7 +810,7 @@ function analyze(floor, opts) {
     const fk = (t.fs || 18) / 18, p = R({ x: t.x + String(t.text).length * 5 * fk, y: t.y - 7 * fk });
     if (t.layer === 'kote') {
       const w = String(t.text).length * 10 * fk, h = 20 * fk;
-      labels.push({ syn0: !!t.syn0, src: 'text', cm: !!(t.blk || t.lz), text: String(t.text), bb: { x0: p.x - w / 2, x1: p.x + w / 2, y0: p.y - h / 2, y1: p.y + h / 2, w, h }, cx: p.x, cy: p.y, aspect: t.dir === 'V' ? 0.05 : 99, typed: true, tdir: t.dir === 'V' || t.dir === 'H' ? t.dir : null, tfix: !!t.dirFix, chev: /[<>]/.test(String(t.text)) ? 'auto' : null, blkc: t.blk && blkC.has(t.blk.id) ? R(blkC.get(t.blk.id)) : null, tsv: R(t.dir === 'V' ? { x: 0, y: 1 } : { x: -1, y: 0 }), /* smjer čitanja natpisa (za 80+40: prvi broj na početku teksta) */ sig: 't:' + Math.round(t.x) + ',' + Math.round(t.y) + ':' + t.text, pin: t.pin && t.pin.a && t.pin.b ? Object.assign({ a: R(t.pin.a), b: R(t.pin.b), outer: !!t.pin.outer, blk: !t.pin.od }, t.pin.od ? { od: true, sa: t.pin.sa || null, sb: t.pin.sb || null } : {}) : null, gap: t.gap && Number.isFinite(t.gap.si) && Number.isFinite(t.gap.sj) ? { ax: t.gap.ax, si: t.gap.si, sj: t.gap.sj } : null, dg: t.dg && t.dg.a && t.dg.b ? { a: R(t.dg.a), b: R(t.dg.b) } : null });
+      labels.push({ syn0: !!t.syn0, src: 'text', cm: !!(t.blk || t.lz), text: String(t.text), bb: { x0: p.x - w / 2, x1: p.x + w / 2, y0: p.y - h / 2, y1: p.y + h / 2, w, h }, cx: p.x, cy: p.y, aspect: t.dir === 'V' ? 0.05 : 99, typed: true, tdir: t.dir === 'V' || t.dir === 'H' ? t.dir : null, tfix: !!t.dirFix, chev: /[<>]/.test(String(t.text)) ? 'auto' : null, blkc: t.blk && blkC.has(t.blk.id) ? R(blkC.get(t.blk.id)) : null, tsv: R(t.dir === 'V' ? { x: 0, y: 1 } : { x: -1, y: 0 }), /* smjer čitanja natpisa (za 80+40: prvi broj na početku teksta) */ sig: 't:' + Math.round(t.x) + ',' + Math.round(t.y) + ':' + t.text, pin: t.pin && t.pin.a && t.pin.b ? Object.assign({ a: R(t.pin.a), b: R(t.pin.b), outer: !!t.pin.outer, blk: !t.pin.od }, t.pin.od ? { od: true, sa: t.pin.sa || null, sb: t.pin.sb || null } : {}, t.pin.izb && t.pin.izb.key ? { izb: { key: t.pin.izb.key, dim: t.pin.izb.dim === 'w' ? 'w' : 'd' } } : {}) : null, gap: t.gap && Number.isFinite(t.gap.si) && Number.isFinite(t.gap.sj) ? { ax: t.gap.ax, si: t.gap.si, sj: t.gap.sj } : null, dg: t.dg && t.dg.a && t.dg.b ? { a: R(t.dg.a), b: R(t.dg.b) } : null });
     } else if (t.layer === 'opisi') rooms.push({ text: String(t.text), x: p.x, y: p.y });
     else if (t.layer === 'pogled') rooms.push({ text: String(t.text), x: p.x, y: p.y, view: true });
   }
@@ -1045,7 +1045,7 @@ function buildConstraints(m, st) {
     if (!best.bk && !best.kl && (best.type !== 'vrata' || best.p != null)) best.type = best.p != null ? 'prozor' : (best.arc ? 'vrata' : (best.type === 'prolaz' ? 'vrata' : best.type));
     if (best.src === 'prekid' && !best.arc && best.p == null && best.h > 0 && !(st.openings && st.openings[best.key] && st.openings[best.key].type)) best.type = best.h >= 195 ? 'vrata' : 'prozor'; /* prekid zida s natpisom 120/180 = prozor */
   }
-  m._opRel = [];
+  m._opRel = []; m._izbWait = [];
   m.labels.forEach((l, k) => {
     const I = infos[k]; l.info = I; l.span = null;
     if (I.kind === 'zanemari' || (st.decisions && st.decisions[l.sig] === 'ignore')) return;
@@ -1142,6 +1142,7 @@ function buildConstraints(m, st) {
       for (const r of m._opRel || []) { if (r.done) continue; for (const [X, Y] of [[r.A, r.B], [r.B, r.A]]) { const ox = X.op, oy = Y.op; if (oy.offset || oy.chain || !(ox.offset || ox.chain)) continue;
           oy.chain = { ref: ox, kX: X.k, kY: Y.k, sgn: Math.sign(Y.pos - X.pos) || 1, v: r.v, label: r.l }; r.done = true; go = true; break; } } }
     for (const r of m._opRel || []) if (!r.done) notes.push({ kind: 'kota', label: r.l, text: 'Kota #' + r.l.n + ' (' + fmt(r.v) + ') između dva otvora: izmjeri i udaljenost jednog od njih do zida.' }); }
+  for (const r of m._izbWait || []) notes.push({ kind: 'kota', label: r.l, text: 'Kota #' + r.l.n + ' (' + fmt(r.v) + ') je od izbočenja: izmjeri i stranicu izbočenja uz taj zid, pa se otvor smjesti.' });
   for (const o of ops.concat(nis)) { if (!o.offSame || !o.offset) continue; const a = o.offset, b = o.offSame, k = 'od:' + o.key, pick = st.offPick && st.offPick[k], avg = (a.value + b.value) / 2;
     if (pick === 'avg' || (!pick && Math.abs(a.value - b.value) <= Math.max(6, 0.08 * Math.max(a.value, b.value)))) { o.offset = Object.assign({}, a, { value: avg }); notes.push({ kind: 'odm', text: 'Udaljenost otvora od zida izmjerena s obje strane zida (#' + a.label.n + ' ' + fmt(a.value) + ', #' + b.label.n + ' ' + fmt(b.value) + ') → uzeto ' + fmt(avg, 1) + ' cm' }); }
     else if (pick === 'b') o.offset = b; else if (pick !== 'a') o.offDisagree = { a, b, key: k }; }
@@ -1342,7 +1343,10 @@ function pinSpan(m, st, pin, v, l, ops, putOff, cons) {
     const offI = (P.side || 1) * tP / 2, offJ = (Q.side || -1) * tQ / 2, sp = { ax, dir, i: P.w.lineAxis, j: Q.w.lineAxis, type: 'eksp', offI, offJ, add: offI - offJ, sketch: Q.pos - P.pos, v: dir === 'H' ? (a.y + b.y) / 2 : (a.x + b.x) / 2, pin: true };
     cons.push({ ax, i: sp.i, j: sp.j, target: v + sp.add, value: v, add: sp.add, kind: 'measure', label: l, span: sp, accepted: st.decisions && st.decisions[l.sig] === 'accept' }); return sp; }
   const W0 = A.kind === 'w' ? A : B.kind === 'w' ? B : null, O = A.kind === 'o' ? A : B.kind === 'o' ? B : null;
-  if (W0 && O) { const dirO = Math.sign(O.pos - W0.pos) || 1, near = dirO > 0 ? 0 : 1, outer = W0.xs ? W0.side === -dirO : pin.outer; putOff(O.op, { ax, axis: W0.w.lineAxis, t: wallT(m, W0.w, st) * (outer ? -1 : 1), dir: dirO, value: v, label: l, side: O.side, far: O.k !== near }); return { off: true, pin: true }; }
+  if (W0 && O) { const dirO = Math.sign(O.pos - W0.pos) || 1, near = dirO > 0 ? 0 : 1, outer = W0.xs ? W0.side === -dirO : pin.outer; let vv = v;
+    /* v2.79: udaljenost mjerena od lica izbočenja (stup/dimnjak u uglu) – do ugla se doda izmjerena stranica izbočenja uz ovaj zid */
+    if (pin.izb) { const nz = st.niches && st.niches[pin.izb.key], e = nz && !nz.est ? nz[pin.izb.dim] : null; if (!(e > 0)) { (m._izbWait = m._izbWait || []).push({ l, v }); return { off: true, pin: true, izb: true }; } vv = v + e; }
+    putOff(O.op, { ax, axis: W0.w.lineAxis, t: wallT(m, W0.w, st) * (outer ? -1 : 1), dir: dirO, value: vv, label: l, side: O.side, far: O.k !== near }); return { off: true, pin: true, izb: !!pin.izb }; }
   /* od ruba otvora do ruba drugog otvora na istom zidu (npr. razmak između dvoja vrata) – razriješi se kad jedan od njih ima udaljenost od zida */
   if (A.kind === 'o' && B.kind === 'o' && A.op !== B.op && A.op.wall === B.op.wall) { (m._opRel = m._opRel || []).push({ A, B, v, l, ax }); return { off: true, pin: true, rel: true }; }
   return null;

@@ -168,5 +168,8 @@ function showExport() {
 }
 /* popis listova za snimku izvedenog stanja (bez crtanja) */
 function lists() { try { return plan().lst.map(x => [x.no, x.name, x.sc]); } catch (e) { return null; } }
-root.IzmjeraNacrti = { open, bar, tlDone, nextLabel, goStep, status, showExport, plan, render, lists };
+/* v2.78: za Predaju – svi listovi kao PDF i DXF (bajtovi, bez spremanja) */
+function files() { const P = plan(); if (!P.lst.length) return { files: [], warn: P.warn, lst: P.lst }; const base = String((app() && app().projectName()) || 'izmjera').replace(/[^a-z0-9čćžšđ_-]+/gi, '_');
+  return { files: [{ name: base + '_nacrti.pdf', bytes: SA().toPdf(render(P.lst)), mime: 'application/pdf' }, { name: base + '_nacrti.dxf', bytes: new TextEncoder().encode(SA().toDxf(render(P.lst))), mime: 'application/dxf' }], warn: P.warn, lst: P.lst }; }
+root.IzmjeraNacrti = { open, bar, tlDone, nextLabel, goStep, status, showExport, plan, render, lists, files, floors };
 })(typeof window !== 'undefined' ? window : globalThis);

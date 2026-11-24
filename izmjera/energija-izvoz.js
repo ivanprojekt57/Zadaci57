@@ -8,11 +8,12 @@ const enc = s => new TextEncoder().encode(s);
 function zip(files) {
   const parts = [], cen = []; let off = 0;
   const u16 = v => [v & 255, (v >>> 8) & 255], u32 = v => [v & 255, (v >>> 8) & 255, (v >>> 16) & 255, (v >>> 24) & 255];
+  const nw = new Date(), dT = (nw.getHours() << 11) | (nw.getMinutes() << 5) | (nw.getSeconds() >> 1), dD = ((nw.getFullYear() - 1980) << 9) | ((nw.getMonth() + 1) << 5) | nw.getDate(); /* v2.78: pravi datum datoteka u ZIP-u */
   for (const f of files) {
     const name = enc(f.name), data = f.data, crc = crc32(data);
-    const head = [0x50, 0x4b, 3, 4, ...u16(20), ...u16(0x0800), ...u16(0), ...u16(0), ...u16(0x21), ...u32(crc), ...u32(data.length), ...u32(data.length), ...u16(name.length), ...u16(0)];
+    const head = [0x50, 0x4b, 3, 4, ...u16(20), ...u16(0x0800), ...u16(0), ...u16(dT), ...u16(dD), ...u32(crc), ...u32(data.length), ...u32(data.length), ...u16(name.length), ...u16(0)];
     parts.push(Uint8Array.from(head), name, data);
-    cen.push([0x50, 0x4b, 1, 2, ...u16(20), ...u16(20), ...u16(0x0800), ...u16(0), ...u16(0), ...u16(0x21), ...u32(crc), ...u32(data.length), ...u32(data.length), ...u16(name.length), ...u16(0), ...u16(0), ...u16(0), ...u16(0), ...u32(0), ...u32(off)], name);
+    cen.push([0x50, 0x4b, 1, 2, ...u16(20), ...u16(20), ...u16(0x0800), ...u16(0), ...u16(dT), ...u16(dD), ...u32(crc), ...u32(data.length), ...u32(data.length), ...u16(name.length), ...u16(0), ...u16(0), ...u16(0), ...u16(0), ...u32(0), ...u32(off)], name);
     off += head.length + name.length + data.length;
   }
   let cenLen = 0; const cenParts = []; for (let i = 0; i < cen.length; i += 2) { const h = Uint8Array.from(cen[i]); cenParts.push(h, cen[i + 1]); cenLen += h.length + cen[i + 1].length; }
