@@ -351,6 +351,22 @@ function answer(v, extra) {
   app.save(); T.sig = ''; T.mGeo = null; return true;
 }
 function allHeights(v) { app.snapshot(); for (const r of roomsNoHeight()) { const c = raw({ x: r.x, y: r.y }); addTyped('h=' + fmt(v), { x: c.x, y: c.y + 26 }, 'H'); } V.lastH = v; store.set('izmjera-zadnja-visina', String(v)); app.save(); T.sig = ''; }
+/* v2.81: „↔ Zid ima skok” – zidovi nacrtani u istoj crti, a u stvarnosti nisu u ravnini: traži prijelom crte zida (u praznini između dijelova ili na spoju s poprečnim zidom) s kojim kota sjedne */
+function stepFix(q) {
+  const f = app.currentFloor(), S = TR.tl(f), sp0 = (S.wallSplit || []).slice(); if (!T.m || !T.st) { toast('Pričekaj analizu skice pa pokušaj ponovno.'); step(true); return; }
+  const an = sp => { const m = C.analyze(f, { splits: sp }); m.labels.forEach(l => { const k = l.ocrKey || l.sig; if (T.st.rec && T.st.rec[k] != null) l.rec = T.st.rec[k]; }); return m; };
+  const carry = (m0, m1) => { const out = { wallT: Object.assign({}, T.st.wallT || {}), wallView: Object.assign({}, T.st.wallView || {}) }, E = m0.E;
+    for (const k of ['wallT', 'wallView']) for (const w0 of m0.walls) { const v = (T.st[k] || {})[C.wallKey(w0)]; if (v == null) continue; for (const w1 of m1.walls) { if (w1.o !== w0.o || Math.abs(w1.c - w0.c) > 2 * E || w1.e0 < w0.e0 - E || w1.e1 > w0.e1 + E) continue; const k1 = C.wallKey(w1); if (out[k][k1] == null) out[k][k1] = v; } }
+    return Object.assign({}, T.st, out); };
+  let i0; try { i0 = C.fitInfo(T.m, T.st); } catch (e) { toast('Ne mogu provjeriti – pokušaj ponovno.'); step(true); return; }
+  const c0 = i0.B.cons.find(c => c.kind === 'measure' && c.label && c.label.sig === q.key && Number.isFinite(c.dev)); if (!c0) { toast('↔ Ova kota ne mjeri od zida do zida – prijelom ne pomaže.'); step(true); return; }
+  const lim = Math.max(2, Number((T.st.settings || {}).uskl) || 3), t0 = Date.now(); let best = null;
+  for (const cand of C.stepCands(T.m, c0)) { if (Date.now() - t0 > 3500) break; const sp = sp0.concat([cand]); let m2, st2, i2; try { m2 = an(sp); st2 = carry(T.m, m2); i2 = C.fitInfo(m2, st2); } catch (e) { continue; }
+    const c2 = i2.B.cons.find(c => c.kind === 'measure' && c.label && c.label.sig === q.key && Number.isFinite(c.dev)); if (!c2 || Math.abs(c2.dev) > Math.max(lim, 0.25 * Math.abs(c0.dev))) continue; if (!(i2.score < i0.score * 0.6)) continue;
+    if (!best || i2.score < best.score) best = { sp, st2, score: i2.score, cand, dev: c2.dev }; }
+  if (!best) { toast('↔ Prijelom zida ne pomaže ovoj koti – provjeri mjeru (ili nacrtaj zid gdje stvarno je).'); step(true); return; }
+  app.snapshot && app.snapshot(); best.cand.user = true; S.wallSplit = best.sp; S.wallT = best.st2.wallT; S.wallView = best.st2.wallView; app.save(); T.sig = ''; T.mGeo = null; TR.analyzeNow(true); app.redraw();
+  toast('↔ Zid je prelomljen – kota #' + q.label.n + ' (' + fmt(q.value) + ') sad sjeda. Prijelom maknuti: ✂ Razreži i dodir na oznaku.'); step(true); }
 function panelEl() { let p = $('vdPanel'); if (!p) { p = document.createElement('div'); p.id = 'vdPanel'; document.body.appendChild(p); } return p; }
 function suggestNext(P) {
   const open = P.rooms.filter(r => (P.per.get(r.key) || []).length); if (!open.length) return null; const L = V.lastDone;
@@ -418,7 +434,7 @@ function step(noCenter) {
       ((Q.keys || []).filter(k => !(Q.zero && k.trim() === '0')).length ? '<div class="vd-row">' + Q.keys.filter(k => !(Q.zero && k.trim() === '0')).map(k => '<button data-k="' + k + '">' + k.trim() + '</button>').join('') + '</div>' : '') : '') +
     (Q.btns ? '<div class="vd-row' + (Q.names ? ' vd-names' : '') + '">' + Q.btns.map(([k, n]) => '<button data-b="' + esc(k) + '"' + (Q.names ? '' : ' class="pri"') + '>' + esc(n) + '</button>').join('') + '</div>' : '') +
     '<div class="vd-row">' + (pad ? '<button data-a="ok" class="pri">✓ Upiši</button>' : '') + (pad && laserOn() && laserTrig() ? '<button data-a="lzr" class="pri" style="background:#dc2626;border-color:#dc2626">🔴 Izmjeri</button>' : '') +
-    (q.type === 'viol' ? '<button data-a="acc">Prihvati</button><button data-a="ign">Zanemari kotu</button>' : '') +
+    (q.type === 'viol' ? '<button data-a="acc">Prihvati</button><button data-a="ign">Zanemari kotu</button>' + (!q.chain ? '<button data-a="skok" title="Zidovi na skici leže na istoj crti, a u stvarnosti nisu u ravnini (odvojen dio, uvučena ili izbačena fasada)">↔ Zid ima skok</button>' : '') : '') +
     (q.type === 'vis' && V.lastH > 0 ? '<button data-a="sameH">Kao prethodna (' + fmt(V.lastH) + ')</button><button data-a="allH">Ista za sve</button>' : '') +
     (q.type === 'blk' || q.type === 'bod' ? '<button data-a="blkm">Postavke…</button>' : '') +
     (q.type === 'wt3' ? '<button data-a="wtd">Znam debljinu</button>' : '') +
@@ -445,6 +461,7 @@ function bindPanel() {
     if (a === 'skip') { if (q) V.skip.add(q.key); step(); return; }
     if (a === 'acc') { answer(null, 'accept'); step(); return; }
     if (a === 'ign') { answer(null, 'ignore'); step(); return; }
+    if (a === 'skok') { b.disabled = true; b.textContent = 'Tražim…'; setTimeout(() => { stepFix(q); }, 30); return; }
     if (a === 'sameH') { answer(V.lastH); step(); return; }
     if (a === 'allH') { const v = V.val ? num(V.val) : V.lastH; if (v > 0) { allHeights(v); step(); } return; }
     if (a === 'blkm') { TR.blkMenu(q.id); return; }

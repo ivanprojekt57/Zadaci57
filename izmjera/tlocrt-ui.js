@@ -72,7 +72,7 @@ function persist() {
 function ensureDom() {
   if ($('tlWiz')) return;
   const d = document.createElement('div'); d.id = 'tlWiz'; d.hidden = true;
-  d.innerHTML = '<div class="tl-head"><b>Tlocrt → DXF</b><span class="tl-ver">v2.80</span><span id="tlFloor"></span><div class="tl-steps" id="tlSteps"></div><button id="tlClose" class="tl-btn">✕ Zatvori</button></div><div id="tlFlow" hidden style="background:#12305e;padding:6px 12px"></div>' +
+  d.innerHTML = '<div class="tl-head"><b>Tlocrt → DXF</b><span class="tl-ver">v2.82</span><span id="tlFloor"></span><div class="tl-steps" id="tlSteps"></div><button id="tlClose" class="tl-btn">✕ Zatvori</button></div><div id="tlFlow" hidden style="background:#12305e;padding:6px 12px"></div>' +
     '<div class="tl-body"><div class="tl-view"><canvas id="tlCanvas"></canvas><div class="tl-zoom"><button id="tlFit" class="tl-btn" title="Prikaži sve">⤢</button></div><div id="tlWallPop" class="tl-pop" hidden></div></div><div class="tl-panel" id="tlPanel"></div></div>';
   document.body.appendChild(d);
   $('tlClose').onclick = close; $('tlFit').onclick = () => { W.view = null; draw(); };
@@ -143,7 +143,9 @@ function gapSplit() {
     for (const ax of ['X', 'Y']) { const o = ax === 'X' ? 'V' : 'H';
       m.axes[ax].forEach((A, i) => { const L = A.line; if (!L || L.view || !bad.some(c => c.ax === ax && (c.i === i || c.j === i))) return;
         const ws = m.walls.filter(w => w.line === L && !w.view && !w.obj).sort((a, b) => a.e0 - b.e0);
-        for (let k = 1; k < ws.length; k++) { const g0 = ws[k - 1].e1, g1 = ws[k].e0; if (g1 - g0 < 4 * E) continue; const c = { o, c: Math.round(L.c * 10) / 10, at: Math.round((g0 + g1) / 2 * 10) / 10, auto: true, gap: true }; if (!sp.some(h => same(h, c)) && !cands.some(h => same(h, c))) cands.push(c); } }); }
+        for (let k = 1; k < ws.length; k++) { const g0 = ws[k - 1].e1, g1 = ws[k].e0; if (g1 - g0 < 4 * E) continue; const c = { o, c: Math.round(L.c * 10) / 10, at: Math.round((g0 + g1) / 2 * 10) / 10, auto: true, gap: true }; if (!sp.some(h => same(h, c)) && !cands.some(h => same(h, c))) cands.push(c); }
+        /* v2.81: i praznina unutar jednog zida (prolaz između dva dijela zgrade) – prijelom na krajevima praznine */
+        const rs = (L.runs || []).slice().sort((a, b) => a.a0 - b.a0); for (let k = 1; k < rs.length; k++) { if (rs[k].a0 - rs[k - 1].a1 < 4 * E) continue; for (const at of [rs[k - 1].a1, rs[k].a0]) { const c = { o, c: Math.round(L.c * 10) / 10, at: Math.round(at * 10) / 10, auto: true, gap: true }; if (!sp.some(h => same(h, c)) && !cands.some(h => same(h, c))) cands.push(c); } } }); }
     let best = null;
     for (const c of cands.slice(0, 10)) { if (Date.now() - t0 > 4000) break; const sp2 = sp.concat([c]); let m2, st2, i2; try { m2 = an(sp2); st2 = carry(m, m2, st); i2 = C.fitInfo(m2, st2); } catch (e) { continue; }
       if (!(i2.score < info.score * 0.5)) continue; if (!best || i2.score < best.i.score) best = { sp: sp2, m: m2, st: st2, i: i2 }; }

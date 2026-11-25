@@ -83,15 +83,18 @@ function migrate() { if (ls.get(MIG)) return; const ps = getPs(), E = jget(REK, 
     delete pr.reg; delete pr.rmod; }
   setPs(ps); jset(REK, E); ls.set(MIG, '1'); }
 /* ---------- sinkronizacija ---------- */
-let busy = false, soonT = null, lastTry = 0;
+let busy = false, soonT = null, lastTry = 0, again = false;
+const DRK = 'izmjera-reg-dirty'; /* v2.82: ima izmjena (zadaci, projekti) koje još nisu poslane */
+function payload(c) { const E = jget(REK, {}), sent = Object.values(E).filter(x => !x._del).map(x => { const o = Object.assign({}, x); if ((jget(RIK, [])).some(y => y.id === x.id)) o.known = true; return o; });
+  const del = getDel(), ps = getPs(), links = {}, prev = jget(RLK, {});
+  ps.forEach(p => { if (p.regId) links[p.regId] = p.name || 'izmjera'; }); Object.keys(prev).forEach(id => { if (!(id in links)) links[id] = ''; });
+  const K = window.IzmjeraKartice, tasks = K ? K.forSync() : null;
+  return { sent, del, links, K, body: JSON.stringify({ k: c.k, a: 'sync', items: sent, tasks, del, links, skr: Object.keys(jget('izmjera-zad-skriveno', {})) }) }; }
 async function sync(manual) {
-  const c = cfg(); if (!c) { if (manual) settings(); return; } if (busy) return; busy = true; lastTry = Date.now(); paint('🔄 sinkroniziram…');
+  const c = cfg(); if (!c) { if (manual) settings(); return; } if (busy) { again = true; return; } busy = true; lastTry = Date.now(); paint('🔄 sinkroniziram…');
   try { migrate();
-    const E = jget(REK, {}), sent = Object.values(E).filter(x => !x._del).map(x => { const o = Object.assign({}, x); if ((jget(RIK, [])).some(y => y.id === x.id)) o.known = true; return o; });
-    const del = getDel(), ps = getPs(), links = {}, prev = jget(RLK, {});
-    ps.forEach(p => { if (p.regId) links[p.regId] = p.name || 'izmjera'; }); Object.keys(prev).forEach(id => { if (!(id in links)) links[id] = ''; });
-    const K = window.IzmjeraKartice, tasks = K ? K.forSync() : null, t0 = Date.now();
-    const txt = await post(c.url, JSON.stringify({ k: c.k, a: 'sync', items: sent, tasks, del, links, skr: Object.keys(jget('izmjera-zad-skriveno', {})) }));
+    const t0 = Date.now(), PL = payload(c), sent = PL.sent, del = PL.del, links = PL.links, K = PL.K;
+    const txt = await post(c.url, PL.body);
     let r; try { r = JSON.parse(txt); } catch (e) { throw new Error(/<html|<!DOCTYPE/i.test(txt) ? 'tablica nije objavljena kao Web app (Deploy → Web app, pristup: Anyone)' : 'neispravan odgovor'); }
     if (!r.ok) throw new Error(r.err || 'greška u tablici');
     if (!r.v || r.v < 3) throw new Error('u tablici je stara skripta – zalijepi novu Code.gs i objavi novu verziju (Deploy → Manage deployments → ✏ → New version)');
@@ -101,11 +104,11 @@ async function sync(manual) {
     if (r.skr && typeof r.skr === 'object') { const o = jget('izmjera-zad-skriveno', {}); Object.keys(r.skr).forEach(k => o[k] = 1); jset('izmjera-zad-skriveno', o); } /* v2.44: odbačeni prijedlozi isti na mobitelu i tabletu */ jset(RIK, (r.items || []).filter(x => x && x.id)); const lk = {}; Object.keys(links).forEach(id => { if (links[id]) lk[id] = 1; }); jset(RLK, lk);
     fillLinked();
     if (K && r.tasks) K.fromSync(r.tasks, t0); ls.set('izmjera-zad-err', r.tasksErr || '');
-    ls.set(LK, Date.now()); ls.set(EK, ''); setTimeout(() => flush(false), 500);
+    ls.set(LK, Date.now()); ls.set(EK, ''); if ((+ls.get(DRK) || 0) <= t0) ls.set(DRK, ''); setTimeout(() => flush(false), 500);
     paint(); try { const h = $('home'); if (h && !h.classList.contains('hidden')) HM().listProjects(); } catch (e) { }
     if (manual) toast('✓ Registar: ' + (r.items || []).length + ' projekata');
   } catch (e) { ls.set(EK, e.message || String(e)); paint(); if (manual) alert('Sinkronizacija s registrom nije uspjela:\n' + (e.message || e)); }
-  finally { busy = false; }
+  finally { busy = false; if (again) { again = false; setTimeout(() => sync(false), 800); } }
 }
 /* ---------- v2.17: datoteke u mapu projekta na Disku (DXF, PDF, Excel, fotke, kopija projekta) ---------- */
 const QK = 'izmjera-disk-red';
@@ -130,7 +133,14 @@ function backupProject(id) { const c = cfg(); if (!c) return; try { const H = HM
     const sent = i.diskFoto || [], ids = []; for (const f of d.floors || []) for (const o of f.items || []) if (o.type === 'photo' && o.id && !sent.includes(o.id)) ids.push([o.id, o.n, f.name]);
     if (ids.length && window.AndroidApp && AndroidApp.loadPhoto) { for (const [pid, n, fl] of ids) { upload('Foto ' + (n || pid) + ' – ' + (fl || '') + '.jpg', 'image/jpeg', '', { broj: i.broj, photo: pid, quiet: true }); sent.push(pid); }
       i.diskFoto = sent; d.info = i; H.storeProject(id, JSON.stringify(d)); } } catch (e) { } }
-function soon() { if (!on()) return; clearTimeout(soonT); soonT = setTimeout(() => sync(false), 4000); }
+function soon() { if (!on()) return; ls.set(DRK, String(Date.now())); clearTimeout(soonT); soonT = setTimeout(() => sync(false), 1500); }
+/* v2.82: kad se aplikacija zatvori ili ode u pozadinu prije slanja – pošalji odmah (na računalu sendBeacon, preživi zatvaranje kartice) */
+function flushNow() { const c = cfg(); if (!c || !ls.get(DRK)) return; clearTimeout(soonT);
+  if (window.AndroidApp && AndroidApp.http) { sync(false); return; }
+  try { if (navigator.sendBeacon && navigator.sendBeacon(c.url, new Blob([payload(c).body], { type: 'text/plain;charset=utf-8' }))) return; } catch (e) { }
+  sync(false); }
+document.addEventListener('visibilitychange', () => { if (document.hidden) flushNow(); else if (on() && navigator.onLine !== false && Date.now() - Math.max(+ls.get(LK) || 0, lastTry) > 20000) sync(false); });
+window.addEventListener('pagehide', flushNow); window.addEventListener('online', () => { if (on()) sync(false); });
 function toast(t) { try { if (window.AndroidApp && AndroidApp.toast) { AndroidApp.toast(t); return; } } catch (e) { } const s = $('status'); if (s) s.textContent = t; }
 /* ---------- izgled: gumb u lijevoj traci + postavke ---------- */
 function ago(ms) { if (!ms) return 'još nije'; const m = Math.round((Date.now() - ms) / 60000); return m < 1 ? 'upravo' : m < 60 ? 'prije ' + m + ' min' : m < 1440 ? 'prije ' + Math.round(m / 60) + ' h' : new Date(ms).toLocaleDateString('hr'); }
@@ -163,7 +173,8 @@ function settings() {
       ov.remove(); paint(); sync(true); } });
 }
 /* automatski: pri pokretanju, pri povratku na početni zaslon (najviše svakih 5 min) */
-setInterval(() => { try { paint(); const h = $('home'); if (on() && h && !h.classList.contains('hidden') && Date.now() - Math.max(+ls.get(LK) || 0, lastTry) > 5 * 60000 && navigator.onLine !== false) sync(false); } catch (e) { } }, 3000);
+setInterval(() => { try { paint(); const h = $('home'), hv = h && !h.classList.contains('hidden'), zad = hv && window.IzmjeraKartice && IzmjeraKartice.tab() === 'zad', gap = Date.now() - Math.max(+ls.get(LK) || 0, lastTry);
+  if (on() && navigator.onLine !== false && !document.hidden && ((ls.get(DRK) && gap > 15000) || (zad && gap > 60000) || (hv && gap > 5 * 60000))) sync(false); } catch (e) { } }, 3000); /* v2.82: na popisu zadataka svake minute, neposlano odmah */
 const DK = 'izmjera-reg-del'; function getDel() { try { return JSON.parse(localStorage.getItem(DK) || '[]'); } catch (e) { return []; } } function setDel(a) { try { localStorage.setItem(DK, JSON.stringify(a)); } catch (e) { } }
 function markDeleted(id) { const a = getDel(); if (!a.includes(id)) a.push(id); setDel(a); soon(); }
 window.IzmjeraRegistar = { markDeleted, sync: () => sync(true), soon, on, settings, toItem, applyItem, upload, flush, backupProject, items, item, saveItem, delItem, newId, linkedIzm, link, migrate, sheetUrl: () => ls.get(SHK) };

@@ -1369,9 +1369,10 @@ function edimObj(m, dl, ops, nis, st, v, l, putOff) {
   return null;
 }
 function findAxis(m, ax, s, along) { /* v2.37: along = položaj kote uzduž zida – kad je crta prelomljena (dva dijela na istom mjestu), bira se dio uz koji kota stoji */
-  let b = -1, bd = m.E * 0.6, bc = false; m.axes[ax].forEach((a, i) => { const d = Math.abs(a.s - s); if (d > m.E * 0.6) return;
+  let b = -1, bd = m.E * 0.6, bc = false, bg = Infinity; m.axes[ax].forEach((a, i) => { const d = Math.abs(a.s - s); if (d > m.E * 0.6) return;
     const cov = along != null && !!(a.line && a.line.runs && a.line.runs.some(r => along >= r.a0 - m.E && along <= r.a1 + m.E));
-    if (b < 0 || (cov && !bc) || (cov === bc && d <= bd)) { bd = d; b = i; bc = cov; } }); return b; }
+    /* v2.81: kota u prolazu između dva prelomljena dijela – ide na bliži dio (ne na zadnji) */ const gd = !cov && along != null && a.line && a.line.runs && a.line.runs.length ? Math.min(...a.line.runs.map(r => along < r.a0 ? r.a0 - along : along > r.a1 ? along - r.a1 : 0)) : Infinity;
+    if (b < 0 || (cov && !bc) || (cov === bc && (cov || gd === Infinity || bg === Infinity ? d <= bd : gd < bg - 0.01 || (Math.abs(gd - bg) <= 0.01 && d <= bd)))) { bd = d; b = i; bc = cov; bg = gd; } }); return b; }
 
 /* skok vanjskog zida (dvije debljine): vanjsko lice (fasada) ostaje ravno, razlika debljine ide unutra */
 function jogFlush(m, st) {
@@ -2084,7 +2085,14 @@ function softCands(m, st, info) { const out = [], E = m.E, seen = new Set();
         if (L.splitAt != null && Math.abs(L.splitAt - p.c) < 2 * E) continue; const k = o + ':' + Math.round(L.c) + ':' + Math.round(p.c); if (seen.has(k)) continue; seen.add(k);
         out.push({ o, c: Math.round(L.c * 10) / 10, at: Math.round(p.c * 10) / 10, auto: true, soft: true, near: Number.isFinite(pos) ? Math.abs(pos - p.c) : 0 }); } } }
   return out.sort((a, b) => a.near - b.near).slice(0, 14).map(({ near, ...r }) => r); }
-const API = { facades, fitInfo, softCands, regEdges, colWall, stairGeo, stairMode, stairShape, stairView, ST_DEF, isView, wallKey, autoSplits, analyze, build, nextQuestion, buildConstraints, parseLabel, autoKind, cleanOcr, toDxf, sketchDxf, DEFAULTS, fmt, fmtPct, rotP, bbox, warp, LAYERS };
+/* v2.81: zid nije u ravnini (skok fasade, odvojeni dio zgrade) – mjesta gdje se crta zida može prelomiti da kota sjedne:
+   krajevi praznine između dijelova zida i spojevi s poprečnim zidovima. Samo za osi na kojima su kote (c.ax, c.i, c.j). */
+function stepCands(m, c) { const out = [], E = m.E, A = m.axes[c.ax], o = c.ax === 'X' ? 'V' : 'H', seen = new Set(), add = (L, at, gap) => { const k = Math.round(at); if (seen.has(k)) return; seen.add(k); out.push({ o, c: Math.round(L.c * 10) / 10, at: Math.round(at * 10) / 10, auto: true, gap: !!gap, step: true }); };
+  for (const i of [c.i, c.j]) { const L = A[i] && A[i].line; if (!L || L.view || !L.runs || !L.runs.length) continue; const rs = L.runs.slice().sort((a, b) => a.a0 - b.a0), lo = rs[0].a0, hi = rs[rs.length - 1].a1;
+    for (let k = 1; k < rs.length; k++) { if (rs[k].a0 - rs[k - 1].a1 < 2 * E) continue; add(L, rs[k - 1].a1, true); add(L, rs[k].a0, true); }
+    for (const p of m.walls) { if (p.o === o || p.view || p.obj) continue; if (Math.min(Math.abs(p.e0 - L.c), Math.abs(p.e1 - L.c)) > 1.5 * E) continue; if (p.c <= lo + 1.5 * E || p.c >= hi - 1.5 * E) continue; if (L.splitAt != null && Math.abs(L.splitAt - p.c) < 2 * E) continue; add(L, p.c, false); } }
+  return out.slice(0, 16); }
+const API = { facades, fitInfo, softCands, stepCands, regEdges, colWall, stairGeo, stairMode, stairShape, stairView, ST_DEF, isView, wallKey, autoSplits, analyze, build, nextQuestion, buildConstraints, parseLabel, autoKind, cleanOcr, toDxf, sketchDxf, DEFAULTS, fmt, fmtPct, rotP, bbox, warp, LAYERS };
 if (typeof module !== 'undefined' && module.exports) module.exports = API; else root.IzmjeraTlocrtCore = API;
 try { if (root && !root.__izCoreSrc) root.__izCoreSrc = izCore.toString(); } catch (e) { } /* za pozadinsku analizu (Web Worker) */
 })(typeof window !== 'undefined' ? window : globalThis);
