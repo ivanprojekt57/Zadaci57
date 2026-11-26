@@ -623,10 +623,10 @@ function analyze(floor, opts) {
   for (const o of items) { if (!(o && o.layer === 'nacrt' && o.blk && o.blk.main && (o.blk.bk || o.blk.kl || o.blk.t === 'vrata') && o.blk.c && o.blk.dv)) continue; /* vrata / otvor bez krila / klizna iz bloka 🚪 */
     const c = R(o.blk.c), d = R(o.blk.dv), ow = Math.abs(d.x) >= Math.abs(d.y) ? 'H' : 'V', u = ow === 'H' ? c.x : c.y, v = ow === 'H' ? c.y : c.x, hw = (o.blk.dW > 0 ? o.blk.dW : 30) / 2;
     let bw = null, bd = 3 * E; for (const w of W) { if (w.view || w.o !== ow || u < w.e0 - E || u > w.e1 + E) continue; const dd = Math.abs(v - w.c); if (dd < bd) { bd = dd; bw = w; } }
-    if (bw && !o.blk.bk && !o.blk.kl) { const B = o.blk, nr = B.nv ? R(B.nv) : null, side = nr ? Math.sign(ow === 'H' ? nr.y : nr.x) * (B.sw || 1) : 0, sdU = Math.sign(ow === 'H' ? d.x : d.y) || 1, op = { wall: bw.id, s0: Math.max(bw.e0, u - hw), s1: Math.min(bw.e1, u + hw), src: 'blok', type: 'vrata', side: side || undefined, blkDoor: true };
+    if (bw && !o.blk.bk && !o.blk.kl && !o.blk.gar) { const B = o.blk, nr = B.nv ? R(B.nv) : null, side = nr ? Math.sign(ow === 'H' ? nr.y : nr.x) * (B.sw || 1) : 0, sdU = Math.sign(ow === 'H' ? d.x : d.y) || 1, op = { wall: bw.id, s0: Math.max(bw.e0, u - hw), s1: Math.min(bw.e1, u + hw), src: 'blok', type: 'vrata', side: side || undefined, blkDoor: true };
       if (B.dvo) { const f1 = B.w1 > 0 && B.w > 0 && B.w1 < B.w ? B.w1 / B.w : 0.5, hF = (Math.abs(B.dv.x) >= Math.abs(B.dv.y) ? -B.dv.x : B.dv.y) > 0 ? 1 : -1; op.double = true; op.split = hF * sdU > 0 ? 1 - f1 : f1; } else op.hinge = (B.hg ? 1 : -1) * sdU > 0;
       openings.push(op); continue; }
-    if (bw) { const kl = !!o.blk.kl, nr = o.blk.nv ? R(o.blk.nv) : null, sd = nr ? Math.sign(ow === 'H' ? nr.y : nr.x) * (o.blk.sw || 1) : 0; openings.push(kl ? { wall: bw.id, s0: Math.max(bw.e0, u - hw), s1: Math.min(bw.e1, u + hw), src: 'blok', type: 'vrata', kl: true, side: sd || undefined, hinge: !!o.blk.hg } : { wall: bw.id, s0: Math.max(bw.e0, u - hw), s1: Math.min(bw.e1, u + hw), src: 'blok', type: 'prolaz', bk: true }); } }
+    if (bw) { const kl = !!o.blk.kl, nr = o.blk.nv ? R(o.blk.nv) : null, sd = nr ? Math.sign(ow === 'H' ? nr.y : nr.x) * (o.blk.sw || 1) : 0; if (o.blk.gar) { openings.push({ wall: bw.id, s0: Math.max(bw.e0, u - hw), s1: Math.min(bw.e1, u + hw), src: 'blok', type: 'vrata', gar: true, side: sd || undefined }); continue; } /* v2.85: garažna vrata */ openings.push(kl ? { wall: bw.id, s0: Math.max(bw.e0, u - hw), s1: Math.min(bw.e1, u + hw), src: 'blok', type: 'vrata', kl: true, side: sd || undefined, hinge: !!o.blk.hg } : { wall: bw.id, s0: Math.max(bw.e0, u - hw), s1: Math.min(bw.e1, u + hw), src: 'blok', type: 'prolaz', bk: true }); } }
   for (const r of winRects) { // pravokutnik preko zida → prozor na tom zidu
     let bw = null, bd = Infinity; for (const w of W) { if (w.o !== r.o || w.view || w.obj) continue; if (r.s1 < w.e0 - E || r.s0 > w.e1 + E) continue; const d = Math.abs(w.c - r.c); if (d < bd && d < r.t + 2 * E) { bd = d; bw = w; } }
     if (!bw) continue; const s0 = Math.max(bw.e0, r.s0), s1 = Math.min(bw.e1, r.s1); if (s1 - s0 < E) continue;
@@ -1053,7 +1053,7 @@ function buildConstraints(m, st) {
     }
     best.label = l; best.w = I.parsed.w; best.h = I.parsed.h; best.p = I.parsed.p;
     if (I.parsed.split > 0 && I.parsed.split < 1) { let sp = I.parsed.split; const bw = m.walls[best.wall]; if (l.tsv && bw) { const along = bw.o === 'H' ? l.tsv.x : l.tsv.y; if (along > 0) sp = 1 - sp; /* 1. broj = krilo na početku teksta */ } best.split = sp; best.double = true; }
-    if (!best.bk && !best.kl && (best.type !== 'vrata' || best.p != null)) best.type = best.p != null ? 'prozor' : (best.arc ? 'vrata' : (best.type === 'prolaz' ? 'vrata' : best.type));
+    if (!best.bk && !best.kl && !best.gar && (best.type !== 'vrata' || best.p != null)) best.type = best.p != null ? 'prozor' : (best.arc ? 'vrata' : (best.type === 'prolaz' ? 'vrata' : best.type));
     if (best.src === 'prekid' && !best.arc && best.p == null && best.h > 0 && !(st.openings && st.openings[best.key] && st.openings[best.key].type)) best.type = best.h >= 195 ? 'vrata' : 'prozor'; /* prekid zida s natpisom 120/180 = prozor */
   }
   m._opRel = []; m._izbWait = [];
@@ -1595,6 +1595,7 @@ function build(m, st) {
       const sw = Math.min(5, width / 6), fs = side > 0 ? f1 : f0, fo = side > 0 ? f0 : f1;
       const sd = t <= 25 ? t : 10, sIn = fs - side * sd;
       rect('OTVORI_VRATA', a, fs, a + sw, sIn); rect('OTVORI_VRATA', b - sw, fs, b, sIn);
+      if (o.gar) { /* v2.85: garažna vrata – dignuto krilo uz strop: crtkani okvir s unutarnje strane, dubine = visina vrata */ const D = o.h > 0 ? o.h : 220; rect('GARAZNA_VRATA', a, fs, b, fs + side * D); } else
       if (o.kl) { /* klizna: krilo 4 cm ispred lica zida, preklapa špalete; strelica smjera */ const k0 = fs + side * 1, k1 = fs + side * 5, ov = Math.min(6, width / 8); rect('OTVORI_VRATA', a - ov, k0, b + ov, k1); const am = fs + side * 12, dr = o.hinge ? 1 : -1, c0 = (a + b) / 2 - dr * width * 0.3, c1 = (a + b) / 2 + dr * width * 0.3; L('OTVORI_VRATA', P(c0, am), P(c1, am)); L('OTVORI_VRATA', P(c1, am), P(c1 - dr * 6, am - 3)); L('OTVORI_VRATA', P(c1, am), P(c1 - dr * 6, am + 3)); } else {
       const sp = o.split > 0 && o.split < 1 ? o.split : 0.5, leaves = o.double ? [[a + sw, 1, (width - 2 * sw) * sp], [b - sw, -1, (width - 2 * sw) * (1 - sp)]] : [[o.hinge ? b - sw : a + sw, o.hinge ? -1 : 1, width - 2 * sw]], lt = 4;
       for (const [hu, dirU, len] of leaves) { const Lk = Math.max(10, len);
@@ -1980,7 +1981,7 @@ function roomAt(g, R, p) {
 /* ---------------- 4. DXF (R12 / AC1009, centimetri) ---------------- */
 const LAYERS = [
   ['ZIDOVI_NOSIVI', 7], ['ZIDOVI_PREGRADNI', 8], ['OTVORI_VRATA', 3], ['OTVORI_PROZORI', 4], ['KOTE', 5], ['OPISI', 1],
-  ['STUBISTE', 6], ['STUBISTE_CRTKANO', 6], ['KROVNI_PROZOR', 4], ['OTVOR_PLOCA', 1], ['TERASA', 82], ['GREDE', 5], ['PRAG', 30], ['POGLED', 42], ['DIMNJAK', 40], ['STUPOVI', 7], ['OSTALO', 9], ['PROVJERA', 30], ['NADVOJ', 3], ['SKICA', -252]
+  ['STUBISTE', 6], ['STUBISTE_CRTKANO', 6], ['KROVNI_PROZOR', 4], ['OTVOR_PLOCA', 1], ['TERASA', 82], ['GREDE', 5], ['PRAG', 30], ['POGLED', 42], ['DIMNJAK', 40], ['STUPOVI', 7], ['OSTALO', 9], ['PROVJERA', 30], ['NADVOJ', 3], ['GARAZNA_VRATA', 3], ['SKICA', -252]
 ];
 function dxfText(s) { let o = ''; for (const ch of String(s)) { const c = ch.codePointAt(0); if (c > 126 || c < 32) o += '\\U+' + c.toString(16).toUpperCase().padStart(4, '0'); else o += ch; } return o; }
 function toDxf(out, opts) {
@@ -2004,7 +2005,7 @@ function toDxf(out, opts) {
   g(0, 'LTYPE'); g(2, 'DASHED'); g(70, 0); g(3, '__ __ __'); g(72, 65); g(73, 2); g(40, 15); g(49, 10); g(49, -5); g(0, 'ENDTAB');
   g(0, 'TABLE'); g(2, 'LAYER'); g(70, LAYERS.length + 1);
   g(0, 'LAYER'); g(2, '0'); g(70, 0); g(62, 7); g(6, 'CONTINUOUS');
-  for (const [name, col] of LAYERS) { g(0, 'LAYER'); g(2, name); g(70, 0); g(62, col); g(6, /^(STUBISTE_CRTKANO|NADVOJ|KROVNI_PROZOR|OTVOR_PLOCA|TERASA|GREDE)$/.test(name) ? 'DASHED' : 'CONTINUOUS'); }
+  for (const [name, col] of LAYERS) { g(0, 'LAYER'); g(2, name); g(70, 0); g(62, col); g(6, /^(STUBISTE_CRTKANO|NADVOJ|KROVNI_PROZOR|OTVOR_PLOCA|TERASA|GREDE|GARAZNA_VRATA)$/.test(name) ? 'DASHED' : 'CONTINUOUS'); }
   g(0, 'ENDTAB');
   g(0, 'TABLE'); g(2, 'STYLE'); g(70, 1); g(0, 'STYLE'); g(2, 'STANDARD'); g(70, 0); g(40, 0); g(41, 1); g(50, 0); g(71, 0); g(42, 12); g(3, 'arial.ttf'); g(4, ''); g(0, 'ENDTAB');
   g(0, 'TABLE'); g(2, 'DIMSTYLE'); g(70, 1);

@@ -72,7 +72,7 @@ function persist() {
 function ensureDom() {
   if ($('tlWiz')) return;
   const d = document.createElement('div'); d.id = 'tlWiz'; d.hidden = true;
-  d.innerHTML = '<div class="tl-head"><b>Tlocrt → DXF</b><span class="tl-ver">v2.84</span><span id="tlFloor"></span><div class="tl-steps" id="tlSteps"></div><button id="tlClose" class="tl-btn">✕ Zatvori</button></div><div id="tlFlow" hidden style="background:#12305e;padding:6px 12px"></div>' +
+  d.innerHTML = '<div class="tl-head"><b>Tlocrt → DXF</b><span class="tl-ver">v2.85</span><span id="tlFloor"></span><div class="tl-steps" id="tlSteps"></div><button id="tlClose" class="tl-btn">✕ Zatvori</button></div><div id="tlFlow" hidden style="background:#12305e;padding:6px 12px"></div>' +
     '<div class="tl-body"><div class="tl-view"><canvas id="tlCanvas"></canvas><div class="tl-zoom"><button id="tlFit" class="tl-btn" title="Prikaži sve">⤢</button></div><div id="tlWallPop" class="tl-pop" hidden></div></div><div class="tl-panel" id="tlPanel"></div></div>';
   document.body.appendChild(d);
   $('tlClose').onclick = close; $('tlFit').onclick = () => { W.view = null; draw(); };
@@ -574,7 +574,7 @@ function exportPlanPdf(out, opt) {
   const P = window.IzmjeraPdf; if (!P) throw Error('Nedostaje izmjera-pdf.js');
   const f = P.f, set = P.settings(), doc = new P.Doc();
   const L = { zid: doc.layer('Zidovi'), otv: doc.layer('Otvori'), kote: doc.layer('Kote'), opis: doc.layer('Opisi'), stub: doc.layer('Stubište'), ost: doc.layer('Ostalo'), nad: doc.layer('Nadvoji') };
-  const grp = { ZIDOVI_NOSIVI: 'zid', ZIDOVI_PREGRADNI: 'zid', DIMNJAK: 'zid', STUPOVI: 'zid', OTVORI_VRATA: 'otv', OTVORI_PROZORI: 'otv', KOTE: 'kote', OPISI: 'opis', STUBISTE: 'stub', STUBISTE_CRTKANO: 'stub', POGLED: 'ost', OSTALO: 'ost', NADVOJ: 'nad', KROVNI_PROZOR: 'nad', OTVOR_PLOCA: 'nad', TERASA: 'nad', GREDE: 'nad', PRAG: 'ost' };
+  const grp = { ZIDOVI_NOSIVI: 'zid', ZIDOVI_PREGRADNI: 'zid', DIMNJAK: 'zid', STUPOVI: 'zid', OTVORI_VRATA: 'otv', OTVORI_PROZORI: 'otv', GARAZNA_VRATA: 'nad', KOTE: 'kote', OPISI: 'opis', STUBISTE: 'stub', STUBISTE_CRTKANO: 'stub', POGLED: 'ost', OSTALO: 'ost', NADVOJ: 'nad', KROVNI_PROZOR: 'nad', OTVOR_PLOCA: 'nad', TERASA: 'nad', GREDE: 'nad', PRAG: 'ost' };
   const style = { zid: '0 0 0 RG 0.7 w', otv: '0.05 0.05 0.05 RG 0.35 w', kote: '0.12 0.25 0.62 RG 0.25 w', opis: '0 0 0 RG 0.3 w', stub: '0 0 0 RG 0.3 w', ost: '0.45 0.45 0.45 RG 0.3 w', nad: '0.05 0.05 0.05 RG 0.3 w [2.5 1.5] 0 d' };
   const tcol = { zid: '0 g', otv: '0 g', kote: '0.12 0.25 0.62 rg', opis: '0 g', stub: '0 g', ost: '0.4 g' };
   // granice crteža (cm, y prema dolje)
@@ -799,9 +799,9 @@ function drawRaw() {
   const pts = (W.floor.items || []).flatMap(o => o.pts || []); if (!pts.length) return;
   if (!W.view) fitTo(C.bbox(pts), 30);
   cx.lineCap = 'round';
-  for (const o of W.floor.items) { if (!o.pts || o.pts.length < 2) continue; cx.strokeStyle = o.layer === 'nacrt' ? '#334155' : o.layer === 'kote' ? '#2563eb' : '#c03945'; cx.lineWidth = 1.4; cx.beginPath(); const a = tr(o.pts[0]); cx.moveTo(a.x, a.y); for (const p of o.pts) { const b = tr(p); cx.lineTo(b.x, b.y); } cx.stroke(); }
+  for (const o of W.floor.items) { if (!o.pts || o.pts.length < 2) continue; cx.strokeStyle = o.layer === 'nacrt' ? '#334155' : o.layer === 'kote' ? '#2563eb' : '#c03945'; cx.lineWidth = 1.4; cx.setLineDash(o.dash ? [6, 4] : []); cx.beginPath(); const a = tr(o.pts[0]); cx.moveTo(a.x, a.y); for (const p of o.pts) { const b = tr(p); cx.lineTo(b.x, b.y); } cx.stroke(); } cx.setLineDash([]);
 }
-const LCOL = { POGLED: '#64748b', ZIDOVI_NOSIVI: '#0b1220', ZIDOVI_PREGRADNI: '#475569', OTVORI_VRATA: '#16a34a', OTVORI_PROZORI: '#0891b2', KOTE: '#2563eb', OPISI: '#dc2626', STUBISTE: '#a21caf', STUBISTE_CRTKANO: '#a21caf', DIMNJAK: '#b45309', OSTALO: '#cbd5e1', PROVJERA: '#f97316', NADVOJ: '#16a34a', KROVNI_PROZOR: '#0891b2', OTVOR_PLOCA: '#0f766e', TERASA: '#65a30d', GREDE: '#b91c1c', PRAG: '#9333ea', SKICA: null };
+const LCOL = { POGLED: '#64748b', ZIDOVI_NOSIVI: '#0b1220', ZIDOVI_PREGRADNI: '#475569', OTVORI_VRATA: '#16a34a', GARAZNA_VRATA: '#16a34a', OTVORI_PROZORI: '#0891b2', KOTE: '#2563eb', OPISI: '#dc2626', STUBISTE: '#a21caf', STUBISTE_CRTKANO: '#a21caf', DIMNJAK: '#b45309', OSTALO: '#cbd5e1', PROVJERA: '#f97316', NADVOJ: '#16a34a', KROVNI_PROZOR: '#0891b2', OTVOR_PLOCA: '#0f766e', TERASA: '#65a30d', GREDE: '#b91c1c', PRAG: '#9333ea', SKICA: null };
 function drawResult() {
   const o = W.out; if (!W.view) { const b = o.bounds; fitTo({ x0: b.x0 - 160, y0: b.y0 - 160, x1: b.x1 + 160, y1: b.y1 + 160 }, 16); }
   const s = W.view.s;
@@ -812,7 +812,7 @@ function drawResult() {
   cx.fillStyle = '#fff'; for (const h of o.holes) { const a = tr({ x: h.x0, y: h.y0 }); cx.fillRect(a.x, a.y, (h.x1 - h.x0) * s, (h.y1 - h.y0) * s); } }
   for (const p of o.polys) { const c = LCOL[p.layer]; if (!c) continue; cx.strokeStyle = c; cx.lineWidth = 1; cx.beginPath(); p.pts.forEach((q, i) => { const a = tr(q); i ? cx.lineTo(a.x, a.y) : cx.moveTo(a.x, a.y); }); cx.stroke(); }
   for (const d of o.dims || []) { const c = LCOL[d.layer]; if (!c) continue; cx.strokeStyle = c; cx.lineWidth = 1.1; for (const l of d.lines) { const a = tr(l.a), b = tr(l.b); cx.beginPath(); cx.moveTo(a.x, a.y); cx.lineTo(b.x, b.y); cx.stroke(); } cx.textAlign = 'center'; for (const t of d.texts) { const p = tr(t); cx.save(); cx.translate(p.x, p.y); cx.rotate(-(t.rot || 0) * Math.PI / 180); cx.fillStyle = c; cx.font = Math.max(8, t.h * s) + 'px Arial'; cx.fillText(t.text, 0, 0); cx.restore(); } cx.textAlign = 'start'; }
-  for (const l of o.lines) { const c = LCOL[l.layer]; if (!c) continue; const a = tr(l.a), b = tr(l.b); cx.strokeStyle = c; cx.lineWidth = l.layer.startsWith('ZIDOVI') ? 1.8 : 1.1; if (/^(STUBISTE_CRTKANO|NADVOJ|KROVNI_PROZOR|OTVOR_PLOCA|TERASA|GREDE)$/.test(l.layer)) cx.setLineDash([6, 4]); cx.beginPath(); cx.moveTo(a.x, a.y); cx.lineTo(b.x, b.y); cx.stroke(); cx.setLineDash([]); }
+  for (const l of o.lines) { const c = LCOL[l.layer]; if (!c) continue; const a = tr(l.a), b = tr(l.b); cx.strokeStyle = c; cx.lineWidth = l.layer.startsWith('ZIDOVI') ? 1.8 : 1.1; if (/^(STUBISTE_CRTKANO|NADVOJ|KROVNI_PROZOR|OTVOR_PLOCA|TERASA|GREDE|GARAZNA_VRATA)$/.test(l.layer)) cx.setLineDash([6, 4]); cx.beginPath(); cx.moveTo(a.x, a.y); cx.lineTo(b.x, b.y); cx.stroke(); cx.setLineDash([]); }
   for (const a of o.arcs) { const c = tr(a.c), f = Math.atan2(a.from.y - a.c.y, a.from.x - a.c.x), t = Math.atan2(a.to.y - a.c.y, a.to.x - a.c.x); let d = t - f; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI; cx.strokeStyle = LCOL[a.layer]; cx.lineWidth = 1.1; cx.beginPath(); cx.arc(c.x, c.y, a.r * s, f, f + d, d < 0); cx.stroke(); }
   for (const c of o.circles) { const p = tr(c.c); cx.strokeStyle = LCOL[c.layer]; cx.beginPath(); cx.arc(p.x, p.y, c.r * s, 0, 7); cx.stroke(); }
   cx.textAlign = 'center'; cx.textBaseline = 'alphabetic';

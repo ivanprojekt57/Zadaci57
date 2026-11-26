@@ -93,6 +93,63 @@ function css() { if ($('hkCss')) return; const c = document.createElement('style
 .hk-k input{flex:1;border:1px dashed #94a3b8;border-radius:8px;padding:8px;font-size:15px}.hk-par{display:block;font:700 11px Arial;color:#64748b}
 .hk-add{display:flex;gap:6px;margin:0 0 12px}.hk-add input{flex:1;padding:13px;border:1px solid #d3deec;border-radius:12px;font-size:16px;background:#fff;color:#0f2a4a}.hk-add button{padding:0 16px;border:0;border-radius:12px;background:#15803d;color:#fff;font:800 15px Arial;white-space:nowrap}
 .hk-pr{display:flex;align-items:center;gap:10px;background:#fffbeb;border:1px dashed #f59e0b;border-radius:10px;padding:8px 10px;margin:0 0 4px}.hk-pr .tx{flex:1;font:600 14px Arial;color:#78350f}.hk-pr button{border:0;border-radius:8px;padding:8px 12px;font:700 13px Arial}
+
+/* v2.85: kartica Zadaci kao ploča po danima (pauspapir) – isti izgled kao Zadaci 57 na računalu */
+@font-face{font-family:\'Barlow\';font-style:normal;font-display:swap;font-weight:500;src:url(fonts/barlow-latin-ext-500-normal.woff2) format(\'woff2\');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:\'Barlow\';font-style:normal;font-display:swap;font-weight:500;src:url(fonts/barlow-latin-500-normal.woff2) format(\'woff2\');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:\'Barlow\';font-style:normal;font-display:swap;font-weight:600;src:url(fonts/barlow-latin-ext-600-normal.woff2) format(\'woff2\');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:\'Barlow\';font-style:normal;font-display:swap;font-weight:600;src:url(fonts/barlow-latin-600-normal.woff2) format(\'woff2\');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:\'Barlow\';font-style:normal;font-display:swap;font-weight:700;src:url(fonts/barlow-latin-ext-700-normal.woff2) format(\'woff2\');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:\'Barlow\';font-style:normal;font-display:swap;font-weight:700;src:url(fonts/barlow-latin-700-normal.woff2) format(\'woff2\');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:\'Barlow Semi Condensed\';font-style:normal;font-display:swap;font-weight:600;src:url(fonts/barlow-semi-condensed-latin-ext-600-normal.woff2) format(\'woff2\');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:\'Barlow Semi Condensed\';font-style:normal;font-display:swap;font-weight:600;src:url(fonts/barlow-semi-condensed-latin-600-normal.woff2) format(\'woff2\');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:\'Barlow Semi Condensed\';font-style:normal;font-display:swap;font-weight:700;src:url(fonts/barlow-semi-condensed-latin-ext-700-normal.woff2) format(\'woff2\');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:\'Barlow Semi Condensed\';font-style:normal;font-display:swap;font-weight:700;src:url(fonts/barlow-semi-condensed-latin-700-normal.woff2) format(\'woff2\');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+#home.hk-pz #homeMain{background-color:#f1f2f0;background-image:linear-gradient(rgba(35,41,47,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(35,41,47,.055) 1px,transparent 1px),linear-gradient(rgba(35,41,47,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(35,41,47,.12) 1px,transparent 1px);background-size:var(--pzc,24px) var(--pzc,24px),var(--pzc,24px) var(--pzc,24px),var(--pzm,96px) var(--pzm,96px),var(--pzm,96px) var(--pzm,96px);background-position:var(--pzx,0) var(--pzy,0)}
+#hkView.pz{--ink:#23292f;--mut:#69727b;--ln:#a3abb3;--or:#ef7d1a;--pen:#0f7c8c;--red:#c8331f;--sep:rgba(35,41,47,.55);--bx:rgba(35,41,47,.32);display:flex;flex-direction:column;overflow:hidden;padding:0 2px 6px;color:var(--ink);font:500 15px Barlow,Arial,sans-serif}
+#hkView.pz *{font-family:Barlow,Arial,sans-serif}#hkView.pz .cn,#hkView.pz .pz-ax,#hkView.pz .pz-dim em,#hkView.pz .pz-lg b,#hkView.pz .pz-sas b,#hkView.pz .pz-od,#hkView.pz .pz-sub{font-family:"Barlow Semi Condensed",Barlow,Arial,sans-serif}
+.pz-add{display:flex;align-items:center;gap:12px;margin:0 0 4px;flex:none}.pz-add input{flex:1;min-width:0;border:0;border-bottom:2px solid var(--ln);background:transparent;padding:11px 2px;font:500 17px Barlow,Arial;color:var(--ink);outline:0;border-radius:0}
+.pz-add button{border:0;background:var(--ink);color:#fff;font:700 15px "Barlow Semi Condensed",Arial;border-radius:8px;padding:11px 16px;white-space:nowrap}
+.pz-note{color:var(--mut);font-size:13px;margin:2px 2px 4px;flex:none}
+.pz-bd{flex:1;min-height:420px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+.pz-tr{height:100%;display:flex;flex-direction:column}
+.pz-dim{position:relative;height:28px;flex:none}.pz-dim:before{content:'';position:absolute;left:0;right:0;top:14px;border-top:1.5px solid var(--ln)}
+.pz-dim i{position:absolute;top:6px;height:16px;border-left:1.5px solid var(--ln)}.pz-dim i:after{content:'';position:absolute;left:-6px;top:2px;width:12px;border-top:1.5px solid var(--ln);transform:rotate(-45deg)}
+.pz-dim em{position:absolute;top:-3px;left:50%;transform:translateX(-50%);font-style:normal;font-weight:600;font-size:13px;color:var(--mut);background:#f1f2f0;padding:0 8px;white-space:nowrap}
+.pz-cols{flex:1;min-height:0;display:flex}
+.pz-col{flex:none;display:flex;flex-direction:column;min-height:0;border-left:2px solid var(--sep);background:rgba(255,255,255,.18);scroll-snap-align:start}.pz-col:last-child{border-right:2px solid var(--sep)}
+.pz-col.we{background:repeating-linear-gradient(135deg,rgba(35,41,47,.045) 0 2px,transparent 2px 11px),rgba(255,255,255,.2)}
+.pz-col.td{background:rgba(239,125,26,.07);border-left:3px solid var(--or)}.pz-col.td+.pz-col{border-left:3px solid var(--or)}
+.pz-ax{display:flex;align-items:center;gap:10px;padding:10px 10px 12px;border-bottom:2px solid var(--sep);flex:none}.pz-col.td .pz-ax{border-bottom-color:var(--or)}
+.pz-ax .b{width:42px;height:42px;border-radius:50%;border:2px solid var(--mut);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;background:#f1f2f0;flex:none}
+.pz-col.td .pz-ax .b{background:var(--or);border-color:var(--or);color:#fff}.pz-col.we .pz-ax .b{border-style:dashed}
+.pz-ax .n{font-weight:700;font-size:17px;line-height:1.05;min-width:0}.pz-ax .n small{display:block;font:500 13px Barlow,Arial;color:var(--mut)}.pz-col.we .pz-ax .n{color:var(--mut)}.pz-ax .c{margin-left:auto;font:600 13px Barlow,Arial;color:var(--mut)}
+.pz-sc{flex:1;min-height:0;overflow-y:auto;padding:12px 10px 10px;scrollbar-width:thin}
+.pz-l{min-height:56px}.pz-l.od{min-height:0;margin-bottom:6px;padding-bottom:6px;border-bottom:1.5px dashed rgba(200,51,31,.45)}
+.pz-od{font-weight:700;font-size:13px;color:var(--red);margin:0 0 6px}
+.pz-sub{display:flex;gap:6px;font-weight:600;font-size:13.5px;color:var(--mut);margin:12px 0 8px;padding-top:8px;border-top:1.5px dashed var(--ln)}
+.pz-card{position:relative;border:1.5px solid var(--bx);border-radius:4px;padding:11px 10px 11px 42px;margin:0 0 10px;background:#fff;min-height:52px;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.pz-card[data-v]{border-left-width:4px;padding-left:40px}.pz-card.a1{padding-right:48px}.pz-card.a2{padding-right:86px}.pz-card.a3{padding-right:124px}
+.pz-card .ck{position:absolute;left:10px;top:12px;width:22px;height:22px;border:1.8px solid var(--ink);border-radius:3px;background:#fff;padding:0;margin:0}.pz-card[data-v] .ck{left:8px}
+.pz-card b{display:block;font-weight:600;font-size:15.5px;line-height:1.28;word-wrap:break-word}
+.pz-card .par{display:block;font-weight:600;font-size:12px;color:var(--mut)}
+.pz-card .m{margin-top:5px;font-size:13px;color:var(--mut);display:flex;flex-wrap:wrap;gap:3px 9px;align-items:center}.pz-card .m .h{color:var(--pen);font-weight:700}.pz-card .m .d{font-weight:600}
+.pz-card .m .pr{color:var(--pen);font-weight:600;text-decoration:underline;text-decoration-color:var(--ln);text-underline-offset:3px;background:none;padding:0;border-radius:0}
+.pz-card .m .hk-vp{background:transparent!important;border:1px solid currentColor;border-radius:3px;padding:0 5px;font:700 12px "Barlow Semi Condensed",Arial;margin:0}
+.pz-card .m .wt{background:#fff4e0;color:#a15a00;border:1px solid #e9b45c;border-radius:3px;padding:0 5px;font-weight:700}
+.pz-card .k{display:flex;align-items:center;gap:7px;margin-top:8px;font-weight:600;font-size:12px;color:var(--mut)}.pz-card .k i{flex:1;border-top:1.5px dashed var(--ln)}
+.pz-card .ac{position:absolute;right:8px;top:8px;display:flex;gap:4px}.pz-card .ac button{border:1.5px solid var(--ln);border-radius:6px;background:#fff;min-width:34px;height:32px;font:700 13px Barlow,Arial;color:var(--ink);padding:0 6px}
+.pz-card.od{border-color:rgba(200,51,31,.55);background:#fff8f6}.pz-card.od .m .d{color:var(--red);font-weight:700}.pz-card.vs{border-style:dashed}
+.pz-card[data-v=etazni]{border-left-color:#2f6fd0}.pz-card[data-v=legalizacija]{border-left-color:#c4610e}.pz-card[data-v=energetski]{border-left-color:#2f8f5b}.pz-card[data-v=statika]{border-left-color:#69727b}.pz-card[data-v=procjena]{border-left-color:#c8331f}.pz-card[data-v=savjetovanje]{border-left-color:#0f7c8c}.pz-card[data-v=nadzor]{border-left-color:#d9822b}.pz-card[data-v=tlocrt]{border-left-color:#4b5d70}.pz-card[data-v=troskovnik]{border-left-color:#c2577f}
+.pz-card.src{opacity:.3}.pz-ghost{position:fixed!important;z-index:9998;pointer-events:none;box-shadow:0 14px 30px rgba(35,41,47,.28);transform:rotate(-1.2deg);margin:0!important}
+.pz-ph{border:2px dashed var(--ink);border-radius:4px;margin:0 0 10px;background:rgba(255,255,255,.55)}
+.pz-emp{border:1.5px dashed var(--or);border-radius:4px;padding:22px 10px;text-align:center;color:#b4560a;font-size:14px;line-height:1.45}
+.pz-ft{display:flex;align-items:stretch;border:1.5px solid var(--ln);margin-top:10px;min-height:58px;flex:none;background:rgba(241,242,240,.94)}
+.pz-lg{flex:1;min-width:0;display:flex;align-items:center;gap:2px;padding:0 10px;border-right:1.5px solid var(--ln);overflow-x:auto;scrollbar-width:none}.pz-lg b{font-weight:700;font-size:13px;color:var(--mut);margin-right:6px}
+.pz-lg button{display:flex;align-items:center;gap:5px;padding:7px 9px;border-radius:6px;border:0;background:transparent;font:600 14px Barlow,Arial;white-space:nowrap;color:var(--ink)}.pz-lg button span{color:var(--mut);font-weight:700}.pz-lg button.on{box-shadow:inset 0 0 0 1.5px var(--ink)}
+.pz-sas{display:flex}.pz-sas>*{padding:6px 14px;border:0;border-right:1.5px solid var(--ln);background:transparent;display:flex;flex-direction:column;justify-content:center;font:500 12px Barlow,Arial;color:var(--mut);text-align:left}.pz-sas>*:last-child{border-right:0}
+.pz-sas b{font-weight:700;font-size:17px;color:var(--ink)}.pz-sas .r b{color:var(--red)}
+.pz-dn{flex:none;max-height:38%;overflow-y:auto;margin-top:8px}
 `; document.head.appendChild(c); }
 function tabsBar() { const main = $('homeMain'); if (!main) return null; let bar = $('hkTabs'); if (!bar) { bar = document.createElement('div'); bar.id = 'hkTabs'; } const head = main.querySelector('.home-head'); const anchor = $('homeMeet') || $('homeContinue');
   if (anchor && bar.nextElementSibling !== anchor) anchor.before(bar);
@@ -143,7 +200,7 @@ function setStatus(pid, st) { const H = HM(), T = TJ(); if (!H || !T) return; le
 function view() { let v = $('hkView'); if (!v) { v = document.createElement('div'); v.id = 'hkView'; const pl = $('projectlist'); if (pl) pl.after(v); } return v; }
 function render() { const H = $('home'); if (!H || !$('homeMain')) return; css(); { const T = TJ(); if (T && !T._k3) { const o0 = T.ignoreDone; T.ignoreDone = () => tab() === 'izm' || (o0 ? o0() : false); T._k3 = 1; } } /* v2.40: u Izmjerama sve izmjere, i završene */ const t = tab(); H.classList.remove('hk-reg'); H.classList.toggle('hk-izm', t === 'izm'); H.classList.toggle('hk-pro', t === 'pro'); H.classList.toggle('hk-zad', t === 'zad'); side(H); { const np = $('newproject'); if (np && t === 'izm') np.textContent = '＋ Nova izmjera'; }
   tabsBar(); const v = view(); const q = $('projectSearch'); if (q) q.placeholder = t === 'zad' ? 'Pretraži zadatke…' : 'Pretraži: naziv, broj, adresa, investitor…';
-  if (t === 'zad') renderZad(v); else if (t === 'pro') renderPro(v);
+  H.classList.remove('hk-pz'); v.classList.remove('pz'); if (t === 'zad') renderZad(v); else if (t === 'pro') renderPro(v);
 }
 /* ---------- registar (zbijeno, po statusu) ---------- */
 const GR = [['sastanak', '📅 SASTANCI'], ['ponuda', '⏳ ČEKA ODGOVOR'], ['izmjera', '✅ PRIHVAĆENO'], ['izrada', '🛠 U IZRADI'], ['', '• BEZ STATUSA'], ['predano', '📦 PREDANO / OBAVLJENO'], ['odbijeno', '✖ ODBIJENO']];
@@ -251,7 +308,8 @@ function itEdit(id) { const R = RG(); if (!R) return; const it0 = id ? R.item(id
       R.saveItem(Object.assign({}, x)); ov.remove(); render(); toast(isNew ? '＋ Projekt dodan – ide u tablicu' : '✓ Spremljeno – ide u tablicu'); } }); }
 /* ---------- zadaci ---------- */
 const openDone = { v: false };
-function renderZad(v) { const q = (($('projectSearch') || {}).value || '').trim().toLocaleLowerCase('hr'), t0 = today(), t1 = addD(t0, 1), wk = addD(t0, 7);
+function renderZad(v) { { const W = v.clientWidth || ((($('homeMain') || {}).clientWidth || 0) - 60); if (W >= 600) return renderZadB(v, W); }
+  const q = (($('projectSearch') || {}).value || '').trim().toLocaleLowerCase('hr'), t0 = today(), t1 = addD(t0, 1), wk = addD(t0, 7);
   const ps = regPs(), byB = {}; ps.forEach(p => { byB[pKey(p)] = p; });
   const all = getZ().filter(x => !x.del && (!q || (x.t + ' ' + (x.b || '') + ' ' + (x.n || '')).toLocaleLowerCase('hr').includes(q)));
   const vsx = []; all.filter(x => !x.done).forEach(x => (x.k || []).forEach((k, i) => { if (k.d && !k.done) vsx.push({ id: x.id + '#' + i, vs: true, pid: x.id, ki: i, t: k.t, d: k.d, b: x.b, v: x.v, par: x.t, kn: x.k.length }); }));
@@ -280,6 +338,84 @@ function renderZad(v) { const q = (($('projectSearch') || {}).value || '').trim(
     e.querySelector('.tx').onclick = ev => { if (ev.target.closest('.pr')) { const p = regPs().find(z => pKey(z) === ev.target.closest('.pr').dataset.b); if (p) itEdit(p.id); return; } zDialog(x()); };
     e.querySelectorAll('[data-u]').forEach(b => b.onclick = () => openUri(b.dataset.u));
     e.querySelectorAll('[data-later]').forEach(b => b.onclick = () => { const o = x(); if (!o) return; const t = today(), base = o.d && o.d > t ? o.d : t, d0 = o.d; o.d = addD(base, 1); zSave(o); zUndo('Odgođeno na ' + dTxt(o.d), () => { const q = x(); if (q) { q.d = d0; zSave(q); } }); }); }); }
+
+/* ---------- v2.85: zadaci kao ploča po danima (tablet i računalo) ---------- */
+let zFv = ''; try { zFv = localStorage.getItem('izmjera-zad-fv') || ''; } catch (e) { }
+const DANF = ['Nedjelja', 'Ponedjeljak', 'Utorak', 'Srijeda', 'Četvrtak', 'Petak', 'Subota'];
+function isoW(s) { const d = new Date(s + 'T12:00:00'); d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7); const w1 = new Date(d.getFullYear(), 0, 4); return 1 + Math.round(((d - w1) / 864e5 - 3 + (w1.getDay() + 6) % 7) / 7); }
+function pzCard(x, byB, sd, od) { const p = x.b && byB[x.b], tel = p && p.tel, pv0 = zPos(x, p)[0], K = x.k || [], kd = K.filter(k => k.done).length, ac = [];
+  if (!x.vs) { if (x.u) ac.push('<button type="button" data-u="' + esc(x.u) + '" title="Otvori poveznicu">🔗</button>'); if ((x.v === 'nazvati' || x.v === 'sastanak') && tel) ac.push('<button type="button" data-u="tel:' + esc(tel.replace(/[^\d+]/g, '')) + '" title="Nazovi">📞</button>');
+    if (x.v === 'mail' && p && p.mail) ac.push('<button type="button" data-u="mailto:' + esc(p.mail) + '" title="Pošalji mail">✉</button>'); ac.push('<button type="button" data-later="1" title="Odgodi za 1 dan">+1</button>'); }
+  const wd = x.w ? Math.max(0, Math.round((new Date(today() + 'T12:00:00') - new Date(x.w + 'T12:00:00')) / 864e5)) : 0;
+  const m = [x.h ? '<span class="h">' + esc(x.h) + '</span>' : '', sd && x.d ? '<span class="d">' + dTxt(x.d) + '</span>' : '', x.w ? '<span class="wt">⏳ čekaš ' + wd + ' d</span>' : '', ZV[x.v] && x.v !== 'ostalo' ? '<span>' + ZV[x.v][0] + ' ' + ZV[x.v][1] + '</span>' : '', zVp(x, p),
+    x.b ? '<span class="pr" data-b="' + esc(x.b) + '">' + (/^r/.test(x.b) ? '' : esc(x.b) + ' ') + (p ? esc(p.name.length > 30 ? p.name.slice(0, 30).replace(/\s+\S*$/, '') + '…' : p.name) : '') + '</span>' : '', x.rp ? '<span>🔁 ' + (RP.find(r => r[0] === x.rp) || ['', x.rp])[1] + '</span>' : '', x.n ? '<span>' + esc(x.n).slice(0, 50) + '</span>' : ''].filter(Boolean).join('');
+  return '<div class="pz-card' + (x.vs ? ' vs' : '') + (od ? ' od' : '') + (ac.length ? ' a' + Math.min(3, ac.length) : '') + '" data-id="' + esc(x.vs ? x.pid : x.id) + '"' + (x.vs ? ' data-ki="' + x.ki + '"' : ' data-dt="' + (x.d || '') + '" data-key="' + x._k + '"') + (pv0 ? ' data-v="' + pv0 + '"' : '') + '><button type="button" class="ck" title="Gotovo"></button>' +
+    (x.vs ? '<span class="par">' + esc(x.par).slice(0, 34) + ' › korak ' + (x.ki + 1) + '/' + x.kn + '</span>' : '') + '<b>' + esc(x.t) + '</b>' + (m ? '<div class="m">' + m + '</div>' : '') + (K.length && !x.vs ? '<div class="k">koraci<i></i>' + kd + '/' + K.length + '</div>' : '') + (ac.length ? '<div class="ac">' + ac.slice(-3).join('') + '</div>' : '') + '</div>'; }
+function renderZadB(v, W) { const H = $('home'), M = $('homeMain'); H.classList.add('hk-pz'); v.classList.add('pz');
+  const q = (($('projectSearch') || {}).value || '').trim().toLocaleLowerCase('hr'), t0 = today(), last = addD(t0, 6), ps = regPs(), byB = {}; ps.forEach(p => { byB[pKey(p)] = p; });
+  const all = getZ().filter(x => !x.del && (!q || (x.t + ' ' + (x.b || '') + ' ' + (x.n || '')).toLocaleLowerCase('hr').includes(q))), vsx = [];
+  all.filter(x => !x.done).forEach(x => (x.k || []).forEach((k, i) => { if (k.d && !k.done) vsx.push({ id: x.id + '#' + i, vs: true, pid: x.id, ki: i, t: k.t, d: k.d, b: x.b, v: x.v, p: x.p, par: x.t, kn: x.k.length }); }));
+  const open = all.filter(x => !x.done).concat(vsx), cnt = {}; open.forEach(x => { const k = ZV[x.v] ? x.v : 'ostalo'; cnt[k] = (cnt[k] || 0) + 1; }); if (zFv && !cnt[zFv]) zFv = '';
+  const vis = zFv ? open.filter(x => (ZV[x.v] ? x.v : 'ostalo') === zFv) : open, srt = L => { L.forEach((x, i) => x._k = x.vs ? 100000 + i : zKey(x, i)); return L.sort((a, b) => (a.d || '').localeCompare(b.d || '') || a._k - b._k); };
+  const nv = Math.max(2, Math.min(8, Math.floor(W / 230))), cw = Math.floor((W - 6) / nv), days = [0, 1, 2, 3, 4, 5, 6].map(i => addD(t0, i)), dn0 = s => new Date(s + 'T12:00:00');
+  const sx = v.querySelector('.pz-bd') ? v.querySelector('.pz-bd').scrollLeft : 0, sc = {}; v.querySelectorAll('.pz-sc').forEach(e => sc[e.dataset.c] = e.scrollTop);
+  let h = '<div class="pz-add"><input id="hkQ" placeholder="Novi zadatak za danas… (Enter)"><button type="button" id="hkNew">＋ Zadatak</button></div>';
+  if (!(window.IzmjeraRegistar && IzmjeraRegistar.on())) h += '<p class="pz-note">Poveži registar da se zadaci vide i na mobitelu i računalu.</p>';
+  h += '<div class="pz-bd"><div class="pz-tr" style="width:' + (8 * cw + 2) + 'px"><div class="pz-dim" style="width:' + (7 * cw) + 'px">' + [0, 1, 2, 3, 4, 5, 6, 7].map(i => '<i style="left:' + (i * cw) + 'px"></i>').join('') + '<em style="left:' + (Math.min(7, nv) * cw / 2) + 'px">tjedan ' + isoW(t0) + ' · 7 dana · ' + vis.filter(x => x.d && x.d >= t0 && x.d <= last).length + ' zadataka' + (nv < 7 ? ' · povuci ulijevo za ostale dane' : '') + '</em></div><div class="pz-cols">';
+  days.forEach((d, i) => { const D = dn0(d), g = D.getDay(), we = g === 0 || g === 6, L = srt(vis.filter(x => x.d === d)), OD = i === 0 ? srt(vis.filter(x => x.d && x.d < t0)) : [], n = L.length + OD.length;
+    h += '<div class="pz-col' + (i === 0 ? ' td' : '') + (we ? ' we' : '') + '" style="width:' + cw + 'px"><div class="pz-ax"><span class="b">' + D.getDate() + '</span><span class="n">' + (i === 0 ? 'Danas' : i === 1 ? 'Sutra' : DANF[g]) + '<small>' + (i < 2 ? DANF[g].toLowerCase() : D.getDate() + '.' + (D.getMonth() + 1) + '.') + '</small></span><span class="c">' + n + '</span></div><div class="pz-sc" data-c="' + i + '">' +
+      (OD.length ? '<div class="pz-od">Zakašnjelo · ' + OD.length + '</div><div class="pz-l od" data-dt="' + d + '">' + OD.map(x => pzCard(x, byB, true, true)).join('') + '</div>' : '') +
+      '<div class="pz-l" data-dt="' + d + '">' + L.map(x => pzCard(x, byB)).join('') + (i === 0 && !n ? '<div class="pz-emp">Danas je čisto.<br>Zadrži prst na zadatku<br>i povuci ga ovamo.</div>' : '') + '</div></div></div>'; });
+  const LT = srt(vis.filter(x => x.d && x.d > last)), ND = srt(vis.filter(x => !x.d));
+  h += '<div class="pz-col" style="width:' + cw + 'px"><div class="pz-ax"><span class="b">…</span><span class="n">Kasnije<small>od ' + dTxt(addD(t0, 7)) + '</small></span><span class="c">' + (LT.length + ND.length) + '</span></div><div class="pz-sc" data-c="7"><div class="pz-l" data-dt="later">' + LT.map(x => pzCard(x, byB, true)).join('') + '</div><div class="pz-sub">Bez datuma <span>' + ND.length + '</span></div><div class="pz-l" data-dt="">' + ND.map(x => pzCard(x, byB)).join('') + '</div></div></div></div></div></div>';
+  const dn = all.filter(x => x.done && (x.doneAt || 0) > Date.now() - 7 * 864e5).sort((a, b) => (b.doneAt || 0) - (a.doneAt || 0)), odn = open.filter(x => x.d && x.d < t0).length;
+  h += '<div class="pz-ft"><div class="pz-lg"><b>Legenda</b><button type="button" data-fv="" class="' + (zFv ? '' : 'on') + '">Sve<span>' + open.length + '</span></button>' + Object.keys(ZV).filter(k => cnt[k]).map(k => '<button type="button" data-fv="' + k + '" class="' + (zFv === k ? 'on' : '') + '">' + ZV[k][0] + ' ' + ZV[k][1] + '<span>' + cnt[k] + '</span></button>').join('') + '</div><div class="pz-sas"><div>Otvoreno<b>' + all.filter(x => !x.done).length + '</b></div>' + (odn ? '<div class="r">Zakašnjelo<b>' + odn + '</b></div>' : '') + '<button type="button" data-dn="1">Gotovo, 7 dana<b>' + dn.length + (openDone.v ? ' ▾' : ' ▸') + '</b></button></div></div>';
+  if (openDone.v && dn.length) h += '<div class="pz-dn">' + dn.map(x => zRow(x, byB, 'done')).join('') + '</div>';
+  v.innerHTML = h; const bd = v.querySelector('.pz-bd'); bd.scrollLeft = sx; v.querySelectorAll('.pz-sc').forEach(e => { if (sc[e.dataset.c]) e.scrollTop = sc[e.dataset.c]; });
+  const grid = () => { if (!M) return; const r = bd.getBoundingClientRect(), m = M.getBoundingClientRect(), c = cw / Math.max(6, Math.round(cw / 24)); M.style.setProperty('--pzc', c + 'px'); M.style.setProperty('--pzm', cw + 'px'); M.style.setProperty('--pzx', (r.left - m.left - (bd.scrollLeft % cw)) + 'px'); M.style.setProperty('--pzy', (r.top - m.top + 28) + 'px'); };
+  grid(); bd.addEventListener('scroll', grid, { passive: true });
+  const t0q = t0, qi = v.querySelector('#hkQ'); qi.addEventListener('keydown', e => { if (e.key === 'Enter' && qi.value.trim()) zSave({ id: zid(), t: qi.value.trim(), v: guessV(qi.value), d: t0q, done: false }); });
+  v.querySelector('#hkNew').onclick = () => { const t = qi.value.trim(); if (t) { zDialog({ id: zid(), t, v: guessV(t), b: '', d: t0q, h: '', n: '', rp: '', u: '', done: false }); qi.value = ''; } else zDialog(null); };
+  v.querySelectorAll('[data-fv]').forEach(b => b.onclick = () => { zFv = b.dataset.fv; try { localStorage.setItem('izmjera-zad-fv', zFv); } catch (e) { } render(); });
+  v.querySelectorAll('[data-dn]').forEach(b => b.onclick = () => { openDone.v = !openDone.v; render(); });
+  v.querySelectorAll('.pz-card').forEach(e => { const id = e.dataset.id, x = () => getZ().find(q => q.id === id);
+    if (e.dataset.ki != null) { e.querySelector('.ck').onclick = () => zStep(id, +e.dataset.ki); e.onclick = ev => { if (!ev.target.closest('button')) zDialog(x()); }; return; }
+    e.querySelector('.ck').onclick = () => { const o = x(); if (!o) return; const was = o.done; zCheck(o, !o.done); if (!was && !o.rp) zUndo('✓ Gotovo', () => { const q = x(); if (q) { q.done = false; q.doneAt = 0; q.dm = Date.now(); zSave(q); } }); };
+    e.onclick = ev => { if (ev.target.closest('button')) return; const pr = ev.target.closest('.pr'); if (pr) { const p = regPs().find(z => pKey(z) === pr.dataset.b); if (p) { itEdit(p.id); return; } } zDialog(x()); };
+    e.querySelectorAll('[data-u]').forEach(b => b.onclick = () => openUri(b.dataset.u));
+    e.querySelectorAll('[data-later]').forEach(b => b.onclick = () => { const o = x(); if (!o) return; const t = today(), base = o.d && o.d > t ? o.d : t, d0 = o.d; o.d = addD(base, 1); zSave(o); zUndo('Odgođeno na ' + dTxt(o.d), () => { const q = x(); if (q) { q.d = d0; zSave(q); } }); }); });
+  pzDrag(v); }
+/* povlačenje na ploči: prstom zadrži pa povuci (i u drugi dan, ploča se sama pomiče ulijevo/udesno); mišem odmah */
+function pzDrag(v) { if (v._pzd) return; v._pzd = 1; let st = null, D = null, sw = false, tmr = null;
+  const pt = e => e.touches && e.touches[0] ? e.touches[0] : (e.changedTouches && e.changedTouches[0] ? e.changedTouches[0] : e);
+  function down(e) { if (!v.classList.contains('pz')) return; const c = e.target.closest('.pz-card'); if (!c || c.dataset.ki != null || e.target.closest('button,input,a') || (e.button && e.button !== 0)) return; const p = pt(e); st = { x: p.clientX, y: p.clientY, c, mouse: !e.touches }; clearTimeout(tmr); if (!st.mouse) tmr = setTimeout(() => { if (st && !D) begin(); }, 420); }
+  function move(e) { if (!st && !D) return; const p = pt(e); if (!D) { const d = Math.hypot(p.clientX - st.x, p.clientY - st.y); if (st.mouse && d > 6) begin(); else if (!st.mouse && d > 9) { clearTimeout(tmr); st = null; return; } if (!D) return; }
+    if (e.cancelable) e.preventDefault(); D.g.style.left = (p.clientX - D.ox) + 'px'; D.g.style.top = (p.clientY - D.oy) + 'px'; D.x = p.clientX; D.y = p.clientY; place(D.x, D.y); }
+  function begin() { const c = st.c, r = c.getBoundingClientRect(), g = c.cloneNode(true); g.classList.add('pz-ghost'); g.style.width = r.width + 'px'; g.style.left = r.left + 'px'; g.style.top = r.top + 'px'; document.body.appendChild(g);
+    const ph = document.createElement('div'); ph.className = 'pz-ph'; ph.style.height = r.height + 'px'; c.after(ph); c.classList.add('src'); D = { g, ph, c, id: c.dataset.id, ox: st.x - r.left, oy: st.y - r.top, x: st.x, y: st.y }; sw = true; document.body.classList.add('zdragging');
+    try { AndroidApp && AndroidApp.vibrate && AndroidApp.vibrate(25); } catch (e) { } try { navigator.vibrate && navigator.vibrate(25); } catch (e) { } loop(); }
+  function loop() { if (!D) return; const bd = v.querySelector('.pz-bd'); if (bd) { const r = bd.getBoundingClientRect(); if (D.x < r.left + 50) bd.scrollLeft -= 14; else if (D.x > r.right - 50) bd.scrollLeft += 14; place(D.x, D.y); } requestAnimationFrame(loop); }
+  function place(x, y) { const col = [...v.querySelectorAll('.pz-col')].find(q => { const r = q.getBoundingClientRect(); return x >= r.left && x < r.right; }); if (!col) return;
+    const zs = [...col.querySelectorAll('.pz-l')]; let z = zs[zs.length - 1]; for (const q of zs) { const r = q.getBoundingClientRect(); if (y < r.bottom + 8) { z = q; break; } } if (z.classList.contains('od')) z = zs[zs.indexOf(z) + 1] || z;
+    const cs = [...z.querySelectorAll('.pz-card:not(.src)')]; let bf = null; for (const q of cs) { const r = q.getBoundingClientRect(); if (y < r.top + r.height / 2) { bf = q; break; } }
+    v.querySelectorAll('.pz-emp').forEach(e => e.style.display = z.contains(e) ? 'none' : '');
+    if (bf) { if (D.ph.nextElementSibling !== bf) z.insertBefore(D.ph, bf); } else if (D.ph.parentNode !== z || (D.ph.nextElementSibling && D.ph.nextElementSibling.classList.contains('pz-card'))) z.appendChild(D.ph);
+    const s = col.querySelector('.pz-sc'), r = s.getBoundingClientRect(); if (y > r.bottom - 40) s.scrollTop += 10; else if (y < r.top + 40) s.scrollTop -= 10; }
+  function up() { clearTimeout(tmr); st = null; const d = D; D = null; if (!d) return; d.g.remove(); d.c.classList.remove('src'); document.body.classList.remove('zdragging'); setTimeout(() => sw = false, 400);
+    const z = d.ph.parentNode, Z = getZ(), x = Z.find(q => q.id === d.id), t0 = today(), last = addD(t0, 6); if (!z || !x || !z.classList.contains('pz-l')) { render(); return; }
+    const dt = z.dataset.dt, nd = dt === 'later' ? (x.d && x.d > last ? x.d : addD(t0, 7)) : dt;
+    if (x.h && (x.d || '') === nd) { toast('Zadatak sa satom stoji po vremenu'); render(); return; }
+    const sib = dir => { let e = dir < 0 ? d.ph.previousElementSibling : d.ph.nextElementSibling; while (e) { if (e.classList.contains('pz-card') && !e.classList.contains('src') && e.dataset.ki == null && e.dataset.dt === nd) return e; e = dir < 0 ? e.previousElementSibling : e.nextElementSibling; } return null; };
+    const pv = sib(-1), nx = sib(1), kp = pv ? +pv.dataset.key : null, kn = nx ? +nx.dataset.key : null; let k;
+    if (kp == null && kn == null) k = 100000; else if (kp == null) k = kn >= 100000 ? kn - 0.5 : Math.max(0, kn - 1); else if (kn == null) k = kp >= 100000 ? kp + 1 : 100000; else k = (kp + kn) / 2;
+    if (kp != null && kn != null && kp < 100000 && kn >= 100000) k = kp + 0.5;
+    const moved = (x.d || '') !== nd; x.d = nd; if (!x.h) x.o = k; const now = Date.now(); x.mod = now;
+    const U = Z.filter(q => !q.del && !q.done && (q.d || '') === nd && !q.h).map((q, j) => (q._k = zKey(q, j), q)).sort((a, b) => a._k - b._k); let n = 100000;
+    U.forEach(q => { const o0 = q.o; if (q._k >= 100000) q.o = n++; delete q._k; if (q.o !== o0) q.mod = now; }); setZ(Z); toast(moved ? (nd ? 'Premješteno na ' + dTxt(nd) : 'Premješteno u „Bez datuma”') : 'Redoslijed spremljen'); soon(); }
+  v.addEventListener('touchstart', down, { passive: true }); document.addEventListener('touchmove', move, { passive: false }); document.addEventListener('touchend', up); document.addEventListener('touchcancel', up);
+  v.addEventListener('mousedown', down); document.addEventListener('mousemove', move); document.addEventListener('mouseup', up);
+  v.addEventListener('contextmenu', e => { if (e.target.closest('.pz-card')) e.preventDefault(); });
+  document.addEventListener('click', e => { if (sw && e.target.closest && e.target.closest('#hkView')) { sw = false; e.stopPropagation(); e.preventDefault(); } }, true); }
 /* v2.54: zatvorene grupe i Poništi */
 function zCol() { try { return Object.assign({ later: 1, none: 1 }, JSON.parse(ls.get('izmjera-zad-col', '{}'))); } catch (e) { return { later: 1, none: 1 }; } }
 function zUndo(t, fn) { let u = $('hkUndo'); if (!u) { u = document.createElement('div'); u.id = 'hkUndo'; u.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#0f2a4a;color:#fff;padding:10px 12px 10px 18px;border-radius:999px;font:15px Arial;z-index:9999;display:none;align-items:center;gap:12px;box-shadow:0 6px 20px #0004'; document.body.appendChild(u); }
