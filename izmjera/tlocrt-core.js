@@ -298,8 +298,8 @@ function analyze(floor, opts) {
       for (const pr of parts) {
         const part = pts.slice(pr.i0, pr.i1 + 1), a = part[0], b = part.at(-1);
         const L = hyp(b.x - a.x, b.y - a.y); if (L < E * 1.2) continue;
-        if (pr.o === 'H') segs.push({ o: 'H', c: part.reduce((s, p) => s + p.y, 0) / part.length, a0: Math.min(a.x, b.x), a1: Math.max(a.x, b.x), stroke: si, p0: a, p1: b, view });
-        else if (pr.o === 'V') segs.push({ o: 'V', c: part.reduce((s, p) => s + p.x, 0) / part.length, a0: Math.min(a.y, b.y), a1: Math.max(a.y, b.y), stroke: si, p0: a, p1: b, view });
+        if (pr.o === 'H') { const c = part.reduce((s, p) => s + p.y, 0) / part.length; segs.push({ o: 'H', c, a0: Math.min(a.x, b.x), a1: Math.max(a.x, b.x), stroke: si, p0: a, p1: b, view, dv: part.reduce((m, p) => Math.max(m, Math.abs(p.y - c)), 0) }); }
+        else if (pr.o === 'V') { const c = part.reduce((s, p) => s + p.x, 0) / part.length; segs.push({ o: 'V', c, a0: Math.min(a.y, b.y), a1: Math.max(a.y, b.y), stroke: si, p0: a, p1: b, view, dv: part.reduce((m, p) => Math.max(m, Math.abs(p.x - c)), 0) }); }
         else { part.view = view; part.stroke = si; diag.push(part); }
       }
     }
@@ -504,12 +504,21 @@ function analyze(floor, opts) {
 
   /* --- linije zidova (grupiranje po koordinati) i neprekinuti dijelovi --- */
   const lines = { H: [], V: [] };
+  /* v2.83: zid nacrtan vidljivo pomaknut od zida u produžetku, a oba kraja uz prazninu su uglovi (poprečni zid tu završava) – to su dva zida, ne jedan
+     (npr. desni zid sobe i uži desni zid donje sobe, a između njih ulaz otvoren prema van) */
+  function cornGap(qs, s) { const corner = (o, c, e) => wallSegs.some(P => P.o !== o && !P.view && Math.abs(P.c - e) < 1.2 * E && (Math.abs(P.a0 - c) < 1.2 * E || Math.abs(P.a1 - c) < 1.2 * E));
+    if (!(s.dv < 0.08 * E)) return false; /* samo ravne crte (alat Crta) – rukom nacrtan zid ionako vijuga */
+    for (const q of qs) { if (!(q.dv < 0.08 * E)) continue; let qe, se; if (s.a0 >= q.a1 - E) { qe = q.a1; se = s.a0; } else { qe = q.a0; se = s.a1; } if (Math.abs(se - qe) < 2 * E) continue;
+      if (qs.some(r => r !== q && (qe < se ? r.a1 > qe + E && r.a0 < se : r.a0 < qe - E && r.a1 > se))) continue; /* između je još neki dio ove crte */
+      if (corner(s.o, q.c, qe) && corner(s.o, s.c, se)) return true; }
+    return false; }
   for (const o of ['H', 'V']) for (const view of [false, true]) {
     const ss = wallSegs.filter(s => s.o === o && !!s.view === view).sort((a, b) => a.c - b.c);
     let cur = null;
     for (const s of ss) {
       // isti pravac: blizu, ili malo dalje ali kao nastavak (bez preklapanja duž zida)
-      const cont = cur && s.c - cur.last <= 2.5 * E && cur.segs.every(q => s.a0 >= q.a1 - E || s.a1 <= q.a0 + E);
+      let cont = cur && s.c - cur.last <= 2.5 * E && cur.segs.every(q => s.a0 >= q.a1 - E || s.a1 <= q.a0 + E);
+      if (cont && s.c - cur.last > 1.5 * E && cornGap(cur.segs, s)) cont = false;
       if (cur && (s.c - cur.last <= E || cont)) { cur.segs.push(s); cur.last = s.c; } else { cur = { o, segs: [s], last: s.c, view }; lines[o].push(cur); }
     }
     for (const L of lines[o]) {
@@ -531,6 +540,8 @@ function analyze(floor, opts) {
     if (!A.length || !Bq.length) continue;
     const runsOf = ss => { const r = []; for (const sg of [...ss].sort((a, b) => a.a0 - b.a0)) { const q = r.at(-1); if (q && sg.a0 <= q.a1 + 0.8 * E) q.a1 = Math.max(q.a1, sg.a1); else r.push({ a0: sg.a0, a1: sg.a1 }); } return r; };
     const L1 = { o: sp.o, segs: A, last: L.last, view: false, c: L.c, runs: runsOf(A), splitAt: sp.at, splitPart: 0 }, L2 = { o: sp.o, segs: Bq, last: L.last, view: false, c: L.c, runs: runsOf(Bq), splitAt: sp.at, splitPart: 1 };
+    { /* v2.83: dijelovi nacrtani vidljivo jedan pored drugoga (spojeni u istu crtu samo zbog male razlike) – svaki dio stoji gdje je nacrtan */
+      const mc = ss => { let w = 0, s = 0; for (const sg of ss) { const l = sg.a1 - sg.a0 + 1; w += l; s += l * sg.c; } return w ? s / w : L.c; }, c1 = mc(A), c2 = mc(Bq); if (Math.abs(c1 - c2) > E && (sp.step || A.concat(Bq).every(sg => sg.dv < 0.08 * E))) { L1.c = c1; L2.c = c2; } }
     if (L.splitFrom) { L1.splitFrom = L2.splitFrom = L.splitFrom; }
     arr.splice(arr.indexOf(L), 1, L1, L2);
     for (const pr of jogPairs) for (const k of [0, 1]) if (pr[k] === L) pr[k] = pr[2].at <= sp.at ? L1 : L2; /* v2.62: više prijeloma na istoj crti – raniji skok veže se na pravi dio */

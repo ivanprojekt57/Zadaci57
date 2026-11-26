@@ -230,7 +230,7 @@ function roomSteps(r, qs, used) {
 }
 const REST = { key: 'rest', text: 'Ostalo' };
 function plan() {
-  TR.analyzeNow(true); const faces = V.faces = zubFaces(), qs = questions().filter(q => !(q.type === 'gap' && faces.size && (faceAxis(q.ax, q.si, faces) || faceAxis(q.ax, q.sj, faces)))), rooms = roomsOf(), used = new Set(), per = new Map(); V.c3 = wt3Cands(rooms);
+  TR.analyzeNow(true); for (let k = 0; k < 3 && autoStep(); k++); const faces = V.faces = zubFaces(), qs = questions().filter(q => !(q.type === 'gap' && faces.size && (faceAxis(q.ax, q.si, faces) || faceAxis(q.ax, q.sj, faces)))), rooms = roomsOf(), used = new Set(), per = new Map(); V.c3 = wt3Cands(rooms);
   const cur = V.room && V.room.key !== 'rest' ? (rooms.find(x => x.key === V.room.key) || rooms.find(x => V.room.c && x.has(V.room.c))) : null;
   for (const r of cur ? [cur, ...rooms.filter(x => x !== cur)] : rooms) per.set(r.key, roomSteps(r, qs, used));
   const rest = qs.filter(q => !used.has(q)).map(q => Object.assign(q, { rest: true }));
@@ -351,6 +351,34 @@ function answer(v, extra) {
   app.save(); T.sig = ''; T.mGeo = null; return true;
 }
 function allHeights(v) { app.snapshot(); for (const r of roomsNoHeight()) { const c = raw({ x: r.x, y: r.y }); addTyped('h=' + fmt(v), { x: c.x, y: c.y + 26 }, 'H'); } V.lastH = v; store.set('izmjera-zadnja-visina', String(v)); app.save(); T.sig = ''; }
+/* v2.83: zid nacrtan vidljivo uvučen/izbačen u odnosu na zid u produžetku (npr. desni zid donje sobe uži od sobe iznad), a program ga je zbog male razlike
+   spojio u istu crtu – ako i mjere kažu da zidovi nisu u ravnini, i to na istu stranu kao na skici, crta se sama prelomi (ne pita se, ne treba „Prihvati”) */
+function autoStep() {
+  if (V.asBusy || !T.m || !T.st) return false; const f = app.currentFloor(), S = TR.tl(f), sp0 = (S.wallSplit || []).slice(), m0 = T.m, E = m0.E;
+  const sig = (f.name || '') + '|' + T.sig + '|' + JSON.stringify(sp0) + '|' + JSON.stringify(S.labels || {}) + '|' + JSON.stringify(S.answers || {}); if (V.asSig === sig) return false; V.asSig = sig;
+  const same = (a, b) => a.o === b.o && Math.abs(a.c - b.c) < 2 * E && Math.abs(a.at - b.at) < 2 * E, cands = [];
+  for (const ax of ['X', 'Y']) m0.axes[ax].forEach((A, i) => { const L = A.line; if (!L || L.view || !L.segs || L.segs.length < 2) return; const rs = (L.runs || []).slice().sort((a, b) => a.a0 - b.a0);
+    for (let k = 1; k < rs.length; k++) { const g0 = rs[k - 1].a1, g1 = rs[k].a0; if (g1 - g0 < 2 * E) continue; const mid = (g0 + g1) / 2;
+      const side = lo => { let w = 0, s = 0; for (const sg of L.segs) { if (lo ? sg.a1 > mid : sg.a0 < mid) continue; const l = sg.a1 - sg.a0 + 1; w += l; s += l * sg.c; } return w ? s / w : null; }, cA = side(true), cB = side(false);
+      if (cA == null || cB == null || Math.abs(cB - cA) < 1.2 * E) continue;
+      for (const at of [g1, g0]) { const c = { o: ax === 'X' ? 'V' : 'H', c: Math.round(L.c * 10) / 10, at: Math.round(at * 10) / 10, auto: true, gap: true, step: true, sk: true }; if (sp0.some(h => same(h, c)) || cands.some(h => same(h.c, c))) continue; cands.push({ c, ax, i, dir: Math.sign(cB - cA) }); } } });
+  if (!cands.length) return false;
+  const lim = Math.max(2, Number((T.st.settings || {}).uskl) || 3), bigLim = Math.max(5, 2 * lim), big = info => info.B.cons.filter(c => c.kind === 'measure' && Number.isFinite(c.dev) && Math.abs(c.dev) > bigLim);
+  let i0; try { i0 = C.fitInfo(m0, T.st); } catch (e) { return false; } const b0 = big(i0); if (!b0.length) return false;
+  const an = sp => { const m = C.analyze(f, { splits: sp }); m.labels.forEach(l => { const k = l.ocrKey || l.sig; if (T.st.rec && T.st.rec[k] != null) l.rec = T.st.rec[k]; }); return m; };
+  const carry = m1 => { const out = { wallT: Object.assign({}, T.st.wallT || {}), wallView: Object.assign({}, T.st.wallView || {}) };
+    for (const k of ['wallT', 'wallView']) for (const w0 of m0.walls) { const v = (T.st[k] || {})[C.wallKey(w0)]; if (v == null) continue; for (const w1 of m1.walls) { if (w1.o !== w0.o || Math.abs(w1.c - w0.c) > 2 * E || w1.e0 < w0.e0 - E || w1.e1 > w0.e1 + E) continue; const k1 = C.wallKey(w1); if (out[k][k1] == null) out[k][k1] = v; } }
+    return Object.assign({}, T.st, out); };
+  const t0 = Date.now(); let best = null;
+  for (const x of cands) { if (Date.now() - t0 > 3000) break; if (!b0.some(c => c.ax === x.ax && (c.i === x.i || c.j === x.i))) continue;
+    const sp = sp0.concat([x.c]); let m2, st2, i2; try { m2 = an(sp); st2 = carry(m2); i2 = C.fitInfo(m2, st2); } catch (e) { continue; }
+    const g = (i2.jogs || []).find(j => j.o === x.c.o && Math.abs(j.at - x.c.at) < 2 * E); if (!g || Math.abs(g.d) < 3 || Math.sign(g.d) !== x.dir) continue;
+    if (!(i2.score < i0.score * 0.5) || !(big(i2).length < b0.length)) continue; if (!best || i2.score < best.score) best = { sp, st2, score: i2.score, x, d: g.d }; }
+  if (!best) return false;
+  V.asBusy = true; try { best.x.c.user = true; S.wallSplit = best.sp; S.wallT = best.st2.wallT; S.wallView = best.st2.wallView; app.save(); T.sig = ''; T.mGeo = null; TR.analyzeNow(true); } finally { V.asBusy = false; }
+  V.asSig = (f.name || '') + '|' + T.sig + '|' + JSON.stringify(S.wallSplit) + '|' + JSON.stringify(S.labels || {}) + '|' + JSON.stringify(S.answers || {});
+  toast('↔ ' + (best.x.c.o === 'V' ? 'Okomiti' : 'Vodoravni') + ' zidovi koje si nacrtao malo pomaknute nisu u ravnini ni po mjerama (razlika ≈ ' + Math.round(Math.abs(best.d)) + ' cm) – razdvojio sam ih. Ako je ipak jedan ravan zid: ✂ Razreži pa dodir na oznaku prijeloma.');
+  app.redraw(); return true; }
 /* v2.81: „↔ Zid ima skok” – zidovi nacrtani u istoj crti, a u stvarnosti nisu u ravnini: traži prijelom crte zida (u praznini između dijelova ili na spoju s poprečnim zidom) s kojim kota sjedne */
 function stepFix(q) {
   const f = app.currentFloor(), S = TR.tl(f), sp0 = (S.wallSplit || []).slice(); if (!T.m || !T.st) { toast('Pričekaj analizu skice pa pokušaj ponovno.'); step(true); return; }
@@ -1179,5 +1207,6 @@ function pdfTexts(floor, cur) { const out = [], put = (t, p, layer, color, fs) =
     for (const c of T.B.cols || []) { const b = c.bb; if (c.w > 0 || c.h > 0) put('stup ' + (c.w > 0 ? fmt(c.w) : '?') + 'x' + (c.h > 0 ? fmt(c.h) : '?'), raw({ x: (b.x0 + b.x1) / 2, y: b.y1 + 2.2 * E }), 'kote', '#ea580c', 14);
       for (const ax of ['X', 'Y']) { const ps = c.pos[ax]; if (!ps || !ps.w || !ps.vod) continue; const e = ps.dir > 0 ? (ax === 'X' ? b.x0 : b.y0) : (ax === 'X' ? b.x1 : b.y1), mid = (ps.w.c + e) / 2; put(fmt(ps.value), raw(ax === 'X' ? { x: mid, y: (b.y0 + b.y1) / 2 - 1.6 * E } : { x: (b.x0 + b.x1) / 2 + 2.4 * E, y: mid }), 'kote', '#ea580c', 14); } } }
   return out; }
-window.IzmjeraVodic = { roomCheck, roomCheckData, qText, targetOf, stBuild, stCopyUp, pvList: () => (pvCompute(), PV.list), left: () => NZ.n, nzOn: v => { if (v != null) { nzOn = !!v; store.set('izmjera-neizm', v ? '1' : '0'); app.redraw(); } return nzOn; }, pvCount: () => { try { pvCompute(); return PV.list.length; } catch (e) { return 0; } }, stReplace, pdfTexts, krPlace, zubTap, laserFeed, refresh: () => { if (!V.on) return; if (!V.val || V.fresh) step(true); else { const b = panelEl().querySelector('[data-a="laser"]'); if (b) b.outerHTML = laserBtn(); bindPanel(); } }, goBack, roomsOf, plan, start, stop, V, ST, stMenu, copyOutline, exportAll, backup, setSun };
+(T.after = T.after || []).push(() => { if (V.on) return; /* vodič to radi sam prije pitanja */ if (autoStep()) app.redraw(); });
+window.IzmjeraVodic = { autoStep, roomCheck, roomCheckData, qText, targetOf, stBuild, stCopyUp, pvList: () => (pvCompute(), PV.list), left: () => NZ.n, nzOn: v => { if (v != null) { nzOn = !!v; store.set('izmjera-neizm', v ? '1' : '0'); app.redraw(); } return nzOn; }, pvCount: () => { try { pvCompute(); return PV.list.length; } catch (e) { return 0; } }, stReplace, pdfTexts, krPlace, zubTap, laserFeed, refresh: () => { if (!V.on) return; if (!V.val || V.fresh) step(true); else { const b = panelEl().querySelector('[data-a="laser"]'); if (b) b.outerHTML = laserBtn(); bindPanel(); } }, goBack, roomsOf, plan, start, stop, V, ST, stMenu, copyOutline, exportAll, backup, setSun };
 })();

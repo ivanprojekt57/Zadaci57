@@ -6,6 +6,7 @@ const UI = () => window.IzmjeraTlocrtUI || {};
 const $ = id => document.getElementById(id);
 const store = { get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : v; } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) { } } };
 const T = { links: store.get('izmjera-teren-veze', '0') === '1', pin: null, crowd: null, wkFails: 0, wkWait: null, on: store.get('izmjera-teren-kote', '1') === '1', sig: '', floor: null, timer: null, m: null, B: null, st: null, ocrBusy: false, hits: [], missing: null, pinHits: [], moving: null };
+T.after = [];
 
 /* ---------- stanje čarobnjaka iz etaže (dijeli se s „Tlocrt → DXF”) ---------- */
 function tl(floor) { const t = floor.tlocrt = floor.tlocrt || {}; if ((t.v || 1) < 6) { for (const k of Object.keys(t)) delete t[k]; } t.v = 6; for (const k of ['labels', 'answers', 'decisions', 'openings', 'rec', 'wallT', 'wallView', 'niches', 'nicheKind', 'stairs', 'columns', 'offPick']) t[k] = t[k] || {}; return t; }
@@ -21,7 +22,7 @@ function analyzeNow(force) {
   T.st = stateOf(floor);
   T.m.labels.forEach(l => { const k = l.ocrKey || l.sig; if (T.st.rec[k] != null) l.rec = T.st.rec[k]; });
   try { T.B = C.buildConstraints(T.m, T.st); } catch (e) { T.B = null; }
-  noteNew(floor);
+  noteNew(floor); if (!T.rk) { T.rk = true; try { rekeyWalls(); } catch (e) { } T.rk = false; } afterAn();
 }
 /* v1.35: analiza skice ide u pozadini (Web Worker), da ne koči crtanje; ako to ne radi, pokreće se tek kad olovka miruje */
 let WK = null, wkId = 0;
@@ -39,8 +40,19 @@ function finishAnalysis(floor, sig, m) {
   T.st = stateOf(floor);
   T.m.labels.forEach(l => { const k = l.ocrKey || l.sig; if (T.st.rec[k] != null) l.rec = T.st.rec[k]; });
   try { T.B = C.buildConstraints(T.m, T.st); } catch (e) { T.B = null; }
-  noteNew(floor);
+  noteNew(floor); if (!T.rk) { T.rk = true; try { rekeyWalls(); } catch (e) { } T.rk = false; } afterAn();
 }
+/* v2.83: nakon analize (npr. samostalni prijelom zida koji nije u ravnini – izmjera-vodic.js) */
+/* v2.83: zid se promijenio (produžen, prelomljen, razdvojen od zida u produžetku) – upisana debljina / „pogled” prelazi na nove dijelove istog zida */
+function rekeyWalls() { const m = T.m, f = T.floor; if (!m || !f || !f.tlocrt || f !== app.currentFloor()) return; const t = f.tlocrt, E = m.E; let ch = false;
+  const cur = new Map(m.walls.map(w => [C.wallKey(w), w]));
+  for (const fld of ['wallT', 'wallView']) { const S = t[fld]; if (!S) continue;
+    for (const k of Object.keys(S)) { if (cur.has(k)) continue; const z = /^([HV]):(-?\d+):(-?\d+):(-?\d+)$/.exec(k); if (!z) continue; const o = z[1], c = +z[2], e0 = +z[3], e1 = +z[4];
+      const pcs = [...cur].filter(([k1, w]) => w.o === o && !w.obj && Math.abs(w.c - c) <= 2 * E && w.e0 >= e0 - E && w.e1 <= e1 + E && w.e1 - w.e0 >= 2 * E);
+      if (pcs.some(([k1]) => S[k1] != null)) continue; /* dijelovi tog zida već imaju svoje upisane vrijednosti – ostaje kako je */
+      for (const [k1] of pcs) { S[k1] = S[k]; ch = true; } } }
+  if (ch) { app.save(); T.sig = ''; T.mGeo = null; analyzeNow(); app.redraw(); } }
+function afterAn() { if (!T.after || !T.after.length) return; clearTimeout(T.afT); T.afT = setTimeout(() => { for (const fn of T.after) { try { fn(); } catch (e) { } } }, 60); }
 /* v2.76: „kota se zalijepi” – novoupisana kota na nekoliko sekundi pokaže što mjeri */
 function noteNew(floor) { if (!T.m) return; const now = new Set(T.m.labels.filter(l => !l.syn0 && !l.chevOnly && !l.tiny).map(l => l.sig));
   if (T.seen && T.seen.floor === floor) { const fresh = [...now].filter(k => !T.seen.set.has(k)); if (fresh.length && fresh.length <= 3) { T.flash = { sigs: new Set(fresh), until: Date.now() + 6000 }; clearTimeout(T.flashT); T.flashT = setTimeout(() => { T.flash = null; app.redraw(); }, 6100); } }

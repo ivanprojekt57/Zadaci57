@@ -11,7 +11,7 @@
   function status(s, msg, trig) { const was = L.s; if (s !== 'on' && M.on) { M.on = false; M.target = null; } L.s = s; L.msg = msg || ''; L.trig = !!trig; paint(); if (msg && (s !== was || s === 'err' || s === 'perm')) toast('📡 ' + msg); }
   /* očitanje stiže u metrima */
   function value(m) {
-    const cm = Math.round(m * 1000) / 10; L.last = cm;
+    const cm = Math.round(Math.round(m * 1000) / 10); /* v2.83: laser zaokružuje na cijele cm (bez milimetara) */ L.last = cm;
     { /* Tipkaj: otvoreno polje za broj → očitanje se upiše i potvrdi */ const ti = $('typedIn'), bx = $('typedBox');
       if (ti && bx) { const t = fmt(cm), v = ti.value; ti.value = /\d\s*$/.test(v) ? t : v + t; const okb = bx.querySelector('[data-k="ok"]'); if (okb) okb.click(); toast('📡 ' + t + ' upisano'); return; } }
     try { if (window.IzmjeraVodic && IzmjeraVodic.laserFeed(cm)) return; } catch (e) { }

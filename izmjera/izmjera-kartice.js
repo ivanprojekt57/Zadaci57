@@ -35,7 +35,7 @@ function zDel(id) { const z = getZ(), x = z.find(q => q.id === id); if (!x) retu
 const soon = () => { try { window.IzmjeraRegistar && IzmjeraRegistar.soon(); } catch (e) { } render(); };
 function nextDate(d0, rp) { let d = d0 || today(); const st = x => { const y = new Date(x + 'T12:00:00'); if (rp === 'dnevno') y.setDate(y.getDate() + 1); else if (rp === 'radni dani') { do y.setDate(y.getDate() + 1); while (y.getDay() === 0 || y.getDay() === 6); } else if (rp === 'pon i čet') { do y.setDate(y.getDate() + 1); while (y.getDay() !== 1 && y.getDay() !== 4); } else if (rp === 'tjedno') y.setDate(y.getDate() + 7); else if (rp === 'svaka 2 tjedna') y.setDate(y.getDate() + 14); else if (rp === 'mjesečno') y.setMonth(y.getMonth() + 1); else return null; return ymd(y); };
   let n = st(d), g = 0; while (n && n <= today() && g++ < 400) n = st(n); return n; }
-function zCheck(x, on) { x.done = on; x.doneAt = on ? Date.now() : 0;
+function zCheck(x, on) { x.done = on; x.doneAt = on ? Date.now() : 0; x.dm = Date.now(); /* v2.84: kad je kvačica mijenjana – stara kopija bez kvačice ne poništava „gotovo” na drugom uređaju */
   if (on && x.rp && !(window.IzmjeraRegistar && IzmjeraRegistar.on())) { const nd = nextDate(x.d, x.rp); if (nd) { const y = Object.assign({}, x, { id: zid(), d: nd, done: false, doneAt: 0, gid: '' }); zSave(y); } } // bez registra: ponavljanje lokalno
   if (on) localAction(x); zSave(x); }
 /* kvačica odmah mijenja i projekt na tabletu (registar to isto radi u tablici) */
@@ -273,7 +273,7 @@ function renderZad(v) { const q = (($('projectSearch') || {}).value || '').trim(
   v.querySelectorAll('[data-gc]').forEach(e => e.onclick = () => { const c = zCol(); c[e.dataset.gc] = c[e.dataset.gc] ? 0 : 1; ls.set('izmjera-zad-col', JSON.stringify(c)); render(); });
   v.querySelectorAll('.hk-z').forEach(e => { const id = e.dataset.id, x = () => getZ().find(q => q.id === id);
     if (e.dataset.ki != null) { e.querySelector('.ck').onclick = () => zStep(id, +e.dataset.ki); e.querySelector('.tx').onclick = () => zDialog(x()); return; }
-    e.querySelector('.ck').onclick = () => { const o = x(); if (!o) return; const was = o.done; zCheck(o, !o.done); if (!was && !o.rp) zUndo('✓ Gotovo', () => { const q = x(); if (q) { q.done = false; q.doneAt = 0; zSave(q); } }); };
+    e.querySelector('.ck').onclick = () => { const o = x(); if (!o) return; const was = o.done; zCheck(o, !o.done); if (!was && !o.rp) zUndo('✓ Gotovo', () => { const q = x(); if (q) { q.done = false; q.doneAt = 0; q.dm = Date.now(); zSave(q); } }); };
     const pg = e.querySelector('[data-pg]'); if (pg) pg.onclick = ev => { ev.stopPropagation(); zExp[id] = !zExp[id]; render(); };
     e.querySelectorAll('[data-st]').forEach(b => b.onclick = () => zStep(id, +b.dataset.st));
     const ka = e.querySelector('[data-kadd]'); if (ka) ka.addEventListener('keydown', ev => { if (ev.key !== 'Enter' || !ka.value.trim()) return; const o = x(); if (!o) return; (o.k = o.k || []).push({ t: ka.value.trim(), d: '', done: false }); zExp[id] = true; zSave(o); setTimeout(() => { const n = document.querySelector('.hk-z[data-id="' + id + '"] [data-kadd]'); if (n) n.focus(); }, 50); });
