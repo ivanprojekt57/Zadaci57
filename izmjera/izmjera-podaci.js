@@ -5,7 +5,7 @@ const FIELDS = [
   ['Građevina', [['gradjevina', 'Naziv građevine (npr. STAMBENA ZGRADA)'], ['td', 'T.D. (broj projekta)'], ['adresa', 'Adresa građevine'], ['kc', 'Katastarska čestica (k.č.)'], ['ko', 'Katastarska općina (k.o.)'], ['god', 'Godina izgradnje', 'numeric']]],
   ['Investitor', [['invIme', 'Ime i prezime / naziv'], ['invAdresa', 'Adresa'], ['invOib', 'OIB', 'numeric']]]
 ];
-const TYPES = [['etazni', 'Etažni elaborat'], ['legalizacija', 'Legalizacija'], ['energetski', 'Energetski certifikat'], ['statika', 'Statika'], ['procjena', 'Procjena'], ['savjetovanje', 'Savjetovanje'], ['nadzor', 'Nadzor'], ['tlocrt', 'Izrada tlocrta'], ['troskovnik', 'Troškovnik'], ['ostalo', 'Ostalo']];
+const TYPES = [['etazni', 'Etažni elaborat'], ['legalizacija', 'Legalizacija'], ['energetski', 'Energetski certifikat'], ['idejni', 'Idejni projekt'], ['statika', 'Statika'], ['procjena', 'Procjena'], ['savjetovanje', 'Savjetovanje'], ['nadzor', 'Nadzor'], ['tlocrt', 'Izrada tlocrta'], ['troskovnik', 'Troškovnik'], ['ostalo', 'Ostalo']];
 const typeName = k => (TYPES.find(t => t[0] === k) || [k, k])[1];
 const FKEY = 'izmjera-filter-vrsta';
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));

@@ -30,7 +30,7 @@ body.ui2.fullscreen #work:not(.hidden){margin-left:0!important;width:100%!import
 
 
 /* v2.08 početni zaslon (prijedlog 2): svijetlo – lijevo traka (Novi projekt, vrste, datoteke), desno „Nastavi” i popis */
-#home{--hv-et:#3b82f6;--hv-le:#f59e0b;--hv-en:#22c55e;--hv-st:#e11d48;--hv-os:#92400e;--hv-pr:#0891b2;--hv-sv:#475569;--hv-ne:#94a3b8;--hv-na:#ea580c;--hv-tl:#1e3a5f;--hv-tr:#be185d}
+#home{--hv-et:#3b82f6;--hv-le:#f59e0b;--hv-en:#22c55e;--hv-st:#e11d48;--hv-os:#92400e;--hv-pr:#0891b2;--hv-sv:#475569;--hv-ne:#94a3b8;--hv-na:#ea580c;--hv-tl:#1e3a5f;--hv-tr:#be185d;--hv-id:#65a30d}
 body:has(#home:not(.hidden)){background:#f8fafc!important}
 #home{background:#f8fafc!important;color:#0f2a4a}
 #home.hv2:not(.hidden){display:flex!important;align-items:stretch;min-height:100dvh;padding:0!important;max-width:none!important}
@@ -45,7 +45,7 @@ body:has(#home:not(.hidden)){background:#f8fafc!important}
 #homeSide #vrstaFilter button::before{content:"";width:10px;height:10px;border-radius:3px;background:var(--c,transparent);flex:none}#homeSide #vrstaFilter button[data-f=""]::before,#homeSide #vrstaFilter button[data-done]::before{display:none}
 #homeSide #vrstaFilter button span{margin-left:auto;color:#94a3b8!important;font-weight:700;opacity:1!important}
 #homeSide #vrstaFilter button[style*="background:#1e40af"],#homeSide #vrstaFilter button[style*="background:#15803d"]{background:#fff!important;color:#0f2a4a!important;font-weight:800!important;box-shadow:0 1px 4px rgba(0,0,0,.06)!important}
-#vrstaFilter [data-f="etazni"]{--c:var(--hv-et)}#vrstaFilter [data-f="legalizacija"]{--c:var(--hv-le)}#vrstaFilter [data-f="energetski"]{--c:var(--hv-en)}#vrstaFilter [data-f="statika"]{--c:var(--hv-st)}#vrstaFilter [data-f="ostalo"]{--c:var(--hv-os)}#vrstaFilter [data-f="procjena"]{--c:var(--hv-pr)}#vrstaFilter [data-f="savjetovanje"]{--c:var(--hv-sv)}#vrstaFilter [data-f="nadzor"]{--c:var(--hv-na)}#vrstaFilter [data-f="tlocrt"]{--c:var(--hv-tl)}#vrstaFilter [data-f="troskovnik"]{--c:var(--hv-tr)}#vrstaFilter [data-f="nema"]{--c:var(--hv-ne)}
+#vrstaFilter [data-f="etazni"]{--c:var(--hv-et)}#vrstaFilter [data-f="legalizacija"]{--c:var(--hv-le)}#vrstaFilter [data-f="energetski"]{--c:var(--hv-en)}#vrstaFilter [data-f="statika"]{--c:var(--hv-st)}#vrstaFilter [data-f="ostalo"]{--c:var(--hv-os)}#vrstaFilter [data-f="procjena"]{--c:var(--hv-pr)}#vrstaFilter [data-f="savjetovanje"]{--c:var(--hv-sv)}#vrstaFilter [data-f="nadzor"]{--c:var(--hv-na)}#vrstaFilter [data-f="tlocrt"]{--c:var(--hv-tl)}#vrstaFilter [data-f="troskovnik"]{--c:var(--hv-tr)}#vrstaFilter [data-f="idejni"]{--c:var(--hv-id)}#vrstaFilter [data-f="nema"]{--c:var(--hv-ne)}
 #homeSide .hv2-file{display:flex!important;align-items:center;gap:8px;width:100%;text-align:left;padding:11px 12px!important;border-radius:10px!important;border:0!important;background:transparent!important;color:#334155!important;font:700 14px Arial!important;box-shadow:none!important;white-space:normal}
 #homeSide .hv2-file:active{background:#fff!important}
 #homeContinue{max-width:none!important;margin:0 0 16px!important}
@@ -63,7 +63,7 @@ body:has(#home:not(.hidden)){background:#f8fafc!important}
 #home .pc-n{color:#0f2a4a!important;font:800 16px Arial!important}#home .pc-a{color:#64748b!important}#home .pc-s{color:#64748b!important;font-size:12px!important}#home .pc-s b{color:#15803d!important}
 #home .pc-t span{background:color-mix(in srgb,var(--pc,#94a3b8) 14%,#fff)!important;color:var(--pc,#475569)!important;font-weight:700!important}
 #home .pc-m{background:#f1f5f9!important;color:#334155!important;border:0!important}
-#home .pcv-etazni{--pc:var(--hv-et)}#home .pcv-legalizacija{--pc:var(--hv-le)}#home .pcv-energetski{--pc:var(--hv-en)}#home .pcv-statika{--pc:var(--hv-st)}#home .pcv-ostalo{--pc:var(--hv-os)}#home .pcv-procjena{--pc:var(--hv-pr)}#home .pcv-savjetovanje{--pc:var(--hv-sv)}#home .pcv-nadzor{--pc:var(--hv-na)}#home .pcv-tlocrt{--pc:var(--hv-tl)}#home .pcv-troskovnik{--pc:var(--hv-tr)}#home .pcv-nema{--pc:var(--hv-ne)}
+#home .pcv-etazni{--pc:var(--hv-et)}#home .pcv-legalizacija{--pc:var(--hv-le)}#home .pcv-energetski{--pc:var(--hv-en)}#home .pcv-statika{--pc:var(--hv-st)}#home .pcv-ostalo{--pc:var(--hv-os)}#home .pcv-procjena{--pc:var(--hv-pr)}#home .pcv-savjetovanje{--pc:var(--hv-sv)}#home .pcv-nadzor{--pc:var(--hv-na)}#home .pcv-tlocrt{--pc:var(--hv-tl)}#home .pcv-troskovnik{--pc:var(--hv-tr)}#home .pcv-idejni{--pc:var(--hv-id)}#home .pcv-nema{--pc:var(--hv-ne)}
 #home p{color:#64748b!important}
 @media (min-width:761px){#home.hv2{height:100dvh;overflow:hidden!important}#homeSide{overflow-y:auto}#homeMain{display:flex;flex-direction:column;height:100dvh}#homeMain>*{flex:none}#homeMain>#homeTools{align-self:flex-end}#homeMain>#projectlist{flex:1 1 auto;align-content:start;min-height:0;overflow-y:auto;padding:2px 4px 20px 2px;margin:0 -4px 0 -2px}}
 @media (max-width:760px){#home.hv2{flex-direction:column}#homeSide{width:auto;border-right:0;border-bottom:1px solid #d3deec}#homeSide #vrstaFilter{flex-direction:row!important;flex-wrap:wrap!important}#homeSide #vrstaFilter button{width:auto}#homeContinue .go .hv2-th{width:110px;height:80px}#homeContinue .go{gap:12px}#homeContinue .go .hv2-b{display:none}#homeContinue .go span{font-size:20px}#homeContinue .go small{font-size:12px!important;white-space:normal}}

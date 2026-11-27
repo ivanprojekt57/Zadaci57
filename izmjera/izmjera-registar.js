@@ -8,7 +8,7 @@ const $ = id => document.getElementById(id);
 const ls = { get: k => { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } }, set: (k, v) => { try { if (v === '' || v == null) localStorage.removeItem(k); else localStorage.setItem(k, String(v)); } catch (e) { } } };
 const HM = () => (window.IzmjeraApp && IzmjeraApp.home) || null;
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const VR = ['etazni', 'legalizacija', 'energetski', 'statika', 'procjena', 'savjetovanje', 'nadzor', 'tlocrt', 'troskovnik', 'ostalo'];
+const VR = ['etazni', 'legalizacija', 'energetski', 'idejni', 'statika', 'procjena', 'savjetovanje', 'nadzor', 'tlocrt', 'troskovnik', 'ostalo'];
 function cfg() { const u = ls.get(UK); if (!u) return null; try { const x = new URL(u); const k = x.searchParams.get('k'); if (!k) return null; x.search = ''; return { url: x.toString(), k }; } catch (e) { return null; } }
 const on = () => !!cfg();
 /* HTTP: na tabletu preko Jave (bez CORS ograničenja), u pregledniku fetch */

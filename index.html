@@ -52,7 +52,7 @@ main .z:before{content:'';position:absolute;left:70px;top:0;bottom:0;width:2px;b
 
 /* v3.2: vrsta posla, koraci, povlačenje */
 .vp{display:inline-block;font:800 11px Arial;padding:2px 7px;border-radius:6px;margin-right:5px;vertical-align:1px;white-space:nowrap}
-.vp.etazni{background:#e0ecff;color:#1d4ed8}.vp.legalizacija{background:#fdf0d5;color:#a15c00}.vp.energetski{background:#dcf5e3;color:#15803d}.vp.statika{background:#e8ecf1;color:#334155}.vp.procjena{background:#fde4e4;color:#b91c1c}.vp.savjetovanje{background:#dff3fb;color:#0369a1}.vp.nadzor{background:#ffedd5;color:#c2410c}.vp.tlocrt{background:#e2e8f0;color:#1e3a5f}.vp.troskovnik{background:#fce7f3;color:#be185d}.vp.ostalo{background:#eef0f3;color:#64748b}
+.vp.etazni{background:#e0ecff;color:#1d4ed8}.vp.legalizacija{background:#fdf0d5;color:#a15c00}.vp.energetski{background:#dcf5e3;color:#15803d}.vp.idejni{background:#eef4d9;color:#4d6b12}.vp.statika{background:#e8ecf1;color:#334155}.vp.procjena{background:#fde4e4;color:#b91c1c}.vp.savjetovanje{background:#dff3fb;color:#0369a1}.vp.nadzor{background:#ffedd5;color:#c2410c}.vp.tlocrt{background:#e2e8f0;color:#1e3a5f}.vp.troskovnik{background:#fce7f3;color:#be185d}.vp.ostalo{background:#eef0f3;color:#64748b}
 .pg{display:flex;align-items:center;gap:8px;margin-top:7px;padding:2px 0}.pg i{flex:1;height:6px;background:var(--line);border-radius:3px;overflow:hidden}.pg i b{display:block;height:100%;background:var(--ac);border-radius:3px}.pg span{font:800 12px Arial;color:var(--ac)}.pg em{font-style:normal;color:var(--mut);font-size:13px}
 .z{flex-wrap:wrap}.ks{flex-basis:100%;background:var(--card);border-radius:12px;padding:4px 12px 10px;margin:6px 6px 2px 78px;box-shadow:0 1px 2px rgba(15,42,74,.07);position:relative;z-index:1}
 .k{display:flex;align-items:center;gap:10px;padding:8px 0;font-size:15px}.k .c{width:24px;height:24px;border-radius:7px;border:2px solid var(--ck);flex:none;display:flex;align-items:center;justify-content:center;color:#fff;font:900 13px Arial;background:transparent;padding:0}.k.d .c{background:var(--ac);border-color:var(--ac)}.k.d .t{text-decoration:line-through;color:var(--mut)}.k .t{flex:1;min-width:0;word-wrap:break-word}.k .dt{font:700 12px Arial;color:var(--ac);background:var(--soft);border-radius:999px;padding:3px 8px;white-space:nowrap}.k .dt.r{color:var(--red);background:#fdecec}
@@ -146,7 +146,7 @@ html body main .z .ac a,html body main .z .ac button{border:1.5px solid var(--ln
 html body main .z .ks{flex-basis:100%;position:relative;z-index:1;margin:0 8px 8px calc(3*var(--c) + 12px);background:transparent;box-shadow:none;border-top:1.5px dashed var(--ln);border-radius:0;padding:4px 0 2px}
 html body .k .c{border-radius:3px;border-color:var(--ink)}html body .k.d .c{background:var(--ink);border-color:var(--ink)}
 html body main .z.od:after{border-left:4px solid var(--red)}html body main .z.od .tm{color:var(--red)}
-html body main .z.pv-etazni:after,.bcard[data-v=etazni]{border-left:4px solid #2f6fd0}html body main .z.pv-legalizacija:after,.bcard[data-v=legalizacija]{border-left:4px solid #c4610e}html body main .z.pv-energetski:after,.bcard[data-v=energetski]{border-left:4px solid #2f8f5b}html body main .z.pv-statika:after,.bcard[data-v=statika]{border-left:4px solid #69727b}html body main .z.pv-procjena:after,.bcard[data-v=procjena]{border-left:4px solid #c8331f}html body main .z.pv-savjetovanje:after,.bcard[data-v=savjetovanje]{border-left:4px solid #0f7c8c}html body main .z.pv-nadzor:after,.bcard[data-v=nadzor]{border-left:4px solid #d9822b}html body main .z.pv-tlocrt:after,.bcard[data-v=tlocrt]{border-left:4px solid #4b5d70}html body main .z.pv-troskovnik:after,.bcard[data-v=troskovnik]{border-left:4px solid #c2577f}
+html body main .z.pv-etazni:after,.bcard[data-v=etazni]{border-left:4px solid #2f6fd0}html body main .z.pv-legalizacija:after,.bcard[data-v=legalizacija]{border-left:4px solid #c4610e}html body main .z.pv-energetski:after,.bcard[data-v=energetski]{border-left:4px solid #2f8f5b}html body main .z.pv-idejni:after,.bcard[data-v=idejni]{border-left:4px solid #7a9a2e}html body main .z.pv-statika:after,.bcard[data-v=statika]{border-left:4px solid #69727b}html body main .z.pv-procjena:after,.bcard[data-v=procjena]{border-left:4px solid #c8331f}html body main .z.pv-savjetovanje:after,.bcard[data-v=savjetovanje]{border-left:4px solid #0f7c8c}html body main .z.pv-nadzor:after,.bcard[data-v=nadzor]{border-left:4px solid #d9822b}html body main .z.pv-tlocrt:after,.bcard[data-v=tlocrt]{border-left:4px solid #4b5d70}html body main .z.pv-troskovnik:after,.bcard[data-v=troskovnik]{border-left:4px solid #c2577f}
 html body .tx .vp,html body .bcard .vp,html body .pc .vp{background:transparent!important;border:1px solid currentColor;border-radius:3px;padding:0 5px;font-weight:700;font-size:12px}
 html body .pg i{height:4px;background:var(--line)}html body .pg i b{background:var(--ink)}html body .pg span{color:var(--ink)}
 html body .wt{background:#fff4e0;color:#a15a00;border:1px solid #e9b45c;border-radius:3px;font-weight:700}
@@ -215,7 +215,22 @@ body.desk.brd #list{flex:1;min-height:0;display:flex;flex-direction:column}body.
 .bd-sas b{font-weight:700;font-size:18px;color:var(--ink);letter-spacing:.2px}.bd-sas .f b{font-size:15px}.bd-sas .r b{color:var(--red)}.bd-sas a{cursor:pointer}.bd-sas a:hover{background:rgba(35,41,47,.06)}
 body.desk #ed{align-items:stretch;justify-content:flex-end;background:rgba(35,41,47,.16)}
 body.desk #ed .p{width:470px;max-width:100%;max-height:none;height:100%;border-radius:0;border-left:2px solid var(--ink);padding:22px 22px 26px;overflow:auto;box-shadow:-14px 0 36px rgba(35,41,47,.18)}
-</style></head><body>
+</style><style>/* v6: kvačica pita, odgovor, korak iznad zadatka */
+.xask,.xans{display:flex;flex-direction:column;gap:8px;margin:10px 0 2px;cursor:default}
+.xask .r,.xans{flex-direction:row;flex-wrap:wrap}.xask .r{display:flex;gap:8px}
+.xask button,.xans button{border-radius:8px;padding:9px 12px;font-weight:700;font-size:15px;border:1.6px solid var(--ink,#23292f);background:#fff;color:var(--ink,#23292f);line-height:1.1;white-space:nowrap;cursor:pointer}
+.xask .r button{flex:1}.xask button.g,.xans button.g{background:var(--ink,#23292f);color:#fff}
+.xask button.w{background:#fde68a;border-color:#d97706;color:#7c2d12}.xans button.e{border-color:#c8331f;color:#c8331f}
+.xask .ch{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;color:var(--mut,#69727b);font-weight:500}
+.xask .ch button{padding:4px 11px;border-radius:999px;font-size:13px;font-weight:600;border:1.3px solid var(--ln,#a3abb3)}
+.xask .ch button.on{background:#fde68a;border-color:#d97706;color:#7c2d12}.xask .ch button.x{margin-left:auto;border:0;background:none;color:var(--mut,#69727b);text-decoration:underline;padding:4px 2px}
+.xans{gap:6px}.xans button{padding:8px 10px;font-size:14px}
+html body main .z>.xask,html body main .z>.xans{flex-basis:100%;margin:0 12px 8px calc(3*var(--c) + 11px);position:relative;z-index:1}html body main .z>.xask button{font-size:14.5px;padding:9px 10px}
+.bcard .xask,.bcard .xans{margin:8px 0 2px}.bcard .xask button,.bcard .xans button{font-size:13px;padding:7px 6px;white-space:normal}.bcard .xask .r button,.bcard .xans button{flex:1 1 auto}.bcard .xask .r{flex-wrap:wrap;gap:6px}
+.bcard .xask .ch button{font-size:12px;padding:3px 8px}.bcard .xans{gap:5px}
+.kx{display:block;font-size:12.5px;font-weight:600;color:var(--pen,#0f7c8c);margin:1px 0 2px}
+</style>
+</head><body>
 <div class="hd"><div class="r1"><span class="lg"></span><div style="flex:1"><b>Zadaci</b><span class="off" id="off" onclick="netInfo()">bez veze</span><small id="dt"></small></div><button id="cmpB" onclick="cmpT()" title="Zbijeni prikaz">☰</button><button id="rfB" onclick="load()" title="Osvježi">⟳</button></div><div class="tabs" id="tabs"></div></div>
 <main>
  <div class="addw" id="addw"><div class="add" id="addb"><input id="q" placeholder="Npr. sutra 9:30 sastanak Perić" enterkeyhint="done" autocomplete="off"><button onclick="quick()">＋</button></div><div class="prev" id="qp"></div></div>
@@ -318,16 +333,40 @@ function pvAdd() { const d = new Date(); while (d.getDay() !== 1 && d.getDay() !
   pvHide(); msg('🔁 Dodano: e-Dozvola i e-dnevnik, pon i čet'); }
 /* v4.3: poništi (5 s) */
 function undoMsg(t, fn) { const m = document.getElementById('msg'); m.innerHTML = ''; m.append(t + ' '); const b = document.createElement('button'); b.className = 'un'; b.textContent = '↶ Poništi'; b.onclick = e => { e.stopPropagation(); m.style.display = 'none'; fn(); }; m.append(b); m.style.display = 'block'; clearTimeout(msg.t); msg.t = setTimeout(() => m.style.display = 'none', 5000); }
-const PS = [['etazni', 'Etažni elaborat', 'Etažni'], ['legalizacija', 'Legalizacija', 'Legalizacija'], ['energetski', 'Energetski certifikat', 'Energetski'], ['statika', 'Statika', 'Statika'], ['procjena', 'Procjena', 'Procjena'], ['savjetovanje', 'Savjetovanje', 'Savjetovanje'], ['nadzor', 'Nadzor', 'Nadzor'], ['tlocrt', 'Izrada tlocrta', 'Tlocrt'], ['troskovnik', 'Troškovnik', 'Troškovnik'], ['ostalo', 'Ostalo', 'Ostalo']];
+const PS = [['etazni', 'Etažni elaborat', 'Etažni'], ['legalizacija', 'Legalizacija', 'Legalizacija'], ['energetski', 'Energetski certifikat', 'Energetski'], ['idejni', 'Idejni projekt', 'Idejni'], ['statika', 'Statika', 'Statika'], ['procjena', 'Procjena', 'Procjena'], ['savjetovanje', 'Savjetovanje', 'Savjetovanje'], ['nadzor', 'Nadzor', 'Nadzor'], ['tlocrt', 'Izrada tlocrta', 'Tlocrt'], ['troskovnik', 'Troškovnik', 'Troškovnik'], ['ostalo', 'Ostalo', 'Ostalo']];
 const PSN = {}; PS.forEach(p => PSN[p[0]] = p);
 const exp = {}; let PJ = {};
 const posao = x => x.p ? [x.p] : (x.b && PJ[x.b] && PJ[x.b].vr && PJ[x.b].vr.length ? PJ[x.b].vr : []);
 const mins = h => { const m = /^(\d{1,2}):(\d\d)/.exec(h || ''); return m ? +m[1] * 60 + +m[2] : null; };
 const okey = (x, i) => x.h && mins(x.h) != null ? mins(x.h) : (x.o != null && x.o !== '' && Number.isFinite(+x.o) ? +x.o : 100000 + i);
+/* v6: koraci s datumom kao kartice; korak bez sata stoji odmah iznad svog zadatka (isti dan), ručno povučen ima svoj red (k.o) */
+const okv = v => v != null && v !== '' && Number.isFinite(+v);
+function vsOf(base, vs) { base.forEach(x => (x.k || []).forEach((k, i) => { if (k.d && !k.done) vs.push({ id: x.id + '#' + i, vs: true, pid: x.id, ki: i, t: k.t, d: k.d, b: x.b, p: x.p, v: x.v, par: x.t, kn: x.k.length, o: okv(k.o) ? +k.o : null, man: okv(k.o) }); })); return vs; }
+function keyL(L) { L.forEach((x, i) => { x._k = okey(x, i); if (x.vs) x.pre = null; }); const by = {}; L.forEach(x => { if (!x.vs) by[x.id] = x; });
+  L.forEach(x => { if (!x.vs || x.man) return; const p = by[x.pid]; if (p && (p.d || '') === (x.d || '')) { x._k = p._k - 0.5 + x.ki * 0.01; x.pre = p; } }); return L; }
+const GEN = { izmjera: 'izmjere ', sastanak: 'sastanka ', nazvati: 'poziva ', mail: 'maila ', ponuda: 'ponude ', izrada: 'izrade ', predaja: 'predaje ', naplata: 'naplate ' };
+const preH = x => x.pre && x.pre.h ? '<span class="kx">↳ prije ' + (GEN[x.pre.v] || '') + 'u ' + x.pre.h + '</span>' : '';
+/* v6: kvačica pita za Izradu i Ponudu – gotovo ili poslano pa čekam odgovor; kad čekaš: Odobreno / Izmjene / +3 d */
+const ASK = { izrada: 1, ponuda: 1 }; let askId = null, askN = 7;
+const askH = x => askId === x.id && !x.done ? '<div class="xask" onclick="event.stopPropagation()"><div class="r"><button class="g" onclick="tick(\'' + x.id + '\',1)">✓ Gotovo</button><button class="w" onclick="askWait(\'' + x.id + '\')">⏳ Čekam odgovor</button></div><div class="ch">provjeri za ' + [3, 7, 14].map(n => '<button class="' + (askN === n ? 'on' : '') + '" onclick="askN=' + n + ';render()">' + n + ' d</button>').join('') + '<button class="x" onclick="askId=null;render()">Odustani</button></div></div>' : '';
+const ansH = x => x.w && !x.done && !x.vs ? '<div class="xans" onclick="event.stopPropagation()"><button class="g" onclick="tick(\'' + x.id + '\',1)">✓ Odobreno</button><button class="e" onclick="ansIzm(\'' + x.id + '\')">✎ Izmjene</button><button onclick="later(\'' + x.id + '\',3)">+3 d</button></div>' : '';
+function askWait(id) { const x = S.tasks.find(q => q.id === id); if (!x) return; askId = null; const w0 = x.w || '', d0 = x.d; x.w = today(); x.d = addD(askN); x.mod = Date.now(); render();
+  undoMsg('⏳ Čeka odgovor · provjera ' + dTxt(x.d), () => { x.w = w0; x.d = d0; x.mod = Date.now(); render(); api('save', x); }); api('save', x); }
+function ansIzm(id) { const x = S.tasks.find(q => q.id === id); if (!x) return; const w0 = x.w, d0 = x.d; x.w = ''; x.d = today(); x.mod = Date.now(); render();
+  undoMsg('✎ Vraćeno u Danas – izmjene', () => { x.w = w0; x.d = d0; x.mod = Date.now(); render(); api('save', x); }); api('save', x); }
+/* v6: korak povučen na drugi dan / mjesto; red bez sata se presloži (zadaci i ručno složeni koraci) */
+function reOrd(nd) { const U = [], o = {}, sv = new Set();
+  S.tasks.forEach(q => { if (!q.done && (q.d || '') === nd && !q.h) U.push({ q }); (q.done ? [] : q.k || []).forEach(K => { if (!K.done && (K.d || '') === nd && okv(K.o)) U.push({ X: q, K }); }); });
+  U.forEach((u, j) => u._k = u.q ? okey(u.q, j) : +u.K.o); U.sort((a, b) => a._k - b._k); let n = 100000;
+  U.forEach(u => { if (u._k >= 100000) { const v = n++; if (u.q) u.q.o = v; else if (+u.K.o !== v) { u.K.o = v; sv.add(u.X); } } if (u.q) o[u.q.id] = u.q.o; }); return { o, sv }; }
+function kNew(kp, kn) { let k; if (kp == null && kn == null) k = 100000; else if (kp == null) k = kn >= 100000 ? kn - 0.5 : Math.max(0, kn - 1); else if (kn == null) k = kp >= 100000 ? kp + 1 : 100000; else k = (kp + kn) / 2; if (kp != null && kn != null && kp < 100000 && kn >= 100000) k = kp + 0.5; return k; }
+function stepMove(id, nd, k) { const [pid, ki] = id.split('#'), X = S.tasks.find(q => q.id === pid), K = X && X.k && X.k[+ki]; if (!K) { render(); return; } const moved = (K.d || '') !== nd;
+  K.d = nd; if (nd && k != null) K.o = k; else delete K.o; X.mod = Date.now(); const r = nd ? reOrd(nd) : { o: {}, sv: new Set() }; r.sv.delete(X); render();
+  msg(!nd ? 'Korak bez datuma – vidi se u zadatku' : moved ? 'Korak premješten na ' + dTxt(nd) : 'Redoslijed spremljen'); api('save', X); r.sv.forEach(q => { q.mod = Date.now(); api('save', q); }); if (Object.keys(r.o).length) api('red', { o: r.o }); }
 function renderDan() {
   const t0 = today(), t1 = addD(1), wk = addD(7), P = {}; (S.proj || []).forEach(p => P[p.b] = p); PJ = P;
   const base = (S.tasks || []).filter(x => !x.done && !(x.w && x.d && x.d > t0)), vs = [];
-  base.forEach(x => (x.k || []).forEach((k, i) => { if (k.d && !k.done) vs.push({ id: x.id + '#' + i, vs: true, pid: x.id, ki: i, t: k.t, d: k.d, b: x.b, p: x.p, v: x.v, par: x.t, kn: x.k.length }); }));
+  vsOf(base, vs);
   const open = base.concat(vs).sort((a, b) => (a.d || '9999').localeCompare(b.d || '9999') || (a.h || '99').localeCompare(b.h || '99'));
   const dn0 = s => new Date(s + 'T12:00:00'), wdn = s => DANF[dn0(s).getDay()], wke = s => { const g = dn0(s).getDay(); return g === 0 || g === 6; };
   const G = [['Zakašnjelo', x => x.d && x.d < t0, 'red', '!', 'Zakašnjelo', 'prije današnjeg dana'], ['Danas', x => x.d === t0, 'td', dn0(t0).getDate(), 'Danas', wdn(t0).toLowerCase()], ['Sutra', x => x.d === t1, wke(t1) ? 'we' : '', dn0(t1).getDate(), 'Sutra', wdn(t1).toLowerCase()]];
@@ -341,12 +380,12 @@ function renderDan() {
     h = '<div class="nx" onclick="openEd(\'' + nxt.id + '\')"><div class="t">' + nxt.h + '</div><div class="w"><small>SLJEDEĆE · ' + za + '</small><b>' + esc(nxt.t) + '</b></div>' + (p && p.tel ? '<a href="tel:' + esc(p.tel.replace(/[^\d+]/g, '')) + '" onclick="event.stopPropagation()">📞</a>' : '') + '</div>' + h; }
   const CL = gcol(); for (const [n, f, c, bub, ti, sb] of G) { const L = open.filter(f); if (!L.length && n !== 'Danas') continue; const tgl = n !== 'Danas' && n !== 'Zakašnjelo', zat = tgl && CL[n]; h += '<div class="gh dy ' + (c || '') + (tgl ? ' tg' : '') + '"' + (tgl ? ' onclick="gtog(\'' + n + '\')"' : '') + '><span class="b">' + bub + '</span><span class="n">' + ti + (sb ? '<small>' + sb + '</small>' : '') + '</span>' + (L.length ? '<span class="c">' + L.length + '</span>' : '') + (tgl ? '<i>' + (zat ? '▸' : '▾') + '</i>' : '') + '</div>'; if (zat) continue; /* v4.3: grupe se mogu zatvoriti */
     if (n === 'Danas' && !L.length) { h += '<div class="emp0">Danas je čisto 🎉</div>'; continue; }
-    if (n === 'Danas') { L.forEach((x, i) => x._k = okey(x, i)); L.sort((a, b) => a._k - b._k); let nw = false, bk = false; const anyT = L.some(x => x._k < 100000);
-      L.forEach(x => { if (!nw && anyT && x._k < 100000 && x._k > nowM && x.h) { h += '<div class="now">' + nowH + '</div>'; nw = true; }
+    if (n === 'Danas') { keyL(L); L.sort((a, b) => a._k - b._k); let nw = false, bk = false; const anyT = L.some(x => x._k < 100000);
+      L.forEach(x => { if (!nw && anyT && x._k < 100000 && x._k > nowM && (x.h || x.pre)) { h += '<div class="now">' + nowH + '</div>'; nw = true; }
         if (!bk && x._k >= 100000) { if (anyT && !nw) { h += '<div class="now">' + nowH + '</div>'; nw = true; } if (anyT) h += '<div class="gh sub">Bilo kad danas</div>'; bk = true; }
         h += row(x, P, n, '', true); }); if (anyT && !nw) h += '<div class="now">' + nowH + '</div>'; }
     else if (c === 'red') h += L.map(x => row(x, P, n, ' od', 'mv')).join('');
-    else { L.forEach((x, i) => x._k = okey(x, i)); L.sort((a, b) => (a.d || '').localeCompare(b.d || '') || a._k - b._k); h += L.map(x => row(x, P, n, '', true)).join(''); } } /* v4.2: i u Sutra / Tjedan / Kasnije / Bez datuma se može mijenjati redoslijed */
+    else { keyL(L); L.sort((a, b) => (a.d || '').localeCompare(b.d || '') || a._k - b._k); h += L.map(x => row(x, P, n, '', true)).join(''); } } /* v4.2: i u Sutra / Tjedan / Kasnije / Bez datuma se može mijenjati redoslijed */
   const dn = (S.tasks || []).filter(x => x.done).sort((a, b) => (b.doneAt || 0) - (a.doneAt || 0)).slice(0, 20);
   if (dn.length) h += '<div class="gh dy dn tg" onclick="showDone=!showDone;render()"><span class="b">✓</span><span class="n">Gotovo<small>zadnjih 20</small></span><span class="c">' + dn.length + '</span><i>' + (showDone ? '▾' : '▸') + '</i></div>' + (showDone ? dn.map(x => row(x, P, '')).join('') : '');
   if (!pvHas()) h += '<div class="pv"><b>🔁 Stalne provjere</b><span>e-Dozvola i e-dnevnik, svaki ponedjeljak i četvrtak</span><button onclick="pvAdd()">＋ Dodaj</button><button class="x" onclick="pvHide()">✕</button></div>';
@@ -354,18 +393,18 @@ function renderDan() {
 function vpH(x) { return posao(x).slice(0, 2).map(k => PSN[k] ? '<span class="vp ' + k + '">' + PSN[k][2] + '</span>' : '').join(''); }
 function row(x, P, g, cls, dz) { const p = x.b && P[x.b], ac = [];
   const dd = x.d && !/Danas|Sutra|^Dan /.test(g) ? dTxt(x.d).split(' ') : null, tm = x.h ? x.h + (dd ? '<small>' + dd[0] + ' ' + dd[1] + '</small>' : '') : dd ? dd[1] + '<small>' + dd[0] + '</small>' : '';
-  const dzA = dz === 'mv' ? (x.vs || x.done ? '' : ' data-mv="1"') : dz ? ' data-dz="1" data-dt="' + (x.d || '') + '" data-key="' + x._k + '"' + (x.h || x.vs ? ' data-fix="1"' : '') : '';
-  if (x.vs) { return '<div class="z vs' + (cls || '') + '" data-id="' + x.id + '"' + dzA + '><div class="tm' + (tm ? '' : ' no') + '">' + (tm || '·') + '</div><button class="ck" onclick="stepTick(\'' + x.pid + '\',' + x.ki + ')"></button><div class="tx" onclick="openEd(\'' + x.pid + '\')"><span class="par">' + esc(x.par).slice(0, 34) + ' › korak ' + (x.ki + 1) + '/' + x.kn + '</span><b>' + esc(x.t) + '</b>' + (x.b || posao(x).length ? '<div>' + vpH(x) + (x.b ? '<span class="pr">' + (/^r/.test(x.b) ? '' : esc(x.b) + ' ') + (p ? esc(p.n).slice(0, 22) : '') + '</span>' : '') + '</div>' : '') + '</div></div>'; }
+  const dzA = dz === 'mv' ? (x.vs || x.done ? '' : ' data-mv="1"') : dz ? ' data-dz="1" data-dt="' + (x.d || '') + '" data-key="' + x._k + '"' + (x.h ? ' data-fix="1"' : '') : '';
+  if (x.vs) { return '<div class="z vs' + (cls || '') + '" data-id="' + x.id + '"' + dzA + '><div class="tm' + (tm ? '' : ' no') + '">' + (tm || '·') + '</div><button class="ck" onclick="stepTick(\'' + x.pid + '\',' + x.ki + ')"></button><div class="tx" onclick="openEd(\'' + x.pid + '\')"><span class="par">' + esc(x.par).slice(0, 34) + ' › korak ' + (x.ki + 1) + '/' + x.kn + '</span>' + preH(x) + '<b>' + esc(x.t) + '</b>' + (x.b || posao(x).length ? '<div>' + vpH(x) + (x.b ? '<span class="pr">' + (/^r/.test(x.b) ? '' : esc(x.b) + ' ') + (p ? esc(p.n).slice(0, 22) : '') + '</span>' : '') + '</div>' : '') + '</div></div>'; }
   if (x.u) ac.push('<a href="' + esc(x.u) + '" target="_blank">🔗</a>');
   if (p && p.adr && x.v === 'izmjera') ac.push('<a href="' + mapU(p.adr) + '" target="_blank" title="Karta">📍</a>');
   if (p && p.tel && (x.v === 'nazvati' || x.v === 'sastanak' || (x.k && x.k.length))) ac.push('<a href="tel:' + esc(p.tel.replace(/[^\d+]/g, '')) + '">📞</a>');
   if (p && p.mail && x.v === 'mail') ac.push('<a href="mailto:' + esc(p.mail) + '">✉</a>');
-  if (!x.done) ac.push(x.w ? '<button onclick="later(\'' + x.id + '\',3)" title="Pričekaj još 3 dana">+3</button>' : '<button onclick="later(\'' + x.id + '\')" title="Odgodi za 1 dan">+1</button>');
+  if (!x.done && !x.w) ac.push('<button onclick="later(\'' + x.id + '\')" title="Odgodi za 1 dan">+1</button>');
   const sub = [(x.w ? '<span class="wt">⏳ Čekaš ' + wDays(x) + '</span>' : '') + (ZV[x.v] && x.v !== 'ostalo' ? ZV[x.v][0] + ' ' : '') + vpH(x) + (x.b ? '<span class="pr">' + (/^r/.test(x.b) ? '' : esc(x.b) + ' ') + (p ? esc(p.n).slice(0, 28) : '') + '</span>' : ''), x.rp ? '🔁 ' + (RPN[x.rp] || x.rp) : '', x.n ? esc(x.n).slice(0, 60) : ''].filter(s => s && s.trim()).join(' · ');
   const K = x.k || [], kd = K.filter(k => k.done).length, op = exp[x.id];
   const pg = K.length ? '<div class="pg" onclick="event.stopPropagation();exp[\'' + x.id + '\']=!exp[\'' + x.id + '\'];render()"><i><b style="width:' + Math.round(kd / K.length * 100) + '%"></b></i><span>' + kd + '/' + K.length + '</span><em>' + (op ? '▾' : '▸') + '</em></div>' : '';
   const ks = K.length && op && !x.done ? '<div class="ks">' + K.map((k, i) => '<div class="k' + (k.done ? ' d' : '') + '"><button class="c" onclick="stepTick(\'' + x.id + '\',' + i + ')">' + (k.done ? '✓' : '') + '</button><span class="t" onclick="openEd(\'' + x.id + '\')">' + esc(k.t) + '</span>' + (k.d ? '<span class="dt' + (!k.done && k.d < today() ? ' r' : '') + '">' + (k.d === today() ? 'danas' : dTxt(k.d)) + '</span>' : '') + '</div>').join('') + '<div class="kadd"><input placeholder="＋ Novi korak…" enterkeyhint="done" onkeydown="if(event.key===\'Enter\'){stepAdd(\'' + x.id + '\',this.value);}" onclick="event.stopPropagation()"></div></div>' : '';
-  return '<div class="z' + (x.done ? ' dn' : (cls || '')) + (posao(x)[0] ? ' pv-' + posao(x)[0] : '') + '" data-id="' + x.id + '"' + dzA + '><div class="tm' + (tm ? '' : ' no') + '" onclick="openEd(\'' + x.id + '\')">' + (tm || '·') + '</div><button class="ck" onclick="tick(\'' + x.id + '\')">' + (x.done ? '✓' : '') + '</button><div class="tx" onclick="openEd(\'' + x.id + '\')"><b>' + esc(x.t) + '<span class="cx">' + (x.w ? ' ⏳' : '') + vpH(x) + (x.b ? '<span class="pr">' + (/^r/.test(x.b) ? '' : esc(x.b) + ' ') + (p ? esc(p.n).slice(0, 22) : '') + '</span>' : '') + (K.length ? ' <span class="kc">' + kd + '/' + K.length + '</span>' : '') + '</span></b>' + (sub ? '<div>' + sub + '</div>' : '') + pg + '</div><div class="ac">' + ac.join('') + '</div>' + ks + '</div>'; }
+  return '<div class="z' + (x.done ? ' dn' : (cls || '')) + (posao(x)[0] ? ' pv-' + posao(x)[0] : '') + '" data-id="' + x.id + '"' + dzA + '><div class="tm' + (tm ? '' : ' no') + '" onclick="openEd(\'' + x.id + '\')">' + (tm || '·') + '</div><button class="ck" onclick="tick(\'' + x.id + '\')">' + (x.done ? '✓' : '') + '</button><div class="tx" onclick="openEd(\'' + x.id + '\')"><b>' + esc(x.t) + '<span class="cx">' + (x.w ? ' ⏳' : '') + vpH(x) + (x.b ? '<span class="pr">' + (/^r/.test(x.b) ? '' : esc(x.b) + ' ') + (p ? esc(p.n).slice(0, 22) : '') + '</span>' : '') + (K.length ? ' <span class="kc">' + kd + '/' + K.length + '</span>' : '') + '</span></b>' + (sub ? '<div>' + sub + '</div>' : '') + pg + '</div><div class="ac">' + ac.join('') + '</div>' + askH(x) + ansH(x) + ks + '</div>'; }
 
 const mapU = a => 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(a);
 const wDays = x => { const n = Math.max(0, Math.round((new Date(today() + 'T12:00:00') - new Date(x.w + 'T12:00:00')) / 864e5)); return n === 1 ? '1 dan' : n + ' dana'; };
@@ -412,8 +451,8 @@ function pCard(p, op) { const L = op.filter(x => x.b === p.b).sort((a, b) => (a.
 function renderCk() { const P = {}; (S.proj || []).forEach(p => P[p.b] = p); PJ = P; const t0 = today(), L = (S.tasks || []).filter(x => !x.done && x.w).sort((a, b) => (a.d || '9999').localeCompare(b.d || '9999'));
   let h = '<div class="gh">Čekam od drugih <span>' + L.length + '</span></div>';
   h += L.map(x => { const p = x.b && P[x.b], tel = p && p.tel ? p.tel.replace(/[^\d+]/g, '') : '', due = !x.d || x.d <= t0;
-    return '<div class="z" data-id="' + x.id + '"><div class="tm" style="color:#92400e">' + wDays(x).replace(' dana', ' d').replace(' dan', ' d') + '<small>čekaš</small></div><button class="ck" onclick="tick(\'' + x.id + '\')"></button><div class="tx" onclick="openEd(\'' + x.id + '\')"><b>' + esc(x.t) + '</b><div><span class="wt">' + (due ? '⏳ provjeri danas' : 'provjeri ' + dTxt(x.d)) + '</span>' + (x.b ? '<span class="pr">' + (/^r/.test(x.b) ? '' : esc(x.b) + ' ') + (p ? esc(p.n).slice(0, 22) : '') + '</span>' : '') + (x.n ? ' · ' + esc(x.n).slice(0, 50) : '') + '</div></div><div class="ac">' + (tel ? '<a href="tel:' + esc(tel) + '">📞</a>' : '') + '<button onclick="later(\'' + x.id + '\',3)" title="Pričekaj još 3 dana">+3</button></div></div>'; }).join('');
-  if (!L.length) h += '<p class="empty">Ne čekaš ništa ni od koga 👍<br><small>U uređivanju zadatka odaberi ⏳ Čekam.</small></p>';
+    return '<div class="z" data-id="' + x.id + '"><div class="tm" style="color:#92400e">' + wDays(x).replace(' dana', ' d').replace(' dan', ' d') + '<small>čekaš</small></div><button class="ck" onclick="tick(\'' + x.id + '\')"></button><div class="tx" onclick="openEd(\'' + x.id + '\')"><b>' + esc(x.t) + '</b><div><span class="wt">' + (due ? '⏳ provjeri danas' : 'provjeri ' + dTxt(x.d)) + '</span>' + (x.b ? '<span class="pr">' + (/^r/.test(x.b) ? '' : esc(x.b) + ' ') + (p ? esc(p.n).slice(0, 22) : '') + '</span>' : '') + (x.n ? ' · ' + esc(x.n).slice(0, 50) : '') + '</div></div><div class="ac">' + (tel ? '<a href="tel:' + esc(tel) + '">📞</a>' : '') + '</div>' + ansH(x) + '</div>'; }).join('');
+  if (!L.length) h += '<p class="empty">Ne čekaš ništa ni od koga 👍<br><small>Kod Izrade i Ponude kvačica nudi ⏳ Čekam odgovor; inače u uređivanju zadatka odaberi ⏳ Čekam.</small></p>';
   document.getElementById('list').innerHTML = h; }
 /* --- pametan upis --- */
 const DN = [['ned', 0], ['nedjelj', 0], ['pon', 1], ['ponedjelj', 1], ['uto', 2], ['utor', 2], ['sri', 3], ['srijed', 3], ['čet', 4], ['cet', 4], ['četvrt', 4], ['cetvrt', 4], ['pet', 5], ['petak', 5], ['sub', 6], ['subot', 6]];
@@ -440,7 +479,7 @@ function stepTick(id, i) { const x = S.tasks.find(q => q.id === id); if (!x || !
   render(); api('save', x); }
 function stepAdd(id, t) { t = String(t || '').trim(); if (!t) return; const x = S.tasks.find(q => q.id === id); if (!x) return; (x.k = x.k || []).push({ t, d: '', done: false }); exp[id] = true; render();
   const inp = document.querySelector('.z[data-id="' + id + '"] .kadd input'); if (inp) inp.focus(); api('save', x); }
-function tick(id) { const x = S.tasks.find(q => q.id === id); if (!x) return; x.done = !x.done; render(); if (x.done) { if (x.rp) msg('✓ Gotovo – sljedeći se pravi sam'); else undoMsg('✓ Gotovo', () => { x.done = false; render(); api('done', { id, on: false }); }); } api('done', { id, on: x.done }); }
+function tick(id, f) { const x = S.tasks.find(q => q.id === id); if (!x) return; if (!f && !x.done && !x.w && !x.rp && ASK[x.v] && askId !== id) { askId = id; render(); return; } askId = null; x.done = !x.done; render(); if (x.done) { if (x.rp) msg('✓ Gotovo – sljedeći se pravi sam'); else undoMsg('✓ Gotovo', () => { x.done = false; render(); api('done', { id, on: false }); }); } api('done', { id, on: x.done }); }
 function later(id, n) { n = n || 1; const x = S.tasks.find(q => q.id === id); if (!x) return; const t = today(), b = x.w ? t : (x.d && x.d > t ? x.d : t), d = new Date(b + 'T12:00:00'); d.setDate(d.getDate() + n); const d0 = x.d; x.d = ymd(d); render(); undoMsg((x.w ? 'Provjera ' : 'Odgođeno na ') + dTxt(x.d), () => { x.d = d0; render(); api('save', x); }); if (x.w) api('save', x); else api('later', { id, days: n, d: x.d }); }
 function openEd(id, pb) { cur = id ? Object.assign({}, S.tasks.find(q => q.id === id)) : { t: '', v: 'ostalo', d: today(), h: '', b: pb || '', rp: '', u: '', n: '', w: '' };
   const g = i => document.getElementById(i); g('et').value = cur.t || ''; g('ed_d').value = cur.d || ''; g('eh').value = cur.h || ''; g('er').value = cur.rp || ''; g('eu').value = cur.u || ''; g('en').value = cur.n || '';
@@ -452,7 +491,7 @@ function wchips() { const t0 = today(), dd = document.getElementById('ed_d').val
 function pchips() { const pv = cur.b && PJ[cur.b] && PJ[cur.b].vr || [], eff = cur.p ? [cur.p] : pv;
   document.getElementById('epa').textContent = !cur.p && pv.length ? 'iz projekta' : '';
   document.getElementById('ep').innerHTML = PS.map(([k, n]) => '<button class="' + (eff.includes(k) ? 'on vp ' + k + (cur.p ? '' : ' au') : '') + '" onclick="cur.p=(cur.p===\'' + k + '\'?\'\':\'' + k + '\');pchips()">' + n + '</button>').join(''); }
-function kread() { document.querySelectorAll('#ek .k').forEach((r, i) => { if (!cur.k[i]) return; cur.k[i].t = r.querySelector('.t').value.trim(); cur.k[i].d = r.querySelector('.kd').value; }); }
+function kread() { document.querySelectorAll('#ek .k').forEach((r, i) => { if (!cur.k[i]) return; cur.k[i].t = r.querySelector('.t').value.trim(); const nd = r.querySelector('.kd').value; if ((cur.k[i].d || '') !== nd) delete cur.k[i].o; cur.k[i].d = nd; }); }
 function kedit() { const n = cur.k.length, d = cur.k.filter(k => k.done).length; document.getElementById('ekl').textContent = 'KORACI' + (n ? ' ' + d + '/' + n : '');
   document.getElementById('ek').style.display = n ? '' : 'none';
   document.getElementById('ek').innerHTML = cur.k.map((k, i) => '<div class="k' + (k.done ? ' d' : '') + '"><button class="c" onclick="kread();cur.k[' + i + '].done=!cur.k[' + i + '].done;kedit()">' + (k.done ? '✓' : '') + '</button><input class="t" value="' + esc(k.t) + '"><input class="kd" type="date" value="' + esc(k.d || '') + '"><button class="x" onclick="kread();cur.k.splice(' + i + ',1);kedit()">✕</button></div>').join(''); }
@@ -474,13 +513,13 @@ document.getElementById('novi').onclick = e => { e.preventDefault(); if (CFG) wi
   const L = document.getElementById('list'), hint = document.getElementById('hint'), bar = document.getElementById('dbar');
   const pt = e => e.touches ? e.touches[0] : (e.changedTouches ? e.changedTouches[0] : e);
   function down(e) { const z = e.target.closest('.z[data-id]'); if (!z || e.target.closest('input,a,.ck,.c,.pg,.ks') || (e.button && e.button !== 0)) return; const p = pt(e); st = { x: p.clientX, y: p.clientY, z, mouse: !e.touches };
-    clearTimeout(tmr); if (!z.dataset.dz && !z.dataset.mv) return; tmr = setTimeout(() => { if (!st || st.sw) return; if (z.classList.contains('vs')) { msg('Korak se pomiče u zadatku'); st = null; swallow = true; return; } start(z, st.y); }, st.mouse ? 350 : 450); }
+    clearTimeout(tmr); if (!z.dataset.dz && !z.dataset.mv) return; tmr = setTimeout(() => { if (!st || st.sw) return; start(z, st.y); }, st.mouse ? 350 : 450); }
   function start(z, y) { const r = z.getBoundingClientRect(); const ph = document.createElement('div'); ph.className = 'phd'; ph.style.height = r.height + 'px'; z.after(ph);
     D = { z, ph, off: y - r.top, id: z.dataset.id, fix: !!z.dataset.fix, mv: !!z.dataset.mv, tg: null }; z.classList.add('drag'); z.style.top = r.top + 'px'; z.style.width = r.width + 'px'; z.style.left = r.left + 'px';
     document.body.classList.add('dragging'); hint.textContent = '↕ Povuci na novo mjesto ili na traku dolje'; hint.classList.add('on'); bar.classList.add('on'); swallow = true; try { navigator.vibrate && navigator.vibrate(25); } catch (e) { } loop(); }
   function move(e) { if (!D) { if (!st) return; const p = pt(e), dx = p.clientX - st.x, dy = p.clientY - st.y;
       if (st.sw) { e.preventDefault(); swMove(dx); return; }
-      if (st.mouse && Math.hypot(dx, dy) > 6 && (st.z.dataset.dz || st.z.dataset.mv) && !st.z.classList.contains('vs')) { clearTimeout(tmr); const s0 = st; st = null; start(s0.z, s0.y); return; } /* v4.1: mišem odmah povuci, bez držanja */
+      if (st.mouse && Math.hypot(dx, dy) > 6 && (st.z.dataset.dz || st.z.dataset.mv)) { clearTimeout(tmr); const s0 = st; st = null; start(s0.z, s0.y); return; } /* v4.1: mišem odmah povuci, bez držanja */
       if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 1.6 && !st.z.classList.contains('dn')) { clearTimeout(tmr); swStart(); e.preventDefault(); swMove(dx); return; }
       if (Math.abs(dx) > 8 || Math.abs(dy) > 8) { clearTimeout(tmr); st = null; return; }
       if ((st.z.dataset.dz || st.z.dataset.mv) && e.cancelable) e.preventDefault(); /* iPhone: dok držiš prst, ne počinji pomicati stranicu */ return; }
@@ -498,7 +537,12 @@ document.getElementById('novi').onclick = e => { e.preventDefault(); if (CFG) wi
   function swEnd() { const { z, dx } = st, id = z.dataset.id; swallow = true; z.classList.remove('swp'); if (st.bg) st.bg.remove(); if (st.tx) st.tx.style.transform = '';
     if (Math.abs(dx || 0) > 90) { if (z.classList.contains('vs')) { const [pid, ki] = id.split('#'); if (dx > 0) stepTick(pid, +ki); } else if (dx > 0) tick(id); else { const x = (S.tasks || []).find(q => q.id === id); later(id, x && x.w ? 3 : 1); } } }
   function up() { clearTimeout(tmr); if (st && st.sw) { swEnd(); } st = null; setTimeout(() => swallow = false, 450); if (!D) return; const { z, ph, id, tg, fix, mv, inDan } = D; D = null; document.body.classList.remove('dragging'); hint.classList.remove('on'); bar.classList.remove('on'); bar.querySelectorAll('.hv').forEach(b => b.classList.remove('hv'));
-    z.classList.remove('drag'); const x = S.tasks.find(q => q.id === id); if (!x) { render(); return; }
+    z.classList.remove('drag');
+    if (id.indexOf('#') > 0) { if (tg) { z.remove(); ph.remove(); stepMove(id, tg === 'x' ? '' : addD(+tg), null); return; } if (!ph.parentNode) { z.remove(); render(); return; } /* v6: i korak se povlači */
+      const sb = dir => { let e = dir < 0 ? ph.previousElementSibling : ph.nextElementSibling; while (e) { if (e.classList.contains('gh') && !e.classList.contains('sub')) return null; if (e.matches('.z[data-dz]') && e.dataset.id !== id) return e; e = dir < 0 ? e.previousElementSibling : e.nextElementSibling; } return null; };
+      const pv = sb(-1), nx = sb(1); z.remove(); ph.remove(); if (!pv && !nx) { render(); return; } const td = pv ? pv.dataset.dt : nx.dataset.dt, prev = pv && pv.dataset.dt === td ? pv : null, next = nx && nx.dataset.dt === td ? nx : null;
+      stepMove(id, td, kNew(prev ? +prev.dataset.key : null, next ? +next.dataset.key : null)); return; }
+    const x = S.tasks.find(q => q.id === id); if (!x) { render(); return; }
     if (tg) { const nd = tg === 'x' ? '' : addD(+tg); z.remove(); ph.remove(); if ((x.d || '') === nd) { render(); return; } x.d = nd; if (tg !== '0') delete x.o; render(); msg(nd ? 'Premješteno na ' + dTxt(nd) : 'Premješteno u „Bez datuma”'); api('save', x); return; }
     if (!ph.parentNode) { z.remove(); render(); return; }
     const sib = (el, dir) => { let e = dir < 0 ? el.previousElementSibling : el.nextElementSibling; while (e) { if (e.classList.contains('gh') && !e.classList.contains('sub')) return null; if (e.matches('.z[data-dz]') && e.dataset.id !== id) return e; e = dir < 0 ? e.previousElementSibling : e.nextElementSibling; } return null; };
@@ -509,8 +553,7 @@ document.getElementById('novi').onclick = e => { e.preventDefault(); if (CFG) wi
     if (kp == null && kn == null) k = 100000; else if (kp == null) k = kn >= 100000 ? kn - 0.5 : Math.max(0, kn - 1); else if (kn == null) k = kp >= 100000 ? kp + 1 : 100000; else k = (kp + kn) / 2;
     if (kp != null && kn != null && kp < 100000 && kn >= 100000) k = kp + 0.5; /* iza zadnjeg sa satom = u rasporedu */
     const moved = (x.d || '') !== td; if (moved) x.d = td; if (!x.h) x.o = k;
-    const U = S.tasks.filter(q => !q.done && (q.d || '') === td && !q.h).map((q, j) => (q._k = okey(q, j), q)).sort((a, b) => a._k - b._k), o = {};
-    let n = 100000; U.forEach(q => { if (q._k >= 100000) { q.o = n++; } o[q.id] = q.o; }); render(); if (moved) { msg(td ? 'Premješteno na ' + dTxt(td) : 'Premješteno u „Bez datuma”'); api('save', x); } else msg('Redoslijed spremljen'); api('red', { o }); }
+    const r = reOrd(td), o = r.o; render(); if (moved) { msg(td ? 'Premješteno na ' + dTxt(td) : 'Premješteno u „Bez datuma”'); api('save', x); } else msg('Redoslijed spremljen'); api('red', { o }); r.sv.forEach(q => { q.mod = Date.now(); api('save', q); }); }
   L.addEventListener('touchstart', down, { passive: true }); document.addEventListener('touchmove', move, { passive: false }); document.addEventListener('touchend', up); document.addEventListener('touchcancel', up);
   L.addEventListener('mousedown', down); document.addEventListener('mousemove', move); document.addEventListener('mouseup', up);
   L.addEventListener('dragstart', e => { if (e.target.closest && e.target.closest('.z')) e.preventDefault(); });
@@ -533,18 +576,18 @@ function gridAl() { const b = document.body, bd = document.getElementById('bd');
 function bCard(x, P, sd, od) { const p = x.b && P[x.b], pv0 = posao(x)[0], id = x.vs ? x.pid : x.id, K = x.k || [], kd = K.filter(k => k.done).length, ac = [];
   if (!x.vs) { if (x.u) ac.push('<a href="' + esc(x.u) + '" target="_blank" title="Otvori poveznicu">🔗</a>'); if (p && p.tel && (x.v === 'nazvati' || x.v === 'sastanak')) ac.push('<a href="tel:' + esc(p.tel.replace(/[^\d+]/g, '')) + '" title="Nazovi">📞</a>');
     if (p && p.mail && x.v === 'mail') ac.push('<a href="mailto:' + esc(p.mail) + '" title="Pošalji mail">✉</a>'); if (p && p.adr && x.v === 'izmjera') ac.push('<a href="' + mapU(p.adr) + '" target="_blank" title="Karta">📍</a>');
-    ac.push(x.w ? '<button onclick="later(\'' + x.id + '\',3)" title="Pričekaj još 3 dana">+3</button>' : '<button onclick="later(\'' + x.id + '\')" title="Odgodi za 1 dan">+1</button>'); }
+    if (!x.w) ac.push('<button onclick="later(\'' + x.id + '\')" title="Odgodi za 1 dan">+1</button>'); }
   ac.push('<button onclick="openEd(\'' + id + '\')" title="Uredi">✎</button>');
   const m = [x.h ? '<span class="h">' + x.h + '</span>' : '', sd && x.d ? '<span class="d">' + dTxt(x.d) + '</span>' : '', x.w ? '<span class="wt">⏳ čekaš ' + wDays(x) + '</span>' : '', ZV[x.v] && x.v !== 'ostalo' ? '<span>' + ZV[x.v][0] + ' ' + ZV[x.v][1] + '</span>' : '', vpH(x),
     x.b ? '<span class="pr">' + (/^r/.test(x.b) ? '' : esc(x.b) + ' ') + (p ? esc(p.n.length > 30 ? p.n.slice(0, 30).replace(/\s+\S*$/, '') + '…' : p.n) : '') + '</span>' : '', x.rp ? '<span>🔁 ' + (RPN[x.rp] || x.rp) + '</span>' : '', x.n ? '<span class="nt">' + esc(x.n).slice(0, 50) + '</span>' : ''].filter(Boolean).join('');
   const ck = x.vs ? 'stepTick(\'' + x.pid + '\',' + x.ki + ')' : 'tick(\'' + x.id + '\')';
   return '<div class="bcard' + (x.vs ? ' vs' : '') + (od ? ' od' : '') + '" data-id="' + x.id + '" data-dt="' + (x.d || '') + '" data-key="' + x._k + '"' + (pv0 ? ' data-v="' + pv0 + '"' : '') + ' onclick="bOpen(event,\'' + id + '\')"><button class="ck" onclick="' + ck + '" title="Gotovo"></button>' +
-    (x.vs ? '<span class="par">' + esc(x.par).slice(0, 34) + ' › korak ' + (x.ki + 1) + '/' + x.kn + '</span>' : '') + '<b>' + esc(x.t) + '</b>' + (m ? '<div class="m">' + m + '</div>' : '') + (K.length && !x.vs ? '<div class="k">koraci<i></i>' + kd + '/' + K.length + '</div>' : '') + '<div class="ac">' + ac.join('') + '</div></div>'; }
+    (x.vs ? '<span class="par">' + esc(x.par).slice(0, 34) + ' › korak ' + (x.ki + 1) + '/' + x.kn + '</span>' + preH(x) : '') + '<b>' + esc(x.t) + '</b>' + (m ? '<div class="m">' + m + '</div>' : '') + (K.length && !x.vs ? '<div class="k">koraci<i></i>' + kd + '/' + K.length + '</div>' : '') + (x.vs ? '' : askH(x) + ansH(x)) + '<div class="ac">' + ac.join('') + '</div></div>'; }
 function renderBoard() { const t0 = today(), P = {}; (S.proj || []).forEach(p => P[p.b] = p); PJ = P;
   const base = (S.tasks || []).filter(x => !x.done && !(x.w && x.d && x.d > t0)), vs = [];
-  base.forEach(x => (x.k || []).forEach((k, i) => { if (k.d && !k.done) vs.push({ id: x.id + '#' + i, vs: true, pid: x.id, ki: i, t: k.t, d: k.d, b: x.b, p: x.p, v: x.v, par: x.t, kn: x.k.length }); }));
+  vsOf(base, vs);
   const all = base.concat(vs), cnt = {}; all.forEach(x => { const v = ZV[x.v] ? x.v : 'ostalo'; cnt[v] = (cnt[v] || 0) + 1; }); if (fv && !cnt[fv]) fv = '';
-  const vis = fv ? all.filter(x => (ZV[x.v] ? x.v : 'ostalo') === fv) : all, srt = L => { L.forEach((x, i) => x._k = okey(x, i)); return L.sort((a, b) => (a.d || '').localeCompare(b.d || '') || a._k - b._k); };
+  const vis = fv ? all.filter(x => (ZV[x.v] ? x.v : 'ostalo') === fv) : all, srt = L => { keyL(L); return L.sort((a, b) => (a.d || '').localeCompare(b.d || '') || a._k - b._k); };
   const days = [0, 1, 2, 3, 4, 5, 6].map(i => addD(i)), last = days[6], dn0 = s => new Date(s + 'T12:00:00'), sc = {}; document.querySelectorAll('.bc-sc').forEach(e => sc[e.dataset.c] = e.scrollTop);
   let h = '<div class="bd-dim">' + [0, 1, 2, 3, 4, 5, 6, 7].map(i => '<i style="left:' + (i * 100 / 7) + '%"></i>').join('') + '<em>tjedan ' + isoW(t0) + ' · 7 dana · ' + vis.filter(x => x.d && x.d >= t0 && x.d <= last).length + ' zadataka</em></div><div class="bd" id="bd">';
   days.forEach((d, i) => { const D = dn0(d), g = D.getDay(), we = g === 0 || g === 6, L = srt(vis.filter(x => x.d === d)), OD = i === 0 ? srt(vis.filter(x => x.d && x.d < t0)) : [], n = L.length + OD.length;
@@ -559,7 +602,7 @@ function renderBoard() { const t0 = today(), P = {}; (S.proj || []).forEach(p =>
   document.getElementById('list').innerHTML = h; document.querySelectorAll('.bc-sc').forEach(e => { if (sc[e.dataset.c]) e.scrollTop = sc[e.dataset.c]; }); }
 /* v5: povlačenje na ploči – mišem odmah, prstom nakon držanja */
 (function () { const L = document.getElementById('list'); let st = null, D = null, sw = false;
-  L.addEventListener('pointerdown', e => { if (!document.body.classList.contains('brd') || e.button) return; const c = e.target.closest('.bcard'); if (!c || e.target.closest('button,a,input') || c.classList.contains('vs')) return;
+  L.addEventListener('pointerdown', e => { if (!document.body.classList.contains('brd') || e.button) return; const c = e.target.closest('.bcard'); if (!c || e.target.closest('button,a,input')) return;
     st = { x: e.clientX, y: e.clientY, c, touch: e.pointerType !== 'mouse' }; if (st.touch) st.t = setTimeout(() => { if (st && !D) begin(); }, 420); });
   document.addEventListener('pointermove', e => { if (!st) return; if (!D) { const d = Math.hypot(e.clientX - st.x, e.clientY - st.y); if (!st.touch && d > 6) begin(); else if (st.touch && d > 10) { clearTimeout(st.t); st = null; } if (!D) return; }
     if (e.cancelable) e.preventDefault(); D.g.style.left = (e.clientX - D.ox) + 'px'; D.g.style.top = (e.clientY - D.oy) + 'px'; place(e.clientX, e.clientY); }, { passive: false });
@@ -574,16 +617,20 @@ function renderBoard() { const t0 = today(), P = {}; (S.proj || []).forEach(p =>
     if (bf) { if (D.ph.nextElementSibling !== bf) z.insertBefore(D.ph, bf); } else if (D.ph.parentNode !== z || (D.ph.nextElementSibling && D.ph.nextElementSibling.classList.contains('bcard'))) z.appendChild(D.ph);
     const s = col.querySelector('.bc-sc'), r = s.getBoundingClientRect(); if (y > r.bottom - 40) s.scrollTop += 14; else if (y < r.top + 40) s.scrollTop -= 14; }
   function clean(d) { d.g.remove(); d.c.classList.remove('bsrc'); document.body.classList.remove('dragging'); setTimeout(() => sw = false, 300); }
-  function drop(d) { clean(d); const z = d.ph.parentNode, x = (S.tasks || []).find(q => q.id === d.id); if (!z || !x || !z.classList.contains('bc-l')) { render(); return; }
+  function drop(d) { clean(d); const z = d.ph.parentNode;
+    if (d.id.indexOf('#') > 0) { if (!z || !z.classList.contains('bc-l')) { render(); return; } const K = ((S.tasks.find(q => q.id === d.id.split('#')[0]) || {}).k || [])[+d.id.split('#')[1]]; if (!K) { render(); return; } /* v6: korak */
+      const dt = z.dataset.dt, nd = dt === 'later' ? (K.d && K.d > addD(6) ? K.d : addD(7)) : dt, sb = dir => { let e = dir < 0 ? d.ph.previousElementSibling : d.ph.nextElementSibling; while (e) { if (e.classList.contains('bcard') && !e.classList.contains('bsrc') && e.dataset.dt === nd) return e; e = dir < 0 ? e.previousElementSibling : e.nextElementSibling; } return null; };
+      const pv = sb(-1), nx = sb(1); stepMove(d.id, nd, nd ? kNew(pv ? +pv.dataset.key : null, nx ? +nx.dataset.key : null) : null); return; }
+    const x = (S.tasks || []).find(q => q.id === d.id); if (!z || !x || !z.classList.contains('bc-l')) { render(); return; }
     const last = addD(6), dt = z.dataset.dt, nd = dt === 'later' ? (x.d && x.d > last ? x.d : addD(7)) : dt;
     if (x.h && (x.d || '') === nd) { render(); msg('Zadatak sa satom stoji po vremenu'); return; }
-    const sib = dir => { let e = dir < 0 ? d.ph.previousElementSibling : d.ph.nextElementSibling; while (e) { if (e.classList.contains('bcard') && !e.classList.contains('bsrc') && !e.classList.contains('vs') && e.dataset.dt === nd) return e; e = dir < 0 ? e.previousElementSibling : e.nextElementSibling; } return null; };
+    const sib = dir => { let e = dir < 0 ? d.ph.previousElementSibling : d.ph.nextElementSibling; while (e) { if (e.classList.contains('bcard') && !e.classList.contains('bsrc') && e.dataset.dt === nd) return e; e = dir < 0 ? e.previousElementSibling : e.nextElementSibling; } return null; };
     const pv = sib(-1), nx = sib(1), kp = pv ? +pv.dataset.key : null, kn = nx ? +nx.dataset.key : null; let k;
     if (kp == null && kn == null) k = 100000; else if (kp == null) k = kn >= 100000 ? kn - 0.5 : Math.max(0, kn - 1); else if (kn == null) k = kp >= 100000 ? kp + 1 : 100000; else k = (kp + kn) / 2;
     if (kp != null && kn != null && kp < 100000 && kn >= 100000) k = kp + 0.5;
     const moved = (x.d || '') !== nd; x.d = nd; if (!x.h) x.o = k;
-    const U = S.tasks.filter(q => !q.done && (q.d || '') === nd && !q.h).map((q, j) => (q._k = okey(q, j), q)).sort((a, b) => a._k - b._k), o = {}; let n = 100000; U.forEach(q => { if (q._k >= 100000) q.o = n++; o[q.id] = q.o; });
-    render(); if (moved) { msg(nd ? 'Premješteno na ' + dTxt(nd) : 'Premješteno u „Bez datuma”'); api('save', x); } else msg('Redoslijed spremljen'); if (Object.keys(o).length) api('red', { o }); }
+    const r = reOrd(nd), o = r.o;
+    render(); if (moved) { msg(nd ? 'Premješteno na ' + dTxt(nd) : 'Premješteno u „Bez datuma”'); api('save', x); } else msg('Redoslijed spremljen'); if (Object.keys(o).length) api('red', { o }); r.sv.forEach(q => { q.mod = Date.now(); api('save', q); }); }
   document.addEventListener('click', e => { if (sw && e.target.closest && e.target.closest('#list')) { sw = false; e.stopPropagation(); e.preventDefault(); } }, true);
 })();
 addEventListener('resize', () => { clearTimeout(window._rz); window._rz = setTimeout(() => { if (!document.body.classList.contains('dragging')) render(); }, 150); });
