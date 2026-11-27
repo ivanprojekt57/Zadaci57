@@ -3,12 +3,12 @@
 'use strict';
 const LOGO_KEY = 'izmjera-pdf-logo', FIRMA_KEY = 'izmjera-pdf-firma';
 // Helvetica: WinAnsi + č ć đ na slobodnim mjestima 128–133
-const MAP = { 'č': 128, 'Č': 129, 'ć': 130, 'Ć': 131, 'đ': 132, 'Đ': 133, 'š': 0x9a, 'Š': 0x8a, 'ž': 0x9e, 'Ž': 0x8e, '–': 0x96, '—': 0x97, '‘': 0x91, '’': 0x92, '“': 0x93, '”': 0x94, '„': 0x84, '•': 0x95, '…': 0x85, '™': 0x99 };
-const DIFF = '[128 /ccaron /Ccaron /cacute /Cacute /dcroat /Dcroat]';
+const MAP = { 'č': 128, 'Č': 129, 'ć': 130, 'Ć': 131, 'đ': 132, 'Đ': 133, 'š': 0x9a, 'Š': 0x8a, 'ž': 0x9e, 'Ž': 0x8e, '–': 0x96, '—': 0x97, '‘': 0x91, '’': 0x92, '“': 0x93, '”': 0x94, '„': 0x84, '•': 0x95, '…': 0x85, '™': 0x99, '€': 0x8d };
+const DIFF = '[128 /ccaron /Ccaron /cacute /Cacute /dcroat /Dcroat 141 /Euro]'; /* v2.88: € na slobodnom mjestu 141 */
 function str(t) { let o = ''; for (const ch of String(t == null ? '' : t)) { let n = MAP[ch] != null ? MAP[ch] : ch.codePointAt(0); if (n === 10 || n === 13 || n === 9) n = 32; if (n > 255 || (n >= 127 && n < 160 && MAP[ch] == null)) { o += '?'; continue; } if (n === 40 || n === 41 || n === 92) o += '\\' + ch; else if (n >= 32 && n <= 126) o += ch; else o += '\\' + n.toString(8).padStart(3, '0'); } return '(' + o + ')'; }
 function f(n) { const v = Number(n); if (!Number.isFinite(v)) return '0'; const s = v.toFixed(3); return s.replace(/\.?0+$/, '') || '0'; }
 // približna širina teksta (Helvetica), u jedinicama veličine fonta
-function textW(t, bold) { const FT = root.IzmjeraPdfFont; if (FT) { const W = FT[bold ? 'B' : 'R'].w; let w = 0; for (const ch of String(t || '')) { let n = MAP[ch] != null ? MAP[ch] : ch.codePointAt(0); if (n < 32 || n > 255) n = 63; w += (W[n - 32] || 556) / 1000; } return w; }
+function textW(t, bold, serif) { const FT = root.IzmjeraPdfFont; if (FT) { const W = (serif && FT.SR ? FT[bold ? 'SB' : 'SR'] : FT[bold ? 'B' : 'R']).w; let w = 0; for (const ch of String(t || '')) { let n = MAP[ch] != null ? MAP[ch] : ch.codePointAt(0); if (n < 32 || n > 255) n = 63; w += (W[n - 32] || 556) / 1000; } return w; }
   let w = 0; for (const ch of String(t || '')) { if ('il.,:;|!\'’ '.includes(ch)) w += 0.28; else if ('fjrtI()[]-/'.includes(ch)) w += 0.36; else if ('mwMW'.includes(ch)) w += 0.85; else if (ch >= 'A' && ch <= 'Z' || 'ČĆŠŽĐ'.includes(ch)) w += 0.68; else w += 0.556; } return w * (bold ? 1.06 : 1); }
 function jpegSize(bin) { let i = 2; while (i < bin.length) { if (bin.charCodeAt(i) !== 0xff) { i++; continue; } const mk = bin.charCodeAt(i + 1); const len = (bin.charCodeAt(i + 2) << 8) + bin.charCodeAt(i + 3); if (mk >= 0xc0 && mk <= 0xcf && mk !== 0xc4 && mk !== 0xc8 && mk !== 0xcc) return { h: (bin.charCodeAt(i + 5) << 8) + bin.charCodeAt(i + 6), w: (bin.charCodeAt(i + 7) << 8) + bin.charCodeAt(i + 8) }; i += 2 + len; } return null; }
 
@@ -20,7 +20,7 @@ function Doc() {
   if (FT) { const emb = (k, nm) => { const F = FT[k], bin = atob(F.b64), ff = this.add('<< /Length ' + bin.length + ' /Length1 ' + bin.length + ' >>\nstream\n' + bin + '\nendstream'),
       fd = this.add('<< /Type /FontDescriptor /FontName /' + nm + ' /Flags 32 /FontBBox [' + F.bbox.join(' ') + '] /ItalicAngle 0 /Ascent ' + F.asc + ' /Descent ' + F.desc + ' /CapHeight ' + F.cap + ' /StemV ' + (k === 'B' ? 120 : 80) + ' /FontFile2 ' + ff + ' 0 R >>');
       return this.add('<< /Type /Font /Subtype /TrueType /BaseFont /' + nm + ' /FirstChar 32 /LastChar 255 /Widths [' + F.w.join(' ') + '] /Encoding << /Type /Encoding /BaseEncoding /WinAnsiEncoding /Differences ' + DIFF + ' >> /FontDescriptor ' + fd + ' 0 R >>'); };
-    this.F1 = emb('R', 'IZMJRA+LiberationSans'); this.F2 = emb('B', 'IZMJRB+LiberationSans-Bold'); }
+    this.F1 = emb('R', 'IZMJRA+LiberationSans'); this.F2 = emb('B', 'IZMJRB+LiberationSans-Bold'); if (FT.SR && FT.SB) { this.F3 = emb('SR', 'IZMJSA+LiberationSerif'); this.F4 = emb('SB', 'IZMJSB+LiberationSerif-Bold'); } /* v2.88: serif za ponude */ }
   else { this.F1 = this.add(fnt('Helvetica')); this.F2 = this.add(fnt('Helvetica-Bold')); }
 }
 Doc.prototype.add = function (o) { this.objs.push(o); return this.objs.length; };
@@ -33,7 +33,7 @@ Doc.prototype.jpeg = function (dataUrl) {
 Doc.prototype.page = function (W, H, content) {
   const sid = this.add('<< /Length ' + content.length + ' >>\nstream\n' + content + 'endstream');
   const props = this.ocgs.map((id, i) => '/OC' + (i + 1) + ' ' + id + ' 0 R').join(' '), xo = this.imgs.map((id, i) => '/Im' + (i + 1) + ' ' + id + ' 0 R').join(' ');
-  this.pages.push(this.add('<< /Type /Page /Parent ' + this.pagesId + ' 0 R /MediaBox [0 0 ' + f(W) + ' ' + f(H) + '] /Resources << /Font << /F1 ' + this.F1 + ' 0 R /F2 ' + this.F2 + ' 0 R >>' + (xo ? ' /XObject << ' + xo + ' >>' : '') + (props ? ' /Properties << ' + props + ' >>' : '') + ' >> /Contents ' + sid + ' 0 R >>'));
+  this.pages.push(this.add('<< /Type /Page /Parent ' + this.pagesId + ' 0 R /MediaBox [0 0 ' + f(W) + ' ' + f(H) + '] /Resources << /Font << /F1 ' + this.F1 + ' 0 R /F2 ' + this.F2 + ' 0 R' + (this.F3 ? ' /F3 ' + this.F3 + ' 0 R /F4 ' + this.F4 + ' 0 R' : '') + ' >>' + (xo ? ' /XObject << ' + xo + ' >>' : '') + (props ? ' /Properties << ' + props + ' >>' : '') + ' >> /Contents ' + sid + ' 0 R >>'));
 };
 Doc.prototype.bytes = function () {
   this.objs[this.pagesId - 1] = '<< /Type /Pages /Kids [' + this.pages.map(id => id + ' 0 R').join(' ') + '] /Count ' + this.pages.length + ' >>';
@@ -48,9 +48,9 @@ Doc.prototype.bytes = function () {
 
 // tekst: x,y u točkama, align 'l'|'c'|'r', rot u stupnjevima (suprotno od kazaljke)
 function text(t, x, y, size, opt) {
-  opt = opt || {}; const bold = !!opt.bold, w = textW(t, bold) * size, al = opt.align || 'l', r = (opt.rot || 0) * Math.PI / 180, c = Math.cos(r), s = Math.sin(r);
+  opt = opt || {}; const bold = !!opt.bold, sf = !!(opt.serif && root.IzmjeraPdfFont && root.IzmjeraPdfFont.SR), w = textW(t, bold, sf) * size, al = opt.align || 'l', r = (opt.rot || 0) * Math.PI / 180, c = Math.cos(r), s = Math.sin(r);
   const dx = al === 'c' ? -w / 2 : al === 'r' ? -w : 0;
-  const F = '/' + (bold ? 'F2' : 'F1') + ' ';
+  const F = '/' + (sf ? (bold ? 'F4' : 'F3') : (bold ? 'F2' : 'F1')) + ' ';
   let body = str(t) + ' Tj';
   if (/[²³]/.test(String(t))) body = String(t).split(/([²³])/).filter(Boolean).map(seg => seg === '²' || seg === '³' ? F + f(size * 0.62) + ' Tf ' + f(size * 0.38) + ' Ts (' + (seg === '²' ? '2' : '3') + ') Tj ' + F + f(size) + ' Tf 0 Ts' : str(seg) + ' Tj').join(' '); // eksponent kao mala uzdignuta znamenka (ne ovisi o fontu preglednika)
   const k = opt.italic ? 0.2126 : 0; /* kurziv: nagib slova 12° (kao pismo sastavnice) */

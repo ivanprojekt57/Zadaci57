@@ -153,7 +153,8 @@ function css() { if ($('hkCss')) return; const c = document.createElement('style
 /* v2.87: ponuda */
 #pnOv .pn-info{margin:0 0 10px;color:#475569;font-size:14px}
 #pnOv .pn-sec{display:flex;justify-content:space-between;align-items:baseline;margin:6px 0 6px}#pnOv .pn-sec b{font:800 13px Arial;color:#0e4f63;letter-spacing:.02em}#pnOv .pn-sec em{font-style:normal;color:#64748b;font-size:12.5px}
-#pnOv .pn-hd,#pnOv .pn-r{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1.15fr) 112px auto 128px 34px;gap:6px;align-items:center}
+#pnOv .pn-hd,#pnOv .pn-r{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1.15fr) 116px 66px auto 128px 34px;gap:6px;align-items:center}
+#pnOv .pn-pdv{border:1.3px solid #cbd5e1;background:#fff;border-radius:999px;padding:5px 6px;font:700 12px Arial;color:#64748b;white-space:nowrap}#pnOv .pn-pdv.on{border-color:#0e4f63;color:#0e4f63;background:#e6f4f6}
 #pnOv .pn-hd{font:700 11.5px Arial;color:#64748b;padding:0 4px 3px}
 #pnOv .pn-r{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:6px;margin-bottom:6px}#pnOv .pn-r.op{background:#f8fafc}#pnOv .pn-r.op input{font-style:italic;color:#64748b}
 #pnOv .pn-r input{width:100%;box-sizing:border-box;border:1px solid #e2e8f0;border-radius:8px;padding:8px;font:15px Arial;color:#0f2a4a;background:#fff;min-width:0}#pnOv .pn-r [data-f=n]{font-weight:700}
@@ -168,6 +169,9 @@ function css() { if ($('hkCss')) return; const c = document.createElement('style
 #pnOv .pn-opt span input{width:70px;border:1px solid #cbd5e1;border-radius:8px;padding:6px;font:15px Arial;text-align:right}#pnOv .pn-opt span{margin-right:8px}
 #pnOv .pn-zar{margin:4px 2px 0;color:#0e4f63;font-size:13px;text-align:right}
 #pnOv .pn-ph2{margin-top:14px;border-top:2px dashed #cbd5e1;padding-top:8px}
+#pnOv .pn-pdfd{margin-top:14px;background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:8px 10px}#pnOv .pn-pdfd summary{font:800 13px Arial;color:#0e4f63;cursor:pointer}#pnOv .pn-pdfd summary em{font-style:normal;font-weight:400;color:#64748b;margin-left:6px}
+#pnOv .pn-pg{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px;margin-top:8px}#pnOv .pn-pg label{display:flex;flex-direction:column;gap:3px;font:700 11.5px Arial;color:#64748b}#pnOv .pn-pg .w2{grid-column:1/-1}#pnOv .pn-pg .ck{flex-direction:row;align-items:center;gap:8px;font-size:14px;color:#0f2a4a}
+#pnOv .pn-pg input:not([type=checkbox]),#pnOv .pn-pg textarea{border:1px solid #cbd5e1;border-radius:8px;padding:8px;font:15px Arial;color:#0f2a4a;width:100%;box-sizing:border-box}#pnOv .pn-pg input[type=checkbox]{width:20px;height:20px}
 @media (max-width:720px){#pnOv .pn-hd{display:none}#pnOv .pn-r{grid-template-columns:1fr 1fr;}}
 `; document.head.appendChild(c); }
 function tabsBar() { const main = $('homeMain'); if (!main) return null; let bar = $('hkTabs'); if (!bar) { bar = document.createElement('div'); bar.id = 'hkTabs'; } const head = main.querySelector('.home-head'); const anchor = $('homeMeet') || $('homeContinue');
@@ -333,12 +337,15 @@ const pnE = v => v === '' || v == null;
 const pnNum = v => { v = String(v == null ? '' : v).trim(); if (!v) return ''; v = v.replace(/\s|€/g, ''); if (/,/.test(v)) v = v.replace(/\./g, '').replace(',', '.'); else if (/^\d{1,3}(\.\d{3})+$/.test(v)) v = v.replace(/\./g, ''); const n = parseFloat(v); return Number.isFinite(n) ? n : ''; };
 const pnF = n => { n = Math.round((+n || 0) * 100) / 100; return n.toLocaleString('hr-HR', { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 }); };
 const pnDays = d => Math.max(0, Math.round((new Date(today() + 'T12:00:00') - new Date(d + 'T12:00:00')) / 864e5));
-function pnHist(skip) { const h = {}, byN = {}; (RG() ? RG().items() : []).forEach(it => { if (it.id === skip || !it.pon) return; (it.pon.s || []).forEach(q => { if (q.tko && q.tko !== 'Ja') { const o = h[q.tko] || (h[q.tko] = { tel: '', mail: '' }); if (q.tel) o.tel = q.tel; if (q.mail) o.mail = q.mail; }
+function pnHist(skip) { const h = {}, byN = {}; (RG() ? RG().items() : []).forEach(it => { if (it.id === skip || !it.pon) return; (it.pon.s || []).forEach(q => { if (q.tko && q.tko !== 'Ja') { const o = h[q.tko] || (h[q.tko] = { tel: '', mail: '' }); if (q.tel) o.tel = q.tel; if (q.mail) o.mail = q.mail; if (q.pdv === false) o.npdv = 1; else if (q.pdv === true) o.npdv = 0; }
   if (q.n) { const k = q.n.toLowerCase(), m = it.mod || 0; if (!byN[k] || m > byN[k].m) byN[k] = { m, tko: q.tko || '', iz: q.iz, tel: q.tel || '' }; } }); }); return { h, byN }; }
-function pnSum(P) { const ma = P && P.ma && P.ma.on ? (+P.ma.pct || 0) / 100 : 0, f = [0, 1].map(() => ({ n: 0, suc: 0, moje: 0, cnt: 0, ok: 0 }));
-  ((P && P.s) || []).forEach(q => { if (q.op) return; const t = f[q.f === 2 ? 1 : 0]; t.cnt++; if (pnE(q.iz)) return; t.ok++; const iz = +q.iz, ja = q.tko === 'Ja', inv = ja ? iz : iz * (1 + ma); t.n += inv; if (ja) t.moje += iz; else { t.suc += iz; t.moje += inv - iz; } });
-  if (P && P.ko && P.ko.on && +P.ko.iz) { f[0].n += +P.ko.iz; f[0].moje += +P.ko.iz; } f.forEach(t => { t.pdv = t.n * 0.25; t.uk = t.n * 1.25; }); return f; }
-const pnInv = (P, q) => q.tko === 'Ja' || !(P.ma && P.ma.on) ? +q.iz : +q.iz * (1 + (+P.ma.pct || 0) / 100);
+/* v2.88: Projekt 57 nije u sustavu PDV-a (čl. 90. st. 1.) – na ponudi PDV 0; suradniku koji je u sustavu PDV-a plaćaš cijenu + 25 % */
+const PN_PDV = 0.25, PN_OSL = 'Oslobođeno PDV-a temeljem čl. 90., st.1., Zakona o porezu na dodanu vrijednost.';
+const pnCost = q => pnE(q.iz) ? 0 : q.tko !== 'Ja' && q.pdv !== false ? +q.iz * (1 + PN_PDV) : +q.iz;
+const pnInv = (P, q) => q.tko === 'Ja' ? +q.iz : pnCost(q) * (1 + (P.ma && P.ma.on ? (+P.ma.pct || 0) / 100 : 0));
+function pnSum(P) { const f = [0, 1].map(() => ({ n: 0, suc: 0, moje: 0, cnt: 0, ok: 0 }));
+  ((P && P.s) || []).forEach(q => { if (q.op) return; const t = f[q.f === 2 ? 1 : 0]; t.cnt++; if (pnE(q.iz)) return; t.ok++; const inv = pnInv(P, q); t.n += inv; if (q.tko === 'Ja') t.moje += inv; else { const c = pnCost(q); t.suc += c; t.moje += inv - c; } });
+  if (P && P.ko && P.ko.on && +P.ko.iz) { f[0].n += +P.ko.iz; f[0].moje += +P.ko.iz; } f.forEach(t => { t.pdv = 0; t.uk = t.n; }); return f; }
 function pnSt(q, zt) { if (q.tko === 'Ja') return pnE(q.iz) ? ['upiši cijenu', 'pn-t'] : ['moje', 'pn-me']; if (!pnE(q.iz)) return ['✓ stiglo', 'pn-ok'];
   if (zt && zt.done) return ['stiglo? upiši cijenu', 'pn-t']; return q.rq ? ['⏳ čekam ' + pnDays(q.rq) + ' d', 'pn-w'] : [q.tko ? 'zatraži' : 'odaberi tko', 'pn-t']; }
 /* zadaci iz ponude: zatražiti ponude → čekam (po suradniku) → poslati ponudu → odgovor (čekam 7 d); prihvaćeno/odbijeno rješava tablica */
@@ -353,7 +360,7 @@ function pnTasks(o, sent) { const Z = getZ(), now = Date.now(), t0 = today(), b 
     if (!pnE(q.iz)) { close(id); return; } if (!q.rq) { drop(id); return; } if (ex && ex.done && !ex.del) return;
     up(id, { t: 'Ponuda: ' + q.n + ' – ' + (q.tko || '?') + ' (' + inv + ')', v: q.tel ? 'nazvati' : 'mail', w: q.rq, d: ex && !ex.del ? ex.d : addD(q.rq, 3), done: false, ime: q.tko || '', tel: q.tel || '' }); });
   Z.forEach(z => { if (z.id.indexOf(pre) !== 0) return; const r = z.id.slice(pre.length); if (['req', 'send', 'mapa'].includes(r) || r.indexOf('nar-') === 0) return; if (!P.s.some(q => q.id === r)) drop(z.id); });
-  const ph1 = P.s.filter(q => q.f !== 2 && !q.op), ready = ph1.length && ph1.every(q => !pnE(q.iz)), iz = pnF(S[0].n) + ' € + PDV';
+  const ph1 = P.s.filter(q => q.f !== 2 && !q.op), ready = ph1.length && ph1.every(q => !pnE(q.iz)), iz = pnF(S[0].n) + ' €';
   if (sent) up(pre + 'send', { t: 'Odgovor na ponudu: ' + inv + ' – ' + iz, v: 'ponuda', w: t0, d: addD(t0, 7), done: false });
   else if (!st || st === 'Sastanak') { if (ready) up(pre + 'send', { t: 'Poslati ponudu: ' + inv + ' – ' + iz, v: 'ponuda', w: '', done: false }); else drop(pre + 'send'); }
   setZ(Z); }
@@ -364,28 +371,81 @@ function pnFromTasks(o) { const P = o.pon; if (!P || !P.s) return false; const Z
 function pnAuto() { const R = RG(); if (!R || pnAuto.busy) return; pnAuto.busy = 1; try { R.items().forEach(it => { if (!it.pon || !it.pon.s || !it.pon.s.length || (it.status && it.status !== 'Sastanak' && it.status !== 'Ponuda poslana')) return; const o = JSON.parse(JSON.stringify(it)); if (pnFromTasks(o)) { R.saveItem(o); pnTasks(o); } }); } catch (e) { } pnAuto.busy = 0; }
 function pnText(o) { const P = o.pon, S = pnSum(P), L = []; L.push('Ponuda – ' + [o.inv, o.opis].filter(Boolean).join(', ')); L.push('');
   const ph = (f, title) => { const qs = P.s.filter(q => (q.f === 2 ? 2 : 1) === f && !q.op && !pnE(q.iz)); if (!qs.length && !(f === 1 && P.ko.on)) return; L.push(title + ':'); qs.forEach(q => L.push('– ' + q.n + ': ' + pnF(pnInv(P, q)) + ' €')); if (f === 1 && P.ko.on && +P.ko.iz) L.push('– Koordinacija i vođenje projekta: ' + pnF(+P.ko.iz) + ' €');
-    const t = S[f - 1]; L.push('Ukupno bez PDV-a: ' + pnF(t.n) + ' € · PDV 25 %: ' + pnF(t.pdv) + ' € · Ukupno: ' + pnF(t.uk) + ' €'); const op = P.s.filter(q => (q.f === 2 ? 2 : 1) === f && q.op && !pnE(q.iz)); if (op.length) L.push('Po potrebi: ' + op.map(q => q.n + ' ' + pnF(pnInv(P, q)) + ' € + PDV').join('; ')); L.push(''); };
+    const t = S[f - 1]; L.push('Ukupno: ' + pnF(t.n) + ' € (PDV 0,00 € – ' + PN_OSL + ')'); const op = P.s.filter(q => (q.f === 2 ? 2 : 1) === f && q.op && !pnE(q.iz)); if (op.length) L.push('Po potrebi (nije uključeno): ' + op.map(q => q.n + ' ' + pnF(pnInv(P, q)) + ' €').join('; ')); L.push(''); };
   ph(1, 'Projektna dokumentacija'); ph(2, 'Prijava početka radova'); return L.join('\n').trim(); }
 function pnCopy(t) { const ok = () => toast('📋 Tekst ponude je kopiran'); try { if (navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(t).then(ok, () => fb()); return; } } catch (e) { } fb();
   function fb() { const a = document.createElement('textarea'); a.value = t; a.style.cssText = 'position:fixed;left:-9999px'; document.body.appendChild(a); a.select(); try { document.execCommand('copy'); ok(); } catch (e) { alert(t); } a.remove(); } }
+/* v2.88: PDF ponude – izgled kao tvoje ponude u Excelu (logo, podaci firme, P O N U D A, stavke, PDV 0 – oslobođeno, napomena, pečat i potpis) */
+const PN_POT = ['Ivan Vrbat, mag.ing.aedif.', 'Ivan Lulić, mag.ing.aedif.', 'Ivan Lulić, struč.spec.ing.aedif.'];
+const PN_MJ = ['siječnja', 'veljače', 'ožujka', 'travnja', 'svibnja', 'lipnja', 'srpnja', 'kolovoza', 'rujna', 'listopada', 'studenog', 'prosinca'];
+const pnYmd = d => d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
+const pnEur = n => (Math.round((+n || 0) * 100) / 100).toLocaleString('hr-HR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+function pnPdfDef(x, P) { let pot = PN_POT[0]; try { pot = localStorage.getItem('izmjera-pon-pot') || pot; } catch (e) { }
+  return Object.assign({ kl: x.inv || '', ka: x.adresa || '', oib: '', uv: 'izradu projektne dokumentacije za:', ob: [x.opis, x.adresa].filter(Boolean).join(', '), br: pnYmd(new Date()), pot, pec: true, nap: '' }, P.pdf || {}); }
+function pnPdf(x, P) { const PDF = window.IzmjeraPdf; if (!PDF) { toast('PDF nije dostupan'); return; } const D = pnPdfDef(x, P), IMG = window.IzmjeraPonudaImg || {}, doc = new PDF.Doc(), T = PDF.text, f = PDF.f;
+  const W = 595.28, H = 841.89, L = 44, R = 553, AM = 470, pages = []; let c = '', y = 0;
+  const S = (t, X, Y, sz, o) => { c += T(t, X, Y, sz, Object.assign({ serif: true }, o || {})); };
+  const tw = (t, sz, b) => PDF.textW(t, b, true) * sz;
+  const wrap = (t, sz, w, b) => { const out = []; String(t || '').split('\n').forEach(par => { let ln = ''; par.split(/\s+/).filter(Boolean).forEach(wd => { const nx = ln ? ln + ' ' + wd : wd; if (tw(nx, sz, b) > w && ln) { out.push(ln); ln = wd; } else ln = nx; }); out.push(ln); }); return out; };
+  const rule = (x1, x2, yy, w) => { c += f(w || 0.6) + ' w 0 g ' + f(x1) + ' ' + f(yy) + ' m ' + f(x2) + ' ' + f(yy) + ' l S\n'; };
+  const logo = IMG.logo ? doc.jpeg(IMG.logo) : null, stamp = IMG.stamp && D.pec !== false ? doc.jpeg(IMG.stamp) : null;
+  const foot = () => { c += '0.45 g\n'; S('Sud upisa u registar: Trgovački sud u Zagrebu. MBS:081534708. MB:05840660', L, 58, 7.5); S('Temeljni kapital 2.500,00 € uplaćen u cijelosti.', L, 48, 7.5); S('Uprava: Ivan Vrbat, Ivan Lulić', L, 38, 7.5); c += '0 g\n'; };
+  const newPage = () => { foot(); pages.push(c); c = ''; y = H - 60; };
+  const need = h => { if (y - h < 120) newPage(); };
+  // zaglavlje
+  let tx = L; if (logo) { const lh = 66, lw = lh * logo.w / logo.h; c += 'q ' + f(lw) + ' 0 0 ' + f(lh) + ' ' + f(L) + ' ' + f(H - 40 - lh) + ' cm ' + logo.name + ' Do Q\n'; tx = L + lw + 18; }
+  y = H - 52; S('P R O J E K T   5 7   d.o.o.', tx, y, 10.5); S('Ulica Pere Devčića 47, Zaprešić', tx, y - 12.5, 10.5);
+  ['OIB: 49674626703', 'IBAN: HR0224840081135353109, SWIFT/BIC: RZBHHR2X', 'mob: 091/576-1167; 092/112-8771', 'e-mail: ivan.vrbat@projekt-57.hr'].forEach((t, i) => { c += T(t, tx, y - 25 - i * 12.5, 9.5); });
+  // klijent
+  y = H - 160; const kv = [['klijent:', D.kl, true], ['adresa:', D.ka], ['oib:', D.oib]].filter(r => r[1]); kv.forEach(([k, v, b]) => { S(k, L, y, 8.5); S(v, L + 34, y, b ? 10.5 : 10, { bold: !!b }); y -= 13; });
+  // P O N U D A
+  y -= 14; c += '0.85 g ' + f(L - 2) + ' ' + f(y - 5) + ' ' + f(R - L + 2) + ' 19 re f 0 g\n'; S('P O N U D A', (L + R) / 2, y, 16, { bold: true, align: 'c' }); y -= 18;
+  S('br.', R - tw(D.br, 10.5) - 10, y, 10.5, { align: 'r' }); S(D.br, R, y, 10.5, { align: 'r' }); y -= 28;
+  wrap('Temeljem Vašeg zahtjeva dostavljamo ponudu za ' + D.uv, 10.5, R - L).forEach(t => { S(t, L, y, 10.5); y -= 13; }); if (D.ob) { wrap(D.ob, 10.5, R - L).forEach(t => { S(t, L, y, 10.5); y -= 13; }); } y -= 8;
+  // stavke
+  const items = (f2) => { const out = []; P.s.filter(q => (q.f === 2 ? 2 : 1) === f2 && q.n && !pnE(q.iz)).forEach(q => out.push({ n: q.n, iz: pnInv(P, q), op: !!q.op })); if (f2 === 1 && P.ko && P.ko.on && +P.ko.iz) out.push({ n: 'Koordinacija i vođenje projekta', iz: +P.ko.iz }); return out.sort((a, b) => (a.op ? 1 : 0) - (b.op ? 1 : 0)); };
+  const table = (arr) => { rule(L - 2, R, y + 4); y -= 12; arr.forEach((it, i) => { const ln = wrap(it.n + (it.op ? ' (po potrebi – nije uključeno u iznos)' : ''), 9.5, 290); need(ln.length * 11.5 + 10); S((i + 1) + ')', 66, y, 9.5, { align: 'r' }); ln.forEach((t, j) => S(t, 74, y - j * 11.5, 9.5));
+      if (it.op) { c += '0.4 g\n'; S(pnEur(it.iz), AM, y, 10, { align: 'r' }); c += '0 g\n'; } else S(pnEur(it.iz), AM, y, 10, { bold: true, align: 'r' }); y -= ln.length * 11.5 + 5.5; }); y += 2; rule(L - 2, R, y); };
+  const tot = (lab, n) => { need(60); y -= 18; S(lab, L, y, 10.5); S(pnEur(n), AM, y, 10.5, { bold: true, align: 'r' }); y -= 13; S('PDV:', 410, y, 10.5, { align: 'r' }); S(pnEur(0), AM, y, 10.5, { align: 'r' }); rule(345, R, y - 4, 0.6); y -= 14;
+    S('ukupno:', 410, y, 10.5, { bold: true, align: 'r' }); S(pnEur(n), AM, y, 10.5, { bold: true, align: 'r' }); y -= 11; S(PN_OSL, R, y, 7, { italic: true, align: 'r' }); };
+  const S0 = pnSum(P), i1 = items(1), i2 = items(2);
+  table(i1); tot('Ukupna naknada za navedenu uslugu iznosi:', S0[0].n);
+  if (i2.some(it => !it.op)) { need(80); y -= 26; S('Prijava početka radova', L, y, 10.5, { bold: true }); S(' (posebno – nije uključeno u gornji iznos):', L + tw('Prijava početka radova', 10.5, true), y, 10.5); y -= 14; table(i2); tot('Ukupno za prijavu početka radova:', S0[1].n); }
+  // napomena
+  const nap = String(D.nap || '').split('\n').map(t => t.replace(/^\s*[-–•]\s*/, '').trim()).filter(Boolean); need(30 + nap.length * 22); y -= 26; S('NAPOMENA:' + (nap.length ? '' : ' -'), L, y, 8.5, { bold: true });
+  nap.forEach(t => { const ln = wrap(t, 8.5, R - 112); need(ln.length * 10.5 + 8); S('-', 102, y, 8.5); ln.forEach((s2, j) => S(s2, 112, y - j * 10.5, 8.5)); y -= ln.length * 10.5 + 7; });
+  // potpis
+  if (y - 53 < 86) newPage(); const ys = Math.min(y - 53, 170), d = new Date(), dat = d.getDate() + '. ' + PN_MJ[d.getMonth()] + ' ' + d.getFullYear() + '.';
+  S('U Zaprešiću, ' + dat, 95, ys, 10.5); if (stamp) { const sw = 104, sh = sw * stamp.h / stamp.w; c += 'q ' + f(sw) + ' 0 0 ' + f(sh) + ' ' + f(435 - sw / 2) + ' ' + f(ys + 2) + ' cm ' + stamp.name + ' Do Q\n'; }
+  rule(345, 525, ys - 3, 0.6); S(D.pot || PN_POT[0], 435, ys - 15, 10.5, { align: 'c' });
+  foot(); pages.push(c); pages.forEach(p => doc.page(W, H, p));
+  try { localStorage.setItem('izmjera-pon-pot', D.pot || PN_POT[0]); } catch (e) { }
+  const name = 'Ponuda_' + PDF.fileName(D.br) + '_' + PDF.fileName(x.inv || x.opis || 'projekt') + '.pdf'; PDF.save(doc.bytes(), name); toast('📄 ' + name); return name; }
 function pnEdit(id) { const R = RG(); if (!R) return; const it0 = R.item(id); if (!it0) return; const x = JSON.parse(JSON.stringify(it0)), P = x.pon = Object.assign({ s: [] }, x.pon || {}); P.ma = Object.assign({ on: false, pct: 10 }, P.ma || {}); P.ko = Object.assign({ on: false, iz: '' }, P.ko || {}); pnFromTasks(x);
   const H = pnHist(x.id), nid = () => 's' + Date.now().toString(36).slice(-5) + Math.random().toString(36).slice(2, 5), nm = [x.inv, x.opis].filter(Boolean).join(' · ') || 'Projekt', pre = 'zp-' + x.id + '-';
   const old = $('pnOv'); if (old) old.remove(); const ov = document.createElement('div'); ov.id = 'pnOv'; ov.style.cssText = 'position:fixed;inset:0;z-index:92;background:#0f2a4a99;overflow:auto;padding:16px';
-  const rowH = (q, i, Zm) => { const st = pnSt(q, Zm[pre + q.id]), hi = H.byN[(q.n || '').toLowerCase()], mi = P.ma.on && q.tko !== 'Ja' && !pnE(q.iz) ? pnInv(P, q) : null;
+  const rowH = (q, i, Zm) => { const st = pnSt(q, Zm[pre + q.id]), hi = H.byN[(q.n || '').toLowerCase()], mi = pnLbl(q);
     return '<div class="pn-r' + (q.op ? ' op' : '') + '" data-i="' + i + '"><input data-f="n" value="' + esc(q.n || '') + '" placeholder="Stavka"><div class="pn-tk"><input data-f="tko" list="pnTko" value="' + esc(q.tko || '') + '" placeholder="tko radi">' + (q.tko && q.tko !== 'Ja' ? '<button type="button" data-a="tel" title="' + (q.tel ? 'Nazovi ' + esc(q.tel) : 'Upiši telefon') + '">' + (q.tel ? '📞' : '☎＋') + '</button>' : '') + '</div>' +
-      '<div class="pn-iz"><input data-f="iz" inputmode="decimal" value="' + (pnE(q.iz) ? '' : esc(String(q.iz).replace('.', ','))) + '" placeholder="' + (hi && !pnE(hi.iz) ? 'zadnje ' + pnF(+hi.iz) : '€') + '">' + (mi != null ? '<small>investitoru ' + pnF(mi) + '</small>' : '') + '</div>' +
+      '<div class="pn-iz"><input data-f="iz" inputmode="decimal" value="' + (pnE(q.iz) ? '' : esc(String(q.iz).replace('.', ','))) + '" placeholder="' + (hi && !pnE(hi.iz) ? 'zadnje ' + pnF(+hi.iz) : '€') + '">' + (mi ? '<small>' + mi + '</small>' : '') + '</div>' +
+      (q.tko && q.tko !== 'Ja' ? '<button type="button" data-a="pdv" class="pn-pdv' + (q.pdv === false ? '' : ' on') + '" title="Je li suradnik u sustavu PDV-a">' + (q.pdv === false ? 'bez PDV' : '+PDV') + '</button>' : '<span></span>') +
       '<button type="button" data-a="op" class="pn-op' + (q.op ? ' on' : '') + '" title="Ako bude trebalo – vidi se, ne ulazi u zbroj">ako treba</button><button type="button" data-a="st" class="pn-st ' + st[1] + '">' + st[0] + '</button><button type="button" data-a="rm" class="pn-rm" title="Ukloni stavku">✕</button></div>'; };
   const sec = (f, title, Q, Zm) => { const L = P.s.map((q, i) => [q, i]).filter(([q]) => (q.f === 2 ? 2 : 1) === f), S = pnSum(P)[f - 1], have = L.map(([q]) => (q.n || '').toLowerCase());
-    return '<div class="pn-sec"><b>' + title + '</b><em>iznosi bez PDV-a</em></div>' + (L.length ? '<div class="pn-hd"><span>Stavka</span><span>Tko radi</span><span>Iznos €</span><span></span><span>Stanje</span><span></span></div>' : '') + L.map(([q, i]) => rowH(q, i, Zm)).join('') +
+    return '<div class="pn-sec"><b>' + title + '</b><em>cijena suradnika bez PDV-a; +PDV ako ga on zaračunava</em></div>' + (L.length ? '<div class="pn-hd"><span>Stavka</span><span>Tko radi</span><span>Iznos €</span><span>PDV</span><span></span><span>Stanje</span><span></span></div>' : '') + L.map(([q, i]) => rowH(q, i, Zm)).join('') +
       '<div class="pn-q">' + Q.filter(([n]) => !have.includes(n.toLowerCase())).map(([n]) => '<button type="button" data-q="' + f + '|' + esc(n) + '">＋ ' + esc(n) + '</button>').join('') + '<button type="button" data-q="' + f + '|">＋ Druga stavka</button></div>' +
       '<div class="pn-tot" data-t="' + f + '">' + totH(f) + '</div>'; };
-  const totH = f => { const S = pnSum(P)[f - 1]; return S.cnt ? '<span>' + (S.ok < S.cnt ? 'cijena ' + S.ok + '/' + S.cnt + ' · ' : '') + 'bez PDV-a ' + pnF(S.n) + ' €</span><span>PDV ' + pnF(S.pdv) + ' €</span><span>Ukupno <b>' + pnF(S.uk) + ' €</b></span>' : ''; };
-  const zarH = () => { const S = pnSum(P)[0]; return S.n ? 'Od toga suradnicima ' + pnF(S.suc) + ' €, tebi ' + pnF(S.moje) + ' € (bez PDV-a)' : ''; };
+  const totH = f => { const S = pnSum(P)[f - 1]; return S.cnt ? '<span>' + (S.ok < S.cnt ? 'cijena ' + S.ok + '/' + S.cnt + ' · ' : '') + 'PDV 0,00 € (oslobođeno)</span><span>Ukupno za investitora <b>' + pnF(S.uk) + ' €</b></span>' : ''; };
+  const zarH = () => { const S = pnSum(P)[0]; return S.n ? 'Od toga suradnicima ' + pnF(S.suc) + ' € (s njihovim PDV-om), tebi ' + pnF(S.moje) + ' €' : ''; };
   const refresh = () => { const Zm = {}; getZ().forEach(z => { if (z.id.indexOf(pre) === 0) Zm[z.id] = z; });
     ov.querySelectorAll('.pn-r').forEach(r => { const q = P.s[+r.dataset.i]; if (!q) return; const st = pnSt(q, Zm[pre + q.id]), b = r.querySelector('[data-a=st]'); b.className = 'pn-st ' + st[1]; b.textContent = st[0];
-      const mi = P.ma.on && q.tko !== 'Ja' && !pnE(q.iz) ? pnInv(P, q) : null, box = r.querySelector('.pn-iz'); let sm = box.querySelector('small'); if (mi == null) { if (sm) sm.remove(); } else { if (!sm) { sm = document.createElement('small'); box.appendChild(sm); } sm.textContent = 'investitoru ' + pnF(mi); } });
+      const mi = pnLbl(q), box = r.querySelector('.pn-iz'); let sm = box.querySelector('small'); if (!mi) { if (sm) sm.remove(); } else { if (!sm) { sm = document.createElement('small'); box.appendChild(sm); } sm.textContent = mi; } });
     ov.querySelectorAll('.pn-tot').forEach(e => e.innerHTML = totH(+e.dataset.t)); const z = ov.querySelector('.pn-zar'); if (z) z.textContent = zarH();
     const g = k => ov.querySelector('[data-o=' + k + ']'); g('pct').disabled = !P.ma.on; g('koiz').disabled = !P.ko.on; };
+  let pdfOpen = false; P.pdf = pnPdfDef(x, P);
+  const pdfH = () => { const D = P.pdf, inp = (k, lab, cls, ex) => '<label class="' + (cls || '') + '"><span>' + lab + '</span><input data-p="' + k + '" value="' + esc(D[k] || '') + '"' + (ex || '') + '></label>';
+    return '<details class="pn-pdfd"' + (pdfOpen ? ' open' : '') + '><summary>📄 Podaci za PDF ponude <em>' + esc([D.kl, D.br].filter(Boolean).join(' · ')) + '</em></summary><div class="pn-pg">' + inp('kl', 'Klijent') + inp('oib', 'OIB') + inp('ka', 'Adresa klijenta', 'w2') + inp('uv', 'Ponuda za (nastavak rečenice „…dostavljamo ponudu za”)', 'w2') + inp('ob', 'Objekt / lokacija', 'w2') + inp('br', 'Br. ponude') +
+      inp('pot', 'Potpisuje', '', ' list="pnPot"') + '<datalist id="pnPot">' + PN_POT.map(t => '<option value="' + esc(t) + '">').join('') + '</datalist><label class="w2 ck"><input type="checkbox" data-p="pec"' + (D.pec !== false ? ' checked' : '') + '> pečat i potpis</label>' +
+      '<label class="w2"><span>Napomena (svaki red posebno; prazno = „NAPOMENA: -”)</span><textarea data-p="nap" rows="3">' + esc(D.nap || '') + '</textarea></label></div></details>'; };
+  const pnLbl = q => { if (q.tko === 'Ja' || pnE(q.iz)) return ''; const c = pnCost(q), inv = pnInv(P, q); return (q.pdv === false ? '' : 's PDV ' + pnF(c)) + (P.ma.on ? (q.pdv === false ? '' : ' · ') + 'investitoru ' + pnF(inv) : ''); };
   const draw = () => { const S = pnSum(P), Zm = {}; getZ().forEach(z => { if (z.id.indexOf(pre) === 0) Zm[z.id] = z; }); const sur = Object.keys(H.h).concat(P.s.map(q => q.tko).filter(t => t && t !== 'Ja')).filter((v, i, a) => a.indexOf(v) === i).sort((a, b) => a.localeCompare(b, 'hr'));
     ov.innerHTML = shell('🧾 Ponuda – ' + esc(nm), 'linear-gradient(135deg,#0f2a4a,#0e4f63)',
       '<datalist id="pnTko"><option value="Ja">' + sur.map(t => '<option value="' + esc(t) + '">').join('') + '</datalist>' +
@@ -394,24 +454,26 @@ function pnEdit(id) { const R = RG(); if (!R) return; const it0 = R.item(id); if
       '<div class="pn-opt"><label><input type="checkbox" data-o="ma"' + (P.ma.on ? ' checked' : '') + '> Marža na suradnike</label><span><input data-o="pct" inputmode="decimal" value="' + esc(String(P.ma.pct).replace('.', ',')) + '"' + (P.ma.on ? '' : ' disabled') + '> %</span>' +
       '<label><input type="checkbox" data-o="ko"' + (P.ko.on ? ' checked' : '') + '> Koordinacija (moja stavka)</label><span><input data-o="koiz" inputmode="decimal" value="' + (pnE(P.ko.iz) ? '' : esc(String(P.ko.iz).replace('.', ','))) + '" placeholder="€"' + (P.ko.on ? '' : ' disabled') + '> €</span></div>' +
       '<p class="pn-zar">' + zarH() + '</p>' +
-      '<div class="pn-ph2">' + sec(2, 'PRIJAVA POČETKA RADOVA', PN_Q2, Zm) + '</div>',
-      '<button type="button" data-a="copy" style="' + BT0 + ';margin-right:auto">📋 Kopiraj tekst</button><button type="button" data-a="ok" style="' + BT0 + '">Spremi i zatvori</button><button type="button" data-a="sent" style="' + BT0 + ';background:#0e4f63;color:#fff;border:0">📤 Ponuda poslana</button>');
+      '<div class="pn-ph2">' + sec(2, 'PRIJAVA POČETKA RADOVA', PN_Q2, Zm) + '</div>' + pdfH(),
+      '<button type="button" data-a="copy" style="' + BT0 + ';margin-right:auto">📋 Kopiraj tekst</button><button type="button" data-a="pdf" style="' + BT0 + '">📄 PDF</button><button type="button" data-a="ok" style="' + BT0 + '">Spremi i zatvori</button><button type="button" data-a="sent" style="' + BT0 + ';background:#0e4f63;color:#fff;border:0">📤 Ponuda poslana</button>');
     const bx = ov.firstElementChild; if (bx) bx.style.maxWidth = '900px'; };
   const read = () => { ov.querySelectorAll('.pn-r').forEach(r => { const q = P.s[+r.dataset.i]; if (!q) return; q.n = r.querySelector('[data-f=n]').value.trim(); const tk = r.querySelector('[data-f=tko]').value.trim();
-      if (tk !== (q.tko || '')) { q.tko = /^ja$/i.test(tk) ? 'Ja' : tk; if (q.tko && q.tko !== 'Ja' && H.h[q.tko]) { q.tel = q.tel || H.h[q.tko].tel; q.mail = q.mail || H.h[q.tko].mail; } } q.iz = pnNum(r.querySelector('[data-f=iz]').value); });
-    const g = k => ov.querySelector('[data-o=' + k + ']'); P.ma.on = g('ma').checked; P.ma.pct = pnNum(g('pct').value) || 0; P.ko.on = g('ko').checked; P.ko.iz = pnNum(g('koiz').value); };
+      if (tk !== (q.tko || '')) { q.tko = /^ja$/i.test(tk) ? 'Ja' : tk; if (q.tko && q.tko !== 'Ja' && H.h[q.tko]) { q.tel = q.tel || H.h[q.tko].tel; q.mail = q.mail || H.h[q.tko].mail; if (H.h[q.tko].npdv) q.pdv = false; } } q.iz = pnNum(r.querySelector('[data-f=iz]').value); });
+    const g = k => ov.querySelector('[data-o=' + k + ']'); P.ma.on = g('ma').checked; P.ma.pct = pnNum(g('pct').value) || 0; P.ko.on = g('ko').checked; P.ko.iz = pnNum(g('koiz').value);
+    ov.querySelectorAll('[data-p]').forEach(e => { P.pdf[e.dataset.p] = e.type === 'checkbox' ? e.checked : e.value.trim(); }); const dd = ov.querySelector('.pn-pdfd'); if (dd) pdfOpen = dd.open; };
   const save = sent => { read(); P.s = P.s.filter(q => q.n || q.tko || !pnE(q.iz)); const S = pnSum(P), o = Object.assign({}, R.item(x.id) || {}, { pon: P }); if (P.s.length && S[0].ok) o.iznos = Math.round(S[0].n * 100) / 100;
     if (sent) { if (!o.status || o.status === 'Sastanak') o.status = 'Ponuda poslana'; o.sent = today(); } R.saveItem(o); pnTasks(o, sent); ov.remove(); soon(); toast(sent ? '📤 Ponuda poslana – zadatak čeka odgovor 7 dana' : '✓ Ponuda spremljena'); };
   draw(); document.body.appendChild(ov);
   ov.addEventListener('change', e => { if (!e.target.matches('input')) return; const r = e.target.closest('.pn-r'), q = r ? P.s[+r.dataset.i] : null, tk0 = q ? q.tko || '' : ''; read(); refresh(); if (q && (q.tko || '') !== tk0) setTimeout(() => { if (ov.isConnected) { read(); draw(); } }, 0); });
   ov.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; read(); const r = b.closest('.pn-r'), q = r ? P.s[+r.dataset.i] : null, a = b.dataset.a;
     if (b.dataset.q != null) { const [f, n] = b.dataset.q.split('|'), hi = n ? H.byN[n.toLowerCase()] : null, d = (PN_Q1.concat(PN_Q2).find(z => z[0] === n) || ['', ''])[1], tko = hi && hi.tko ? hi.tko : d;
-      P.s.push({ id: nid(), f: +f, n, tko, tel: tko && tko !== 'Ja' ? ((H.h[tko] || {}).tel || (hi && hi.tel) || '') : '', iz: '', op: n === 'Elaborat za katastar' }); draw(); const L = ov.querySelectorAll('.pn-r [data-f=' + (n ? (tko ? 'iz' : 'tko') : 'n') + ']'); if (L.length) setTimeout(() => L[L.length - 1].focus(), 30); return; }
+      P.s.push(Object.assign({ id: nid(), f: +f, n, tko, tel: tko && tko !== 'Ja' ? ((H.h[tko] || {}).tel || (hi && hi.tel) || '') : '', iz: '', op: n === 'Elaborat za katastar' }, tko && H.h[tko] && H.h[tko].npdv ? { pdv: false } : {})); draw(); const L = ov.querySelectorAll('.pn-r [data-f=' + (n ? (tko ? 'iz' : 'tko') : 'n') + ']'); if (L.length) setTimeout(() => L[L.length - 1].focus(), 30); return; }
     if (a === 'tel' && q) { if (q.tel) { openUri('tel:' + q.tel.replace(/[^\d+]/g, '')); return; } const t = prompt('Telefon – ' + (q.tko || 'suradnik') + ':', ''); if (t && t.trim()) { q.tel = t.trim(); H.h[q.tko] = Object.assign(H.h[q.tko] || {}, { tel: q.tel }); P.s.forEach(z => { if (z.tko === q.tko && !z.tel) z.tel = q.tel; }); draw(); } return; }
-    if (a === 'op' && q) { q.op = !q.op; draw(); return; }
+    if (a === 'op' && q) { q.op = !q.op; draw(); return; } if (a === 'pdv' && q) { q.pdv = q.pdv === false ? true : false; draw(); return; }
     if (a === 'st' && q) { if (q.tko !== 'Ja' && pnE(q.iz)) { if (!q.tko) { toast('Upiši tko radi'); const i = r.querySelector('[data-f=tko]'); if (i) i.focus(); return; } q.rq = q.rq ? '' : today(); if (q.rq) toast('⏳ Zatraženo – ' + q.tko + '. Zadatak čeka odgovor 3 dana.'); draw(); } else { const i = r.querySelector('[data-f=iz]'); if (i) i.focus(); } return; }
     if (a === 'rm' && q) { P.s.splice(+r.dataset.i, 1); draw(); return; }
     if (a === 'copy') { pnCopy(pnText(Object.assign({}, x, { pon: P }))); return; }
+    if (a === 'pdf') { const S = pnSum(P); if (!S[0].ok) { toast('Upiši barem jednu cijenu'); return; } if (S[0].ok < S[0].cnt && !confirm('Nemaš sve cijene (' + S[0].ok + '/' + S[0].cnt + ') – stavke bez cijene neće biti u PDF-u. Nastaviti?')) return; P.s = P.s.filter(q => q.n || q.tko || !pnE(q.iz)); R.saveItem(Object.assign({}, R.item(x.id) || {}, { pon: P, iznos: Math.round(S[0].n * 100) / 100 })); try { pnPdf(x, P); } catch (e) { alert('PDF: ' + e.message); } return; }
     if (a === 'ok') { save(false); return; } if (a === 'sent') { const S = pnSum(P); if (S[0].ok < S[0].cnt && !confirm('Nemaš sve cijene (' + S[0].ok + '/' + S[0].cnt + '). Svejedno označiti da je ponuda poslana?')) return; save(true); return; } }); }
 /* ---------- zadaci ---------- */
 const openDone = { v: false };
@@ -656,6 +718,6 @@ function fromSync(list, t0) { if (!Array.isArray(list)) return; const loc = getZ
 (function edBtn() { const mk = () => { if ($('terenZadatak') || !document.body) return; const b = document.createElement('button'); b.id = 'terenZadatak'; b.type = 'button'; b.textContent = '✅ Zadatak za ovaj projekt';
     b.onclick = () => { const i = window.projectInfo || {}, nm = (window.IzmjeraApp && IzmjeraApp.projectName && IzmjeraApp.projectName()) || ''; const p = $('ui2MorePop'); if (p) p.hidden = true; const pid = window.IzmjeraApp && IzmjeraApp.projectId && IzmjeraApp.projectId(), pr = getPs().find(p => p.id === pid), it = pr && pr.regId && RG() && RG().item(pr.regId), b = it ? (it.broj || it.id) : (i.broj || ''); zDialog({ id: zid(), t: '', v: 'nazvati', b, d: today(), h: '', n: b ? '' : 'Projekt: ' + nm, rp: '', u: '', done: false }); };
     const box = document.createElement('div'); box.style.display = 'none'; box.id = 'terenZadatakBox'; box.appendChild(b); document.body.appendChild(box); }; if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mk); else mk(); })();
-window.IzmjeraKartice = { countPs: ps => tab() === 'izm' ? ps.filter(isIzm) : tab() === 'pro' ? regPs() : ps, tab, isIzm, render, itEdit: id => itEdit(id), match: p => tab() !== 'izm' || isIzm(p), newProject: () => newProj(), forSync, fromSync, newTask: () => zDialog(null) };
+window.IzmjeraKartice = { countPs: ps => tab() === 'izm' ? ps.filter(isIzm) : tab() === 'pro' ? regPs() : ps, tab, isIzm, render, itEdit: id => itEdit(id), match: p => tab() !== 'izm' || isIzm(p), newProject: () => newProj(), forSync, fromSync, newTask: () => zDialog(null), ponuda: id => pnEdit(id), ponudaPdf: (x, P) => pnPdf(x, P) };
 setInterval(() => { try { const h = $('home'); if (h && !h.classList.contains('hidden') && tab() === 'zad') { const d = today(); if (render._d !== d) { render._d = d; render(); } } } catch (e) { } }, 60000);
 })();
