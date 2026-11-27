@@ -153,7 +153,8 @@ function css() { if ($('hkCss')) return; const c = document.createElement('style
 /* v2.87: ponuda */
 #pnOv .pn-info{margin:0 0 10px;color:#475569;font-size:14px}
 #pnOv .pn-sec{display:flex;justify-content:space-between;align-items:baseline;margin:6px 0 6px}#pnOv .pn-sec b{font:800 13px Arial;color:#0e4f63;letter-spacing:.02em}#pnOv .pn-sec em{font-style:normal;color:#64748b;font-size:12.5px}
-#pnOv .pn-hd,#pnOv .pn-r{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1.15fr) 116px 66px auto 128px 34px;gap:6px;align-items:center}
+#pnOv .pn-hd,#pnOv .pn-r{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1.15fr) 116px 66px 92px 128px 34px;gap:6px;align-items:center}
+#pnOv .pn-r.int{background:#fff5f5;border-color:#fecaca}#pnOv .pn-r.int [data-f=iz]{color:#b91c1c;font-weight:700}#pnOv .pn-tk{min-width:0}#pnOv .pn-intl{font:600 11.5px Arial;color:#b91c1c;padding:0 4px;white-space:normal;line-height:1.2;min-width:0}#pnOv .pn-int{background:#fee2e2;color:#b91c1c;cursor:default}#pnOv .pn-q .pn-qint{border-color:#fca5a5;color:#b91c1c}
 #pnOv .pn-pdv{border:1.3px solid #cbd5e1;background:#fff;border-radius:999px;padding:5px 6px;font:700 12px Arial;color:#64748b;white-space:nowrap}#pnOv .pn-pdv.on{border-color:#0e4f63;color:#0e4f63;background:#e6f4f6}
 #pnOv .pn-hd{font:700 11.5px Arial;color:#64748b;padding:0 4px 3px}
 #pnOv .pn-r{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:6px;margin-bottom:6px}#pnOv .pn-r.op{background:#f8fafc}#pnOv .pn-r.op input{font-style:italic;color:#64748b}
@@ -167,7 +168,7 @@ function css() { if ($('hkCss')) return; const c = document.createElement('style
 #pnOv .pn-tot{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:6px 18px;align-items:baseline;margin:6px 2px 4px;font-size:14px;color:#334155}#pnOv .pn-tot b{font-size:19px;color:#0f2a4a}
 #pnOv .pn-opt{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;background:#eef3f9;border-radius:10px;padding:8px 10px;margin:8px 0 4px;font:600 14px Arial;color:#0f2a4a}#pnOv .pn-opt label{display:flex;align-items:center;gap:6px}#pnOv .pn-opt input[type=checkbox]{width:20px;height:20px}
 #pnOv .pn-opt span input{width:70px;border:1px solid #cbd5e1;border-radius:8px;padding:6px;font:15px Arial;text-align:right}#pnOv .pn-opt span{margin-right:8px}
-#pnOv .pn-zar{margin:4px 2px 0;color:#0e4f63;font-size:13px;text-align:right}
+#pnOv .pn-z2{flex-basis:100%;text-align:right;color:#0e4f63;font-size:13px}#pnOv .pn-zar{margin:4px 2px 0;color:#0e4f63;font-size:13px;text-align:right}
 #pnOv .pn-ph2{margin-top:14px;border-top:2px dashed #cbd5e1;padding-top:8px}
 #pnOv .pn-pdfd{margin-top:14px;background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:8px 10px}#pnOv .pn-pdfd summary{font:800 13px Arial;color:#0e4f63;cursor:pointer}#pnOv .pn-pdfd summary em{font-style:normal;font-weight:400;color:#64748b;margin-left:6px}
 #pnOv .pn-pg{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px;margin-top:8px}#pnOv .pn-pg label{display:flex;flex-direction:column;gap:3px;font:700 11.5px Arial;color:#64748b}#pnOv .pn-pg .w2{grid-column:1/-1}#pnOv .pn-pg .ck{flex-direction:row;align-items:center;gap:8px;font-size:14px;color:#0f2a4a}
@@ -337,16 +338,16 @@ const pnE = v => v === '' || v == null;
 const pnNum = v => { v = String(v == null ? '' : v).trim(); if (!v) return ''; v = v.replace(/\s|€/g, ''); if (/,/.test(v)) v = v.replace(/\./g, '').replace(',', '.'); else if (/^\d{1,3}(\.\d{3})+$/.test(v)) v = v.replace(/\./g, ''); const n = parseFloat(v); return Number.isFinite(n) ? n : ''; };
 const pnF = n => { n = Math.round((+n || 0) * 100) / 100; return n.toLocaleString('hr-HR', { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 }); };
 const pnDays = d => Math.max(0, Math.round((new Date(today() + 'T12:00:00') - new Date(d + 'T12:00:00')) / 864e5));
-function pnHist(skip) { const h = {}, byN = {}; (RG() ? RG().items() : []).forEach(it => { if (it.id === skip || !it.pon) return; (it.pon.s || []).forEach(q => { if (q.tko && q.tko !== 'Ja') { const o = h[q.tko] || (h[q.tko] = { tel: '', mail: '' }); if (q.tel) o.tel = q.tel; if (q.mail) o.mail = q.mail; if (q.pdv === false) o.npdv = 1; else if (q.pdv === true) o.npdv = 0; }
+function pnHist(skip) { const h = {}, byN = {}; (RG() ? RG().items() : []).forEach(it => { if (it.id === skip || !it.pon) return; (it.pon.s || []).forEach(q => { if (q.int) return; if (q.tko && q.tko !== 'Ja') { const o = h[q.tko] || (h[q.tko] = { tel: '', mail: '' }); if (q.tel) o.tel = q.tel; if (q.mail) o.mail = q.mail; if (q.pdv === false) o.npdv = 1; else if (q.pdv === true) o.npdv = 0; }
   if (q.n) { const k = q.n.toLowerCase(), m = it.mod || 0; if (!byN[k] || m > byN[k].m) byN[k] = { m, tko: q.tko || '', iz: q.iz, tel: q.tel || '' }; } }); }); return { h, byN }; }
 /* v2.88: Projekt 57 nije u sustavu PDV-a (čl. 90. st. 1.) – na ponudi PDV 0; suradniku koji je u sustavu PDV-a plaćaš cijenu + 25 % */
 const PN_PDV = 0.25, PN_OSL = 'Oslobođeno PDV-a temeljem čl. 90., st.1., Zakona o porezu na dodanu vrijednost.';
-const pnCost = q => pnE(q.iz) ? 0 : q.tko !== 'Ja' && q.pdv !== false ? +q.iz * (1 + PN_PDV) : +q.iz;
+const pnCost = q => pnE(q.iz) ? 0 : (q.int ? q.pdv === true : q.tko !== 'Ja' && q.pdv !== false) ? +q.iz * (1 + PN_PDV) : +q.iz; /* v2.89: interni trošak (q.int) – samo za mene, ne ide na ponudu */
 const pnInv = (P, q) => q.tko === 'Ja' ? +q.iz : pnCost(q) * (1 + (P.ma && P.ma.on ? (+P.ma.pct || 0) / 100 : 0));
-function pnSum(P) { const f = [0, 1].map(() => ({ n: 0, suc: 0, moje: 0, cnt: 0, ok: 0 }));
-  ((P && P.s) || []).forEach(q => { if (q.op) return; const t = f[q.f === 2 ? 1 : 0]; t.cnt++; if (pnE(q.iz)) return; t.ok++; const inv = pnInv(P, q); t.n += inv; if (q.tko === 'Ja') t.moje += inv; else { const c = pnCost(q); t.suc += c; t.moje += inv - c; } });
+function pnSum(P) { const f = [0, 1].map(() => ({ n: 0, suc: 0, moje: 0, cnt: 0, ok: 0, int: 0 }));
+  ((P && P.s) || []).forEach(q => { if (q.op) return; if (q.int) { const c = pnCost(q), t = f[q.f === 2 ? 1 : 0]; t.int += c; t.moje -= c; return; } const t = f[q.f === 2 ? 1 : 0]; t.cnt++; if (pnE(q.iz)) return; t.ok++; const inv = pnInv(P, q); t.n += inv; if (q.tko === 'Ja') t.moje += inv; else { const c = pnCost(q); t.suc += c; t.moje += inv - c; } });
   if (P && P.ko && P.ko.on && +P.ko.iz) { f[0].n += +P.ko.iz; f[0].moje += +P.ko.iz; } f.forEach(t => { t.pdv = 0; t.uk = t.n; }); return f; }
-function pnSt(q, zt) { if (q.tko === 'Ja') return pnE(q.iz) ? ['upiši cijenu', 'pn-t'] : ['moje', 'pn-me']; if (!pnE(q.iz)) return ['✓ stiglo', 'pn-ok'];
+function pnSt(q, zt) { if (q.int) return ['🔒 interno', 'pn-int']; if (q.tko === 'Ja') return pnE(q.iz) ? ['upiši cijenu', 'pn-t'] : ['moje', 'pn-me']; if (!pnE(q.iz)) return ['✓ stiglo', 'pn-ok'];
   if (zt && zt.done) return ['stiglo? upiši cijenu', 'pn-t']; return q.rq ? ['⏳ čekam ' + pnDays(q.rq) + ' d', 'pn-w'] : [q.tko ? 'zatraži' : 'odaberi tko', 'pn-t']; }
 /* zadaci iz ponude: zatražiti ponude → čekam (po suradniku) → poslati ponudu → odgovor (čekam 7 d); prihvaćeno/odbijeno rješava tablica */
 function pnTasks(o, sent) { const Z = getZ(), now = Date.now(), t0 = today(), b = o.broj || o.id, pre = 'zp-' + o.id + '-', inv = o.inv || o.opis || 'projekt', P = o.pon || { s: [] }, S = pnSum(P), st = o.status || '';
@@ -354,24 +355,24 @@ function pnTasks(o, sent) { const Z = getZ(), now = Date.now(), t0 = today(), b 
   const close = id => { const t = Z.find(q => q.id === id); if (t && !t.done && !t.del) { t.done = true; t.doneAt = now; t.dm = now; t.mod = now; } };
   const drop = id => { const t = Z.find(q => q.id === id); if (t && !t.done && !t.del) { t.del = true; t.mod = now; } };
   if (st && st !== 'Sastanak' && st !== 'Ponuda poslana') { setZ(Z); return; }
-  const need = P.s.filter(q => q.tko !== 'Ja' && pnE(q.iz) && !q.rq);
+  const need = P.s.filter(q => !q.int && q.tko !== 'Ja' && pnE(q.iz) && !q.rq);
   if (need.length) up(pre + 'req', { t: 'Zatražiti ponude (' + inv + '): ' + need.map(q => q.n + (q.tko ? ' – ' + q.tko : '')).join(', '), v: 'mail', done: false }); else close(pre + 'req');
-  P.s.forEach(q => { const id = pre + q.id, ex = Z.find(z => z.id === id); if (q.tko === 'Ja') { drop(id); return; }
+  P.s.forEach(q => { const id = pre + q.id, ex = Z.find(z => z.id === id); if (q.tko === 'Ja' || q.int) { drop(id); return; }
     if (!pnE(q.iz)) { close(id); return; } if (!q.rq) { drop(id); return; } if (ex && ex.done && !ex.del) return;
     up(id, { t: 'Ponuda: ' + q.n + ' – ' + (q.tko || '?') + ' (' + inv + ')', v: q.tel ? 'nazvati' : 'mail', w: q.rq, d: ex && !ex.del ? ex.d : addD(q.rq, 3), done: false, ime: q.tko || '', tel: q.tel || '' }); });
   Z.forEach(z => { if (z.id.indexOf(pre) !== 0) return; const r = z.id.slice(pre.length); if (['req', 'send', 'mapa'].includes(r) || r.indexOf('nar-') === 0) return; if (!P.s.some(q => q.id === r)) drop(z.id); });
-  const ph1 = P.s.filter(q => q.f !== 2 && !q.op), ready = ph1.length && ph1.every(q => !pnE(q.iz)), iz = pnF(S[0].n) + ' €';
+  const ph1 = P.s.filter(q => q.f !== 2 && !q.op && !q.int), ready = ph1.length && ph1.every(q => !pnE(q.iz)), iz = pnF(S[0].n) + ' €';
   if (sent) up(pre + 'send', { t: 'Odgovor na ponudu: ' + inv + ' – ' + iz, v: 'ponuda', w: t0, d: addD(t0, 7), done: false });
   else if (!st || st === 'Sastanak') { if (ready) up(pre + 'send', { t: 'Poslati ponudu: ' + inv + ' – ' + iz, v: 'ponuda', w: '', done: false }); else drop(pre + 'send'); }
   setZ(Z); }
 /* kvačica na „Zatražiti ponude” = zatražio sam → te stavke čekaju odgovor */
 function pnFromTasks(o) { const P = o.pon; if (!P || !P.s) return false; const Z = getZ(), rt = Z.find(z => z.id === 'zp-' + o.id + '-req'); if (!rt || !rt.done || !rt.doneAt) return false; let ch = false;
   const d = new Date(rt.doneAt), ds = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-  P.s.forEach(q => { if (q.tko !== 'Ja' && pnE(q.iz) && !q.rq) { q.rq = ds; ch = true; } }); return ch; }
+  P.s.forEach(q => { if (!q.int && q.tko !== 'Ja' && pnE(q.iz) && !q.rq) { q.rq = ds; ch = true; } }); return ch; }
 function pnAuto() { const R = RG(); if (!R || pnAuto.busy) return; pnAuto.busy = 1; try { R.items().forEach(it => { if (!it.pon || !it.pon.s || !it.pon.s.length || (it.status && it.status !== 'Sastanak' && it.status !== 'Ponuda poslana')) return; const o = JSON.parse(JSON.stringify(it)); if (pnFromTasks(o)) { R.saveItem(o); pnTasks(o); } }); } catch (e) { } pnAuto.busy = 0; }
 function pnText(o) { const P = o.pon, S = pnSum(P), L = []; L.push('Ponuda – ' + [o.inv, o.opis].filter(Boolean).join(', ')); L.push('');
-  const ph = (f, title) => { const qs = P.s.filter(q => (q.f === 2 ? 2 : 1) === f && !q.op && !pnE(q.iz)); if (!qs.length && !(f === 1 && P.ko.on)) return; L.push(title + ':'); qs.forEach(q => L.push('– ' + q.n + ': ' + pnF(pnInv(P, q)) + ' €')); if (f === 1 && P.ko.on && +P.ko.iz) L.push('– Koordinacija i vođenje projekta: ' + pnF(+P.ko.iz) + ' €');
-    const t = S[f - 1]; L.push('Ukupno: ' + pnF(t.n) + ' € (PDV 0,00 € – ' + PN_OSL + ')'); const op = P.s.filter(q => (q.f === 2 ? 2 : 1) === f && q.op && !pnE(q.iz)); if (op.length) L.push('Po potrebi (nije uključeno): ' + op.map(q => q.n + ' ' + pnF(pnInv(P, q)) + ' €').join('; ')); L.push(''); };
+  const ph = (f, title) => { const qs = P.s.filter(q => (q.f === 2 ? 2 : 1) === f && !q.op && !q.int && !pnE(q.iz)); if (!qs.length && !(f === 1 && P.ko.on)) return; L.push(title + ':'); qs.forEach(q => L.push('– ' + q.n + ': ' + pnF(pnInv(P, q)) + ' €')); if (f === 1 && P.ko.on && +P.ko.iz) L.push('– Koordinacija i vođenje projekta: ' + pnF(+P.ko.iz) + ' €');
+    const t = S[f - 1]; L.push('Ukupno: ' + pnF(t.n) + ' € (PDV 0,00 € – ' + PN_OSL + ')'); const op = P.s.filter(q => (q.f === 2 ? 2 : 1) === f && q.op && !q.int && !pnE(q.iz)); if (op.length) L.push('Po potrebi (nije uključeno): ' + op.map(q => q.n + ' ' + pnF(pnInv(P, q)) + ' €').join('; ')); L.push(''); };
   ph(1, 'Projektna dokumentacija'); ph(2, 'Prijava početka radova'); return L.join('\n').trim(); }
 function pnCopy(t) { const ok = () => toast('📋 Tekst ponude je kopiran'); try { if (navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(t).then(ok, () => fb()); return; } } catch (e) { } fb();
   function fb() { const a = document.createElement('textarea'); a.value = t; a.style.cssText = 'position:fixed;left:-9999px'; document.body.appendChild(a); a.select(); try { document.execCommand('copy'); ok(); } catch (e) { alert(t); } a.remove(); } }
@@ -403,7 +404,7 @@ function pnPdf(x, P) { const PDF = window.IzmjeraPdf; if (!PDF) { toast('PDF nij
   S('br.', R - tw(D.br, 10.5) - 10, y, 10.5, { align: 'r' }); S(D.br, R, y, 10.5, { align: 'r' }); y -= 28;
   wrap('Temeljem Vašeg zahtjeva dostavljamo ponudu za ' + D.uv, 10.5, R - L).forEach(t => { S(t, L, y, 10.5); y -= 13; }); if (D.ob) { wrap(D.ob, 10.5, R - L).forEach(t => { S(t, L, y, 10.5); y -= 13; }); } y -= 8;
   // stavke
-  const items = (f2) => { const out = []; P.s.filter(q => (q.f === 2 ? 2 : 1) === f2 && q.n && !pnE(q.iz)).forEach(q => out.push({ n: q.n, iz: pnInv(P, q), op: !!q.op })); if (f2 === 1 && P.ko && P.ko.on && +P.ko.iz) out.push({ n: 'Koordinacija i vođenje projekta', iz: +P.ko.iz }); return out.sort((a, b) => (a.op ? 1 : 0) - (b.op ? 1 : 0)); };
+  const items = (f2) => { const out = []; P.s.filter(q => (q.f === 2 ? 2 : 1) === f2 && q.n && !q.int && !pnE(q.iz)).forEach(q => out.push({ n: q.n, iz: pnInv(P, q), op: !!q.op })); if (f2 === 1 && P.ko && P.ko.on && +P.ko.iz) out.push({ n: 'Koordinacija i vođenje projekta', iz: +P.ko.iz }); return out.sort((a, b) => (a.op ? 1 : 0) - (b.op ? 1 : 0)); };
   const table = (arr) => { rule(L - 2, R, y + 4); y -= 12; arr.forEach((it, i) => { const ln = wrap(it.n + (it.op ? ' (po potrebi – nije uključeno u iznos)' : ''), 9.5, 290); need(ln.length * 11.5 + 10); S((i + 1) + ')', 66, y, 9.5, { align: 'r' }); ln.forEach((t, j) => S(t, 74, y - j * 11.5, 9.5));
       if (it.op) { c += '0.4 g\n'; S(pnEur(it.iz), AM, y, 10, { align: 'r' }); c += '0 g\n'; } else S(pnEur(it.iz), AM, y, 10, { bold: true, align: 'r' }); y -= ln.length * 11.5 + 5.5; }); y += 2; rule(L - 2, R, y); };
   const tot = (lab, n) => { need(60); y -= 18; S(lab, L, y, 10.5); S(pnEur(n), AM, y, 10.5, { bold: true, align: 'r' }); y -= 13; S('PDV:', 410, y, 10.5, { align: 'r' }); S(pnEur(0), AM, y, 10.5, { align: 'r' }); rule(345, R, y - 4, 0.6); y -= 14;
@@ -425,18 +426,21 @@ function pnEdit(id) { const R = RG(); if (!R) return; const it0 = R.item(id); if
   const H = pnHist(x.id), nid = () => 's' + Date.now().toString(36).slice(-5) + Math.random().toString(36).slice(2, 5), nm = [x.inv, x.opis].filter(Boolean).join(' · ') || 'Projekt', pre = 'zp-' + x.id + '-';
   const old = $('pnOv'); if (old) old.remove(); const ov = document.createElement('div'); ov.id = 'pnOv'; ov.style.cssText = 'position:fixed;inset:0;z-index:92;background:#0f2a4a99;overflow:auto;padding:16px';
   const rowH = (q, i, Zm) => { const st = pnSt(q, Zm[pre + q.id]), hi = H.byN[(q.n || '').toLowerCase()], mi = pnLbl(q);
+    if (q.int) return '<div class="pn-r int" data-i="' + i + '"><input data-f="n" value="' + esc(q.n || '') + '" placeholder="npr. potpis projekta – kolegica"><div class="pn-tk"><span class="pn-intl">samo za tebe – ne ide na ponudu</span></div>' +
+      '<div class="pn-iz"><input data-f="iz" inputmode="decimal" value="' + (pnE(q.iz) ? '' : esc(String(q.iz).replace('.', ','))) + '" placeholder="− €">' + (q.pdv === true && !pnE(q.iz) ? '<small>s PDV ' + pnF(pnCost(q)) + '</small>' : '') + '</div>' +
+      '<button type="button" data-a="pdv" class="pn-pdv' + (q.pdv === true ? ' on' : '') + '" title="Zaračunava li PDV">' + (q.pdv === true ? '+PDV' : 'bez PDV') + '</button><span></span><span class="pn-st pn-int">− trošak</span><button type="button" data-a="rm" class="pn-rm" title="Ukloni">✕</button></div>';
     return '<div class="pn-r' + (q.op ? ' op' : '') + '" data-i="' + i + '"><input data-f="n" value="' + esc(q.n || '') + '" placeholder="Stavka"><div class="pn-tk"><input data-f="tko" list="pnTko" value="' + esc(q.tko || '') + '" placeholder="tko radi">' + (q.tko && q.tko !== 'Ja' ? '<button type="button" data-a="tel" title="' + (q.tel ? 'Nazovi ' + esc(q.tel) : 'Upiši telefon') + '">' + (q.tel ? '📞' : '☎＋') + '</button>' : '') + '</div>' +
       '<div class="pn-iz"><input data-f="iz" inputmode="decimal" value="' + (pnE(q.iz) ? '' : esc(String(q.iz).replace('.', ','))) + '" placeholder="' + (hi && !pnE(hi.iz) ? 'zadnje ' + pnF(+hi.iz) : '€') + '">' + (mi ? '<small>' + mi + '</small>' : '') + '</div>' +
       (q.tko && q.tko !== 'Ja' ? '<button type="button" data-a="pdv" class="pn-pdv' + (q.pdv === false ? '' : ' on') + '" title="Je li suradnik u sustavu PDV-a">' + (q.pdv === false ? 'bez PDV' : '+PDV') + '</button>' : '<span></span>') +
       '<button type="button" data-a="op" class="pn-op' + (q.op ? ' on' : '') + '" title="Ako bude trebalo – vidi se, ne ulazi u zbroj">ako treba</button><button type="button" data-a="st" class="pn-st ' + st[1] + '">' + st[0] + '</button><button type="button" data-a="rm" class="pn-rm" title="Ukloni stavku">✕</button></div>'; };
   const sec = (f, title, Q, Zm) => { const L = P.s.map((q, i) => [q, i]).filter(([q]) => (q.f === 2 ? 2 : 1) === f), S = pnSum(P)[f - 1], have = L.map(([q]) => (q.n || '').toLowerCase());
     return '<div class="pn-sec"><b>' + title + '</b><em>cijena suradnika bez PDV-a; +PDV ako ga on zaračunava</em></div>' + (L.length ? '<div class="pn-hd"><span>Stavka</span><span>Tko radi</span><span>Iznos €</span><span>PDV</span><span></span><span>Stanje</span><span></span></div>' : '') + L.map(([q, i]) => rowH(q, i, Zm)).join('') +
-      '<div class="pn-q">' + Q.filter(([n]) => !have.includes(n.toLowerCase())).map(([n]) => '<button type="button" data-q="' + f + '|' + esc(n) + '">＋ ' + esc(n) + '</button>').join('') + '<button type="button" data-q="' + f + '|">＋ Druga stavka</button></div>' +
+      '<div class="pn-q">' + Q.filter(([n]) => !have.includes(n.toLowerCase())).map(([n]) => '<button type="button" data-q="' + f + '|' + esc(n) + '">＋ ' + esc(n) + '</button>').join('') + '<button type="button" data-q="' + f + '|">＋ Druga stavka</button><button type="button" class="pn-qint" data-qi="' + f + '">－ Interni trošak (samo za mene)</button></div>' +
       '<div class="pn-tot" data-t="' + f + '">' + totH(f) + '</div>'; };
-  const totH = f => { const S = pnSum(P)[f - 1]; return S.cnt ? '<span>' + (S.ok < S.cnt ? 'cijena ' + S.ok + '/' + S.cnt + ' · ' : '') + 'PDV 0,00 € (oslobođeno)</span><span>Ukupno za investitora <b>' + pnF(S.uk) + ' €</b></span>' : ''; };
-  const zarH = () => { const S = pnSum(P)[0]; return S.n ? 'Od toga suradnicima ' + pnF(S.suc) + ' € (s njihovim PDV-om), tebi ' + pnF(S.moje) + ' €' : ''; };
+  const totH = f => { const S = pnSum(P)[f - 1]; return S.cnt ? '<span>' + (S.ok < S.cnt ? 'cijena ' + S.ok + '/' + S.cnt + ' · ' : '') + 'PDV 0,00 € (oslobođeno)</span><span>Ukupno za investitora <b>' + pnF(S.uk) + ' €</b></span>' + (f === 2 && S.n ? '<span class="pn-z2">tebi ' + pnF(S.moje) + ' €' + (S.int ? ' (interno −' + pnF(S.int) + ')' : '') + '</span>' : '') : ''; };
+  const zarH = () => { const S = pnSum(P)[0]; return S.n ? 'Od toga suradnicima ' + pnF(S.suc) + ' € (s njihovim PDV-om)' + (S.int ? ', interni troškovi ' + pnF(S.int) + ' €' : '') + ', tebi ' + pnF(S.moje) + ' €' : ''; };
   const refresh = () => { const Zm = {}; getZ().forEach(z => { if (z.id.indexOf(pre) === 0) Zm[z.id] = z; });
-    ov.querySelectorAll('.pn-r').forEach(r => { const q = P.s[+r.dataset.i]; if (!q) return; const st = pnSt(q, Zm[pre + q.id]), b = r.querySelector('[data-a=st]'); b.className = 'pn-st ' + st[1]; b.textContent = st[0];
+    ov.querySelectorAll('.pn-r').forEach(r => { const q = P.s[+r.dataset.i]; if (!q) return; if (q.int) { const bx = r.querySelector('.pn-iz'); let sm = bx.querySelector('small'); const t = q.pdv === true && !pnE(q.iz) ? 's PDV ' + pnF(pnCost(q)) : ''; if (!t) { if (sm) sm.remove(); } else { if (!sm) { sm = document.createElement('small'); bx.appendChild(sm); } sm.textContent = t; } return; } const st = pnSt(q, Zm[pre + q.id]), b = r.querySelector('[data-a=st]'); b.className = 'pn-st ' + st[1]; b.textContent = st[0];
       const mi = pnLbl(q), box = r.querySelector('.pn-iz'); let sm = box.querySelector('small'); if (!mi) { if (sm) sm.remove(); } else { if (!sm) { sm = document.createElement('small'); box.appendChild(sm); } sm.textContent = mi; } });
     ov.querySelectorAll('.pn-tot').forEach(e => e.innerHTML = totH(+e.dataset.t)); const z = ov.querySelector('.pn-zar'); if (z) z.textContent = zarH();
     const g = k => ov.querySelector('[data-o=' + k + ']'); g('pct').disabled = !P.ma.on; g('koiz').disabled = !P.ko.on; };
@@ -445,7 +449,7 @@ function pnEdit(id) { const R = RG(); if (!R) return; const it0 = R.item(id); if
     return '<details class="pn-pdfd"' + (pdfOpen ? ' open' : '') + '><summary>📄 Podaci za PDF ponude <em>' + esc([D.kl, D.br].filter(Boolean).join(' · ')) + '</em></summary><div class="pn-pg">' + inp('kl', 'Klijent') + inp('oib', 'OIB') + inp('ka', 'Adresa klijenta', 'w2') + inp('uv', 'Ponuda za (nastavak rečenice „…dostavljamo ponudu za”)', 'w2') + inp('ob', 'Objekt / lokacija', 'w2') + inp('br', 'Br. ponude') +
       inp('pot', 'Potpisuje', '', ' list="pnPot"') + '<datalist id="pnPot">' + PN_POT.map(t => '<option value="' + esc(t) + '">').join('') + '</datalist><label class="w2 ck"><input type="checkbox" data-p="pec"' + (D.pec !== false ? ' checked' : '') + '> pečat i potpis</label>' +
       '<label class="w2"><span>Napomena (svaki red posebno; prazno = „NAPOMENA: -”)</span><textarea data-p="nap" rows="3">' + esc(D.nap || '') + '</textarea></label></div></details>'; };
-  const pnLbl = q => { if (q.tko === 'Ja' || pnE(q.iz)) return ''; const c = pnCost(q), inv = pnInv(P, q); return (q.pdv === false ? '' : 's PDV ' + pnF(c)) + (P.ma.on ? (q.pdv === false ? '' : ' · ') + 'investitoru ' + pnF(inv) : ''); };
+  const pnLbl = q => { if (q.int || q.tko === 'Ja' || pnE(q.iz)) return ''; const c = pnCost(q), inv = pnInv(P, q); return (q.pdv === false ? '' : 's PDV ' + pnF(c)) + (P.ma.on ? (q.pdv === false ? '' : ' · ') + 'investitoru ' + pnF(inv) : ''); };
   const draw = () => { const S = pnSum(P), Zm = {}; getZ().forEach(z => { if (z.id.indexOf(pre) === 0) Zm[z.id] = z; }); const sur = Object.keys(H.h).concat(P.s.map(q => q.tko).filter(t => t && t !== 'Ja')).filter((v, i, a) => a.indexOf(v) === i).sort((a, b) => a.localeCompare(b, 'hr'));
     ov.innerHTML = shell('🧾 Ponuda – ' + esc(nm), 'linear-gradient(135deg,#0f2a4a,#0e4f63)',
       '<datalist id="pnTko"><option value="Ja">' + sur.map(t => '<option value="' + esc(t) + '">').join('') + '</datalist>' +
@@ -457,7 +461,7 @@ function pnEdit(id) { const R = RG(); if (!R) return; const it0 = R.item(id); if
       '<div class="pn-ph2">' + sec(2, 'PRIJAVA POČETKA RADOVA', PN_Q2, Zm) + '</div>' + pdfH(),
       '<button type="button" data-a="copy" style="' + BT0 + ';margin-right:auto">📋 Kopiraj tekst</button><button type="button" data-a="pdf" style="' + BT0 + '">📄 PDF</button><button type="button" data-a="ok" style="' + BT0 + '">Spremi i zatvori</button><button type="button" data-a="sent" style="' + BT0 + ';background:#0e4f63;color:#fff;border:0">📤 Ponuda poslana</button>');
     const bx = ov.firstElementChild; if (bx) bx.style.maxWidth = '900px'; };
-  const read = () => { ov.querySelectorAll('.pn-r').forEach(r => { const q = P.s[+r.dataset.i]; if (!q) return; q.n = r.querySelector('[data-f=n]').value.trim(); const tk = r.querySelector('[data-f=tko]').value.trim();
+  const read = () => { ov.querySelectorAll('.pn-r').forEach(r => { const q = P.s[+r.dataset.i]; if (!q) return; q.n = r.querySelector('[data-f=n]').value.trim(); if (q.int) { q.iz = pnNum(r.querySelector('[data-f=iz]').value); return; } const tk = r.querySelector('[data-f=tko]').value.trim();
       if (tk !== (q.tko || '')) { q.tko = /^ja$/i.test(tk) ? 'Ja' : tk; if (q.tko && q.tko !== 'Ja' && H.h[q.tko]) { q.tel = q.tel || H.h[q.tko].tel; q.mail = q.mail || H.h[q.tko].mail; if (H.h[q.tko].npdv) q.pdv = false; } } q.iz = pnNum(r.querySelector('[data-f=iz]').value); });
     const g = k => ov.querySelector('[data-o=' + k + ']'); P.ma.on = g('ma').checked; P.ma.pct = pnNum(g('pct').value) || 0; P.ko.on = g('ko').checked; P.ko.iz = pnNum(g('koiz').value);
     ov.querySelectorAll('[data-p]').forEach(e => { P.pdf[e.dataset.p] = e.type === 'checkbox' ? e.checked : e.value.trim(); }); const dd = ov.querySelector('.pn-pdfd'); if (dd) pdfOpen = dd.open; };
@@ -466,10 +470,11 @@ function pnEdit(id) { const R = RG(); if (!R) return; const it0 = R.item(id); if
   draw(); document.body.appendChild(ov);
   ov.addEventListener('change', e => { if (!e.target.matches('input')) return; const r = e.target.closest('.pn-r'), q = r ? P.s[+r.dataset.i] : null, tk0 = q ? q.tko || '' : ''; read(); refresh(); if (q && (q.tko || '') !== tk0) setTimeout(() => { if (ov.isConnected) { read(); draw(); } }, 0); });
   ov.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; read(); const r = b.closest('.pn-r'), q = r ? P.s[+r.dataset.i] : null, a = b.dataset.a;
+    if (b.dataset.qi) { P.s.push({ id: nid(), f: +b.dataset.qi, n: '', int: true, iz: '' }); draw(); const L = ov.querySelectorAll('.pn-r.int [data-f=n]'); if (L.length) setTimeout(() => L[L.length - 1].focus(), 30); return; }
     if (b.dataset.q != null) { const [f, n] = b.dataset.q.split('|'), hi = n ? H.byN[n.toLowerCase()] : null, d = (PN_Q1.concat(PN_Q2).find(z => z[0] === n) || ['', ''])[1], tko = hi && hi.tko ? hi.tko : d;
       P.s.push(Object.assign({ id: nid(), f: +f, n, tko, tel: tko && tko !== 'Ja' ? ((H.h[tko] || {}).tel || (hi && hi.tel) || '') : '', iz: '', op: n === 'Elaborat za katastar' }, tko && H.h[tko] && H.h[tko].npdv ? { pdv: false } : {})); draw(); const L = ov.querySelectorAll('.pn-r [data-f=' + (n ? (tko ? 'iz' : 'tko') : 'n') + ']'); if (L.length) setTimeout(() => L[L.length - 1].focus(), 30); return; }
     if (a === 'tel' && q) { if (q.tel) { openUri('tel:' + q.tel.replace(/[^\d+]/g, '')); return; } const t = prompt('Telefon – ' + (q.tko || 'suradnik') + ':', ''); if (t && t.trim()) { q.tel = t.trim(); H.h[q.tko] = Object.assign(H.h[q.tko] || {}, { tel: q.tel }); P.s.forEach(z => { if (z.tko === q.tko && !z.tel) z.tel = q.tel; }); draw(); } return; }
-    if (a === 'op' && q) { q.op = !q.op; draw(); return; } if (a === 'pdv' && q) { q.pdv = q.pdv === false ? true : false; draw(); return; }
+    if (a === 'op' && q) { q.op = !q.op; draw(); return; } if (a === 'pdv' && q) { q.pdv = q.int ? q.pdv !== true : (q.pdv === false ? true : false); draw(); return; }
     if (a === 'st' && q) { if (q.tko !== 'Ja' && pnE(q.iz)) { if (!q.tko) { toast('Upiši tko radi'); const i = r.querySelector('[data-f=tko]'); if (i) i.focus(); return; } q.rq = q.rq ? '' : today(); if (q.rq) toast('⏳ Zatraženo – ' + q.tko + '. Zadatak čeka odgovor 3 dana.'); draw(); } else { const i = r.querySelector('[data-f=iz]'); if (i) i.focus(); } return; }
     if (a === 'rm' && q) { P.s.splice(+r.dataset.i, 1); draw(); return; }
     if (a === 'copy') { pnCopy(pnText(Object.assign({}, x, { pon: P }))); return; }
