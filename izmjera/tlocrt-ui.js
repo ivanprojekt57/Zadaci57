@@ -72,7 +72,7 @@ function persist() {
 function ensureDom() {
   if ($('tlWiz')) return;
   const d = document.createElement('div'); d.id = 'tlWiz'; d.hidden = true;
-  d.innerHTML = '<div class="tl-head"><b>Tlocrt → DXF</b><span class="tl-ver">v2.86</span><span id="tlFloor"></span><div class="tl-steps" id="tlSteps"></div><button id="tlClose" class="tl-btn">✕ Zatvori</button></div><div id="tlFlow" hidden style="background:#12305e;padding:6px 12px"></div>' +
+  d.innerHTML = '<div class="tl-head"><b>Tlocrt → DXF</b><span class="tl-ver">v2.87</span><span id="tlFloor"></span><div class="tl-steps" id="tlSteps"></div><button id="tlClose" class="tl-btn">✕ Zatvori</button></div><div id="tlFlow" hidden style="background:#12305e;padding:6px 12px"></div>' +
     '<div class="tl-body"><div class="tl-view"><canvas id="tlCanvas"></canvas><div class="tl-zoom"><button id="tlFit" class="tl-btn" title="Prikaži sve">⤢</button></div><div id="tlWallPop" class="tl-pop" hidden></div></div><div class="tl-panel" id="tlPanel"></div></div>';
   document.body.appendChild(d);
   $('tlClose').onclick = close; $('tlFit').onclick = () => { W.view = null; draw(); };
